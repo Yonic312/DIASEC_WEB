@@ -35,7 +35,7 @@ public class AuthorController {
     private final AuthorService authorService;
     private final ImageUtil imageUtil;
 
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // consumes : 받을 수 있는 콘텐트 타입 제한
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // consumes : 받을 수 있는 콘텐트 타입 제한 rewqrqwer
     public ResponseEntity<?> registerAuthor(
         @ModelAttribute AuthorVo vo,
         @RequestPart("profileImg") MultipartFile profileImg
