@@ -97,7 +97,7 @@ function Layout() {
 
     const navigate = useNavigate();
     const { setMember } = useMember();
-    // 깃 테스트
+    // 깃 테스트 완료
 
     useEffect(() => {
         const handler = async (e) => {
