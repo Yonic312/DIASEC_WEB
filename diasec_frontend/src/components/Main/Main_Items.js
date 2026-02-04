@@ -515,7 +515,7 @@ const Main_Items = () => {
                     {/* 상단 미니  (명화) */}
                         <div className="mb:mt-[60px] md:mr-[4px]">
                             <div className='flex items-end justify-between mb-2 pb-1 border-b-[1px]'>
-                                <div>
+                                <div className="ml-1">
                                     <span
                                         className={`cursor-pointer ${sortMode === 'popular' ? 'font-bold text-black' : 'text-gray-500'}`}
                                         onClick={() => setSortMode('popular')}
@@ -529,7 +529,7 @@ const Main_Items = () => {
                                         가나다순
                                     </span>
                                 </div>
-                                <div className='relative md:w-[240px]'>
+                                <div className='mr-1 relative md:w-[240px]'>
                                     <input 
                                         type="text"
                                         placeholder="작가 이름을 검색하세요"
@@ -545,67 +545,67 @@ const Main_Items = () => {
                                     </svg>
                                 </div>
                             </div>
-                        {/* 시대 */}
-                        {type === "masterPiece" && (
-                            <div 
-                                className='
-                                    sm:text-base text-[clamp(14px,2.503vw,16px)]
-                                    flex overflow-x-auto no-scrollbar whitespace-nowrap md:gap-5 gap-3 text-gray-600 mb-1'>
-                                {[
-                                    "전체", "르네상스", "베네치아파", "바로크", "로코코", "신고전주의", "낭만주의", "사실주의", "인상주의", "신인상주의", "후기인상주의", "근대미술"
-                                ].map((period, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => {
-                                            setSelectedPeriod(period === "전체" ? "" : period);
-                                            setSelectedLabel('');
-                                        }}
-                                        className={`pb-[2px] font-medium ${
-                                            (selectedPeriod === "" && period === "전체") || selectedPeriod === period 
-                                            ? 'text-black border-black border-b-2' 
-                                            : 'border-transparent' }
-                                            border-b-2 hover:border-black hover:text-black transition`}
-                                    >
-                                        {period}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                            {/* 시대 */}
+                            {type === "masterPiece" && (
+                                <div 
+                                    className='
+                                        sm:text-base text-[clamp(14px,2.503vw,16px)]
+                                        flex overflow-x-auto no-scrollbar whitespace-nowrap md:gap-5 gap-3 text-gray-600 ml-1 mb-1'>
+                                    {[
+                                        "전체", "르네상스", "베네치아파", "바로크", "로코코", "신고전주의", "낭만주의", "사실주의", "인상주의", "신인상주의", "후기인상주의", "근대미술"
+                                    ].map((period, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                setSelectedPeriod(period === "전체" ? "" : period);
+                                                setSelectedLabel('');
+                                            }}
+                                            className={`pb-[2px] font-medium ${
+                                                (selectedPeriod === "" && period === "전체") || selectedPeriod === period 
+                                                ? 'text-black border-black border-b-2' 
+                                                : 'border-transparent' }
+                                                border-b-2 hover:border-black hover:text-black transition`}
+                                        >
+                                            {period}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
 
-                        {type === "koreanPainting" && (
-                            <div 
-                                className='
-                                    sm:text-base text-[clamp(14px,2.503vw,16px)]
-                                    flex overflow-x-auto no-scrollbar whitespace-nowrap md:gap-5 gap-3 text-gray-600 mb-1'>
-                                {[
-                                    "전체", "조선 전기", "조선 후기", "기타작가", "민화", "불교"
-                                ].map((period, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => {
-                                            if (DIRECT_AUTHOR_PERIODS.has(period)) {
-                                                setSelectedPeriod('');
-                                                setSelectedLabel(period);
-                                                setAuthorSearch('');
-                                                setTitleSearch('');
-                                                navigate(`/main_Items?type=${type}&author=${encodeURIComponent(period)}`);
-                                                return;
-                                            }
+                            {type === "koreanPainting" && (
+                                <div 
+                                    className='
+                                        sm:text-base text-[clamp(14px,2.503vw,16px)]
+                                        flex overflow-x-auto no-scrollbar whitespace-nowrap md:gap-5 gap-3 text-gray-600 mb-1'>
+                                    {[
+                                        "전체", "조선 전기", "조선 후기", "기타작가", "민화", "불교"
+                                    ].map((period, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                if (DIRECT_AUTHOR_PERIODS.has(period)) {
+                                                    setSelectedPeriod('');
+                                                    setSelectedLabel(period);
+                                                    setAuthorSearch('');
+                                                    setTitleSearch('');
+                                                    navigate(`/main_Items?type=${type}&author=${encodeURIComponent(period)}`);
+                                                    return;
+                                                }
 
-                                            setSelectedPeriod(period === "전체" ? "" : period);
-                                            setSelectedLabel('');
-                                        }}
-                                        className={`pb-[2px] font-medium ${
-                                            (selectedPeriod === "" && period === "전체") || selectedPeriod === period 
-                                            ? 'text-black border-black border-b-2' 
-                                            : 'border-transparent' }
-                                            border-b-2 hover:border-black hover:text-black transition`}
-                                    >
-                                        {period}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                                                setSelectedPeriod(period === "전체" ? "" : period);
+                                                setSelectedLabel('');
+                                            }}
+                                            className={`pb-[2px] font-medium ${
+                                                (selectedPeriod === "" && period === "전체") || selectedPeriod === period 
+                                                ? 'text-black border-black border-b-2' 
+                                                : 'border-transparent' }
+                                                border-b-2 hover:border-black hover:text-black transition`}
+                                        >
+                                            {period}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                     {/* 상단 미니 컬렉션 셀렉터 */}

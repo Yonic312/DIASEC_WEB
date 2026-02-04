@@ -243,10 +243,10 @@ const Join = () => {
     }
 
     return (
-        <div className="flex w-full px-2">
+        <div className="flex w-full">
             <form className="flex flex-col w-full">
                 <div className="flex flex-col pt-20">
-                        <span className="text-xl font-bold pb-6">| 회원가입</span>                    
+                        <span className="text-xl font-bold pl-3 pb-6">회원가입</span>                    
                 </div>
                 <div className="w-full mx-auto mb-10">
 
@@ -316,7 +316,7 @@ const Join = () => {
                         <select 
                             value={phone1} 
                             onChange={(e) => setPhone1(e.target.value)}
-                            className="px-1 sm:w-[65px] w-[55px] border border-gray-300 sm:text-base text-[14px]"
+                            className="px-1 sm:w-[65px] w-[65px] border border-gray-300 sm:text-base text-[14px]"
                         >
                             <option>010</option>
                             <option>011</option>
@@ -334,7 +334,7 @@ const Join = () => {
                             value={phone2} 
                             onChange={(e) => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} 
                             inputMode="numeric" 
-                            className="sm:w-[55px] w-[48px] border border-gray-300 pl-1 sm:text-base text-[14px]"
+                            className="w-[58px] border border-gray-300 pl-1 sm:text-base text-[14px]"
                         />
                         <span className="mx-[3px]">-</span>
                         <input type="text"
@@ -343,7 +343,7 @@ const Join = () => {
                             value={phone3} 
                             onChange={(e) => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} 
                             inputMode="numeric" 
-                            className="sm:w-[55px] w-[48px] border border-gray-300 pl-1 sm:text-base text-[14px]"
+                            className="w-[58px] border border-gray-300 pl-1 sm:text-base text-[14px]"
                         />
                     </div>
 
@@ -364,7 +364,7 @@ const Join = () => {
                 </div>
 
                 <div className="flex flex-col">
-                    <span className="mb-2 sm:text-base text-[14px]">전체동의</span>
+                    <span className="ml-3 mb-2 sm:text-base text-[14px]">전체동의</span>
                     <hr/>
                     <div className="flex mt-3 ml-3 mb-3 items-center">
                         <input 
@@ -372,10 +372,10 @@ const Join = () => {
                             checked={agree.all} 
                             onChange={toggleAgreeAll} 
                             className="
-                                sm:w-4 w-[14px]
-                                sm:h-4 h-[14px]
+                                sm:w-4 w-[12px]
+                                sm:h-4 h-[12px]
                                 mr-1"/>
-                        <span className="ml-1 sm:text-base text-[13px]">이용약관 및 개인정보수집 및 이용, 쇼핑정보 수신(선택)에 모두 동의합니다.</span>
+                        <span className="ml-1 sm:text-base text-[11px]">이용약관 및 개인정보수집 및 이용, 쇼핑정보 수신(선택)에 모두 동의합니다.</span>
                     </div>
                     <hr/>
 

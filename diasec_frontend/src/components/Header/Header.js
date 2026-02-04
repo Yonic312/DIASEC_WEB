@@ -17,17 +17,19 @@ const Header = () => {
         setOpenSections(prev => (prev === key ? null : key));
     };
 
-    // 메뉴 정의 (상단 탭)
+    // 모바일 메뉴 정의 (상단 탭)
     const mainMenus = useMemo(() => ([
         { key:'diasec',              label:'ONLY 디아섹',                  link: '/main_CompanyProfile' },
         { key:'masterPiece',         label:'명화',                         link:'/main_Items?type=masterPiece' },
-        { key:'photoIllustration',   label:'사진/일러스트',                 link:'/main_Items?type=photoIllustration' },
-        { key:'fengShui',            label:'풍수',                 link:'/main_items?type=fengShui' },
-        { key:'authorCollection',    label:'작가',                     link:'/main_items?type=authorCollection' },
-        { key:'customFrame',         label:'맞춤액자/사진보정',             link:'/customFrames' },
-        { key:'companyOrder',        label:'기업주문',                     link:'/bizOrderBoard' },
-        { key:'registerAuthor',      label:'작가등록',                     link:'/authorRegisterIntro' },
-        { key:'event',               label:'이벤트',                       link:'/mainEvent' },
+        { key:'koreanPainting',      label:'동양화',                        link:'/main_Items?type=koreanPainting' },
+        { key:'photoIllustration',   label:'사진/일러스트',                  link:'/main_Items?type=photoIllustration' },
+        { key:'fengShui',            label:'풍수',                         link:'/main_items?type=fengShui' },
+        { key:'Contemporary',        label:'현대작가',                      link:'/main_items?type=Contemporary' },
+        { key:'authorCollection',    label:'작가',                         link:'/main_items?type=authorCollection' },
+        { key:'customFrame',         label:'맞춤액자/사진보정',               link:'/customFrames' },
+        { key:'companyOrder',        label:'기업주문',                      link:'/bizOrderBoard' },
+        { key:'registerAuthor',      label:'작가등록',                      link:'/authorRegisterIntro' },
+        { key:'event',               label:'이벤트',                        link:'/mainEvent' },
     ]), []);
 
     // 무한 스크롤
@@ -45,12 +47,13 @@ const Header = () => {
     // 드롭다운/드로어에 쓸 하위 항목 (서버 데이터)
     const [dropdown, setDropdown] = useState({
         diasec: [{ label: '디아섹코리아 회사소개', img: diasec1, link: '/main_CompanyProfile'}, { label: '디아섹이란', img: diasec2, link: '/introduce'}], 
-        masterPiece: [], photoIllustration: [], fengShui: [],
+        masterPiece: [], photoIllustration: [], fengShui: [], koreanPainting:[], Contemporary: [],
         authorCollection: [], customFrame: [], companyOrder: [], registerAuthor: [], event: []
     });
-
+    
+    // 모바일 카테고리 목록
     const categories = useMemo(
-        () => ['masterPiece', 'fengShui', 'authorCollection', 'photoIllustration'],
+        () => ['masterPiece', 'fengShui', 'authorCollection', 'photoIllustration', 'koreanPainting', 'Contemporary'],
         []
     );
 
@@ -323,7 +326,7 @@ const Header = () => {
                         )
                     })}
                 </ul>
-                {/* ── 회원 패널 (하단 고정 + 디자인 강화) ───────────────── */}
+                {/* ── [모바일] 회원 패널 (하단 고정 + 디자인 강화) ───────────────── */}
                 <div className="mt-6 px-3 pb-4">
                     <div className="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
                         {/* 상단 회원 정보 */}

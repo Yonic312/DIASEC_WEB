@@ -7,6 +7,44 @@ const CreditHistory = () => {
     const { member } = useContext(MemberContext);
     const [history, setHistory] = useState([]);
 
+    // ✅ 페이징
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10; // 테이블이니까 10개가 적당
+
+    const [pageGroupSize, setPageGroupSize] = useState(
+        window.innerWidth < 640 ? 5 : 10
+    );
+
+    useEffect(() => {
+        const handleResize = () => {
+            setPageGroupSize(window.innerWidth < 640 ? 5 : 10);
+        };
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    // 데이터 바뀌면 1페이지로
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [history.length]);
+
+    const totalPages = Math.max(1, Math.ceil(history.length / itemsPerPage));
+    const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
+    const groupStart = currentGroup * pageGroupSize + 1;
+    const groupEnd = Math.min(groupStart + pageGroupSize - 1, totalPages);
+
+    const currentHistory = history.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    // 삭제/변경으로 페이지 초과 방지
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
     useEffect(() => {
         if (!member?.id) return;
 
@@ -54,7 +92,7 @@ const CreditHistory = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {history.map(item => (
+                        {currentHistory.map(item => (
                             <tr key={item.cid} className="text-center">
                                 <td className="md:py-2 py-1 border">{new Date(item.createdAt).toLocaleDateString()}</td>
                                 <td className={`md:p-2 py-1 border font-semibold ${item.type === '사용' ? 'text-red-500' : 'text-green-600'}`}>
@@ -74,6 +112,86 @@ const CreditHistory = () => {
                         ))}
                     </tbody>
                 </table>
+            )}
+
+            {/* 페이징 */}
+            {history.length > 0 && (
+                <div
+                    className="
+                        md:text-sm text-[clamp(10px,1.8252vw,14px)]
+                        flex justify-center items-center sm:gap-2 gap-[1px]
+                        mt-6 mb-10"
+                >
+                    <button
+                        onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
+                        disabled={groupStart === 1}
+                        className="
+                            sm:w-8 w-6
+                            sm:h-8 h-6
+                            flex items-center justify-center
+                            text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {"<<"}
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="
+                            sm:w-8 w-6
+                            sm:h-8 h-6
+                            flex items-center justify-center
+                            text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {"<"}
+                    </button>
+
+                    {Array.from(
+                        { length: groupEnd - groupStart + 1 },
+                        (_, i) => groupStart + i
+                    ).map(page => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`
+                                sm:w-8 w-6
+                                sm:h-8 h-6
+                                flex items-center justify-center rounded-full
+                                ${
+                                    currentPage === page
+                                        ? "bg-black text-white"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                }
+                            `}
+                        >
+                            {page}
+                        </button>
+                    ))}
+
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="
+                            sm:w-8 w-6
+                            sm:h-8 h-6
+                            flex items-center justify-center
+                            text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {">"}
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
+                        disabled={groupEnd === totalPages}
+                        className="
+                            sm:w-8 w-6
+                            sm:h-8 h-6
+                            flex items-center justify-center
+                            text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {">>"}
+                    </button>
+                </div>
             )}
         </div>
     );

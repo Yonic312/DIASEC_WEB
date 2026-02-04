@@ -373,9 +373,11 @@ const Main = () => {
                         font-bold text-gray-800'>보정 서비스 미리보기</h2>
                 </div>
                 <div>
-                    {/* 보정 비교 */}
+                    {/* 보정 비교
+                        xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
+                    */}
                     <div className='
-                        xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[230px]
+                        max-w-[550px] w-[61%]
                         aspect-[450/670] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
                         xl:p-6 lg:p-5 md:p-4 p-2
                         shadow-xl'>
@@ -434,7 +436,7 @@ const Main = () => {
                         </div>
                         <span
                         className="
-                            flex justify-center items-center
+                            flex flex-col justify-center items-center
                             mt-4
                             md:text-sm text-[clamp(11px,1.8252vw,14px)]
                             font-medium tracking-wide
@@ -442,7 +444,7 @@ const Main = () => {
                             px-4
                         "
                         >
-                        원본사진과 보정사진을 <span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!
+                        원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
                     </span>
                     </div>
                 </div>
@@ -466,7 +468,8 @@ const Main = () => {
                         {(events.length >= 4 ? events.concat(events) : events).map((event, i) => (
                             <div
                                 key={`${event?.eventId}-${i}`} 
-                                className="w-1/3 flex-shrink-0 px-[1.5%]">
+                                className="
+                                    w-1/2 md:w-1/3 flex-shrink-0 px-[1.5%]">
                                 <div
                                     key={`${event?.eventId}-${i}`}
                                     className='bg-white rounded-lg overflow-hidden shadow-md cursor-pointer hover:shadow-lg transition hover:scale-105'

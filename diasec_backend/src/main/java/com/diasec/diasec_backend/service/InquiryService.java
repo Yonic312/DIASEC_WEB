@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.diasec.diasec_backend.dao.InquiryMapper;
 import com.diasec.diasec_backend.util.ImageUtil;
@@ -70,14 +71,10 @@ public class InquiryService {
     }
 
     // 관리자 페이지 문의 삭제
+    @Transactional
     public void deleteInquiry(Long iid) {
         // 1. 이미지 URL들 먼저 조회
         List<String> imageUrls = inquiryMapper.selectInquiryImageUrls(iid);
-
-        // 2. 실제 이미지 파일 삭제
-        for (String url : imageUrls) {
-            imageUtil.deleteImage(url);
-        }
 
         // 3. DB에서 이미지 레코드 삭제
         inquiryMapper.deleteInquiryImages(iid);
@@ -87,6 +84,12 @@ public class InquiryService {
 
         // 5. 문의글 삭제
         inquiryMapper.deleteInquiry(iid);
+        
+        // 2. 실제 이미지 파일 삭제
+        for (String url : imageUrls) {
+            System.out.println("url: " + url);
+            imageUtil.deleteImage(url);
+        }
     }
 
     // 미답변 개수 가져오기

@@ -26,7 +26,7 @@ public class AdminOrderController {
     private final AdminOrderService adminOrderService;
     private final CreditService creditService;
 
-    // 주문 상태 목록 가져오기d
+    // 주문 상태 목록 가져오기
     @PostMapping("/orders")
     public List<OrderItemsVo> getOrdersByStatus(@RequestBody Map<String, String> request) {
         String status = request.get("status");

@@ -104,11 +104,11 @@ const SupportInquiryForm = () => {
     
     return(
         <div
-            className="mx-auto px-2"
+            className="w-[60%] mx-auto px-2"
         >
             <div 
                 className="
-                    max-w-2xl 
+                    full 
                     md:p-7 p-[clamp(0.5rem,3.65vw,1.75rem)]
                     md:space-y-6 space-y-[clamp(8px,7.49vw,24px)]
                     border border-gray-200 shadow-md rounded-lg`">

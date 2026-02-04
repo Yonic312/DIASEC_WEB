@@ -9,6 +9,7 @@ const Order_Detail = () => {
     const printRef = useRef();
     const navigate = useNavigate();
     const location = useLocation();
+    const backQuery = location.search;
     const orderCountFromState = location.state?.orderCount || 1;
     const { itemId } = useParams();
     const [order, setOrder] = useState(null);
@@ -286,7 +287,7 @@ const Order_Detail = () => {
             const data = await response.json();
             if (data.success) {
                 toast.success("주문이 삭제되었습니다.");
-                navigate('/admin/order_Status');
+                navigate(`/admin/order_Status${backQuery}`);
             } else {
                 toast.error("삭제 실패: " + data.message);
             }
@@ -450,7 +451,7 @@ const Order_Detail = () => {
 
                         <button 
                             className="px-2 py-1 text-[11px] font-medium border bg-black text-white border-gray-500 rounded-xl hover:text-gray-300  transition" 
-                            onClick={() => navigate(-1)}> 
+                            onClick={() => navigate(`/admin/order_Status${backQuery}`)}> 
                             이전으로
                         </button>
                     </div>

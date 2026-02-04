@@ -134,12 +134,12 @@ const ChangePwd = () => {
                             sm:h-[40px] h-8
                             p-2 border-black border-[1px] border-opacity-15"></input>
 
-                    <div className="flex flex-row mt-5 gap-4">
-                        <button type="button" 
+                    <div className="flex justify-center mt-5 gap-4">
+                        {/* <button type="button" 
                             className="
                                 w-1/2 
                                 sm:h-[40px] h-[30px]
-                                bg-[#ffffff] text-[#000000] border-[1px] border-[#000000] font-bold" onClick={() => navigate('/')}>다음에 변경</button>
+                                bg-[#ffffff] text-[#000000] border-[1px] border-[#000000] font-bold" onClick={() => navigate('/')}>다음에 변경</button> */}
                         <button type="submit" 
                             className="
                                 w-1/2 

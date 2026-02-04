@@ -4,11 +4,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { MemberContext } from "../../../context/MemberContext"; // 경로가 다르면 아래 주석 참고
 
-// ⚠️ MemberContext 경로가 프로젝트 구조상 다를 수 있음
-// 예) 현재 WishList.js 위치가: src/components/Member/Items/WishList.js 라면
-// import { MemberContext } from "../../../context/MemberContext"; 가 맞을 가능성 큼.
-// 에러나면 이 줄만 경로 맞춰서 바꿔.
-
 const WishList = () => {
     const API = process.env.REACT_APP_API_BASE;
     const navigate = useNavigate();
@@ -34,6 +29,43 @@ const WishList = () => {
                 return "맞춤액자";  
             } 
     }
+
+    // ✅ 페이징
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    const [pageGroupSize, setPageGroupSize] = useState(
+    window.innerWidth < 640 ? 5 : 10
+    );
+
+    useEffect(() => {
+    const handleResize = () => {
+        setPageGroupSize(window.innerWidth < 640 ? 5 : 10);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    // items가 바뀌면(불러오기/삭제 후) 1페이지로
+    useEffect(() => {
+    setCurrentPage(1);
+    }, [items.length]);
+
+    const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
+    const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
+    const groupStart = currentGroup * pageGroupSize + 1;
+    const groupEnd = Math.min(groupStart + pageGroupSize - 1, totalPages);
+
+    const currentItems = items.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+    );
+
+    // 현재 페이지가 총 페이지보다 커지면 보정(삭제로 페이지 줄어들 때)
+    useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+    }, [totalPages, currentPage]);
+    // 페이징
 
     // 체크된 위시 아이템 id들
     const [checked, setChecked] = useState(new Set());
@@ -123,46 +155,43 @@ const WishList = () => {
     // ✅ 선택 장바구니 담기
     const addSelectedToCart = async () => {
         if (!member?.id) {
-        toast.warn("로그인이 필요합니다.");
-        navigate("/userLogin");
-        return;
-        }
-
-        if (selectedItems.length === 0) {
-        toast.warn("선택된 상품이 없습니다.");
-        return;
-        }
-
-        try {
-        // 너가 말한 흐름: WishList에서 “선택 장바구니” -> Cart.jsx 연결
-        // 보통은 선택된 pid 목록을 백엔드로 보내서 cart에 insert
-
-        const payload = {
-            id: member.id,
-            items: selectedItems.map((it) => ({
-            pid: it.pid,
-            quantity: 1,
-            category: it.category,
-            })),
-        };
-
-        // 후보1) /cart/insertSelected
-        // 후보2) /cart/insert
-        // 후보3) /cart/add
-        const res = await axios.post(`${API}/cart/insertSelected`, payload, {
-            withCredentials: true,
-        });
-
-        if (res.data?.success === false) {
-            toast.error(res.data?.message || "장바구니 담기 실패");
+            toast.warn("로그인이 필요합니다.");
+            navigate("/userLogin");
             return;
         }
 
-        toast.success("선택한 상품을 장바구니에 담았습니다.");
-        navigate("/cart");
+        if (selectedItems.length === 0) {
+            toast.warn("선택된 상품이 없습니다.");
+            return;
+        }
+
+        try {
+            const payload = {
+                id: member.id,
+                items: selectedItems.map((it) => ({
+                pid: it.pid,
+                quantity: 1,
+                category: it.category,
+                })),
+            };
+
+            // 후보1) /cart/insertSelected
+            // 후보2) /cart/insert
+            // 후보3) /cart/add
+            const res = await axios.post(`${API}/cart/insertSelected`, payload, {
+                withCredentials: true,
+            });
+
+            if (res.data?.success === false) {
+                toast.error(res.data?.message || "장바구니 담기 실패");
+                return;
+            }
+
+            toast.success("선택한 상품을 장바구니에 담았습니다.");
+            navigate("/cart");
         } catch (e) {
-        console.error(e);
-        toast.error("장바구니 담기 실패");
+            console.error(e);
+            toast.error("장바구니 담기 실패");
         }
     };
 
@@ -216,98 +245,208 @@ const WishList = () => {
     }
 
     return (
-        <div className="w-full bg-white sm:px-8 px-2 sm:py-10 py-5 shadow-md border border-gray-200 space-y-4 mb-20">
-        <div className="flex items-center justify-between">
-            <h2 className="xl:text-2xl text-lg font-bold">관심상품</h2>
+        <div className="w-full flex flex-col">
+            <span className="
+                md:text-xl text-[clamp(14px,2.607vw,20px)]
+                font-bold pb-6">| 관심상품 조회</span>
 
-            <div className="flex gap-2">
-                <button
-                    className="px-3 py-2 text-sm border border-gray-400 rounded-xl hover:bg-gray-100"
-                    onClick={toggleAll}
-                >
-                    {checkedCount === items.length && items.length > 0 ? "전체해제" : "전체선택"}
-                </button>
+            <div className="w-full bg-white sm:px-8 px-2 sm:py-10 py-5 shadow-md border border-gray-200 space-y-4 mb-20">
+                <div className="flex items-center">
+                    <div className="flex gap-2">
+                        <button
+                            className="
+                                sm:text-sm text-[10px]
+                                sm:px-3 px-2
+                                sm:py-2 py-1
+                                border border-gray-400 rounded-xl hover:bg-gray-100"
+                            onClick={toggleAll}
+                        >
+                            {checkedCount === items.length && items.length > 0 ? "전체해제" : "전체선택"}
+                        </button>
 
-                <button
-                    className="px-3 py-2 text-sm bg-black text-white rounded-xl hover:opacity-90"
-                    onClick={addSelectedToCart}
-                >
-                    선택 장바구니
-                </button>
+                        <button
+                            className="
+                                sm:text-sm text-[10px]
+                                sm:px-3 px-2
+                                sm:py-2 py-1 
+                                bg-black text-white rounded-xl hover:opacity-90"
+                            onClick={addSelectedToCart}
+                        >
+                            선택 장바구니
+                        </button>
 
-                <button
-                    className="px-3 py-2 text-sm border border-red-300 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition"
-                    onClick={deleteSelected}
-                >
-                    선택삭제
-                </button>
-            </div>
-        </div>
+                        <button
+                            className="
+                                sm:text-sm text-[10px]
+                                sm:px-3 px-2
+                                sm:py-2 py-1 
+                                border border-red-300 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition"
+                            onClick={deleteSelected}
+                        >
+                            선택삭제
+                        </button>
+                    </div>
+                </div>
 
-        <div className="text-sm text-gray-500">
-            총 {items.length}개 / 선택 {checkedCount}개
-        </div>
+                <div className="
+                    sm:text-sm  text-[11px]
+                    text-gray-500">
+                    총 {items.length}개 / 선택 {checkedCount}개
+                </div>
 
-        {items.length === 0 ? (
-            <div className="text-center py-20 text-gray-500">관심상품이 없습니다.</div>
-        ) : (
-            <div className="h-[430px] overflow-y-scroll space-y-2">
-            {items.map((it, idx) => {
-                const key = it.wid ?? it.id ?? it.pid;
-                const isChecked = checked.has(key);
+                {items.length === 0 ? (
+                    <div className="text-center py-20 text-gray-500">관심상품이 없습니다.</div>
+                ) : (
+                    <div className="h-[430px] overflow-y-scroll space-y-2">
+                    {currentItems.map((it, idx) => {
+                        const key = it.wid ?? it.id ?? it.pid;
+                        const isChecked = checked.has(key);
 
-                return (
-                    <div
-                        key={key ?? idx}
-                        className="flex items-center gap-3 border rounded-xl p-3 bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
-                        onClick={() => navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)}
-                    >
-                        <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleOne(key)}
-                            className="w-4 h-4"
-                        />
-
-                        <img
-                            src={it.thumbnail}
-                            alt={it.title}
-                            className="w-20 h-20 object-cover rounded-lg border bg-white cursor-pointer"
-                        />
-                        
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                <p className="font-semibold text-gray-800 truncate">{it.title}</p>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    {convertCategoryName(it.category || "")} {it.author ? `· ${it.author}` : ""}
-                                </p>
-                                </div>
-                                <button
-                                    className="px-2 py-1 text-xs border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
+                        return (
+                            <div
+                                key={key ?? idx}
+                                className="
+                                    w-full
+                                    flex items-center
+                                    sm:gap-3 gap-2
+                                    sm:p-3 p-2
+                                    border rounded-xl bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+                                onClick={() => navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => toggleOne(key)}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteWish(it)
                                     }}
-                                >
-                                삭제
-                                </button>
-                            </div>
+                                    className="
+                                        sm:w-4 w-3
+                                        sm:h-4 h-3
+                                    "
+                                />
 
-                            <div className="mt-2 flex items-end justify-between">
-                                <div className="text-sm text-gray-600">
-                                {it.size ? `사이즈: ${it.size}` : ""}
+                                <img
+                                    src={it.thumbnail}
+                                    alt={it.title}
+                                    className="
+                                        sm:w-20 w-12
+                                        sm:h-20 h-12
+                                        object-cover rounded-lg border bg-white cursor-pointer"
+                                />
+                                
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                        {/* 제목 */}
+                                        <p className="
+                                            sm:text-base text-[12.5px]
+                                            font-semibold 
+                                            text-gray-800 truncate">{it.title}</p>
+                                        {/* 내용 */}
+                                        <p className="
+                                            sm:text-sm text-[10.5px]
+                                            text-gray-500 mt-1">
+                                            {convertCategoryName(it.category || "")} {it.author ? `· ${it.author}` : ""}
+                                        </p>
+                                        </div>
+                                        <button
+                                            className="
+                                                shrink-0
+                                                sm:text-xs text-[10px]
+                                                px-2 py-1 border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteWish(it)
+                                            }}
+                                        >
+                                        삭제
+                                        </button>
+                                    </div>
+
+                                    <div className="mt-2 flex items-end justify-between">
+                                        <div className="text-sm text-gray-600">
+                                        {it.size ? `사이즈: ${it.size}` : ""}
+                                        </div>
+                                        {/* <div className="font-bold text-gray-800">
+                                        {Number(it.price || 0).toLocaleString()}원
+                                        </div> */}
+                                    </div>
                                 </div>
-                                {/* <div className="font-bold text-gray-800">
-                                {Number(it.price || 0).toLocaleString()}원
-                                </div> */}
                             </div>
-                        </div>
+                        );
+                    })}
                     </div>
-                );
-            })}
+                )}
+                <div
+                    className="
+                        md:text-sm text-[clamp(10px,1.8252vw,14px)]
+                        flex justify-center items-center sm:gap-2 gap-[1px] mt-6"
+                >
+                    <button
+                        onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
+                        disabled={groupStart === 1}
+                        className="
+                        sm:w-8 w-6
+                        sm:h-8 h-6
+                        flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {"<<"}
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="
+                        sm:w-8 w-6
+                        sm:h-8 h-6
+                        flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {"<"}
+                    </button>
+
+                    {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(
+                        (page) => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`
+                            sm:w-8 w-6
+                            sm:h-8 h-6
+                            flex items-center justify-center rounded-full ${
+                                currentPage === page
+                                ? "bg-black text-white"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                        >
+                            {page}
+                        </button>
+                        )
+                    )}
+
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="
+                        sm:w-8 w-6
+                        sm:h-8 h-6
+                        flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {">"}
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
+                        disabled={groupEnd === totalPages}
+                        className="
+                        sm:w-8 w-6
+                        sm:h-8 h-6
+                        flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30"
+                    >
+                        {">>"}
+                    </button>
+                </div>
             </div>
-        )}
         </div>
     );
 };

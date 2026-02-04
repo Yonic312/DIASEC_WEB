@@ -23,9 +23,10 @@ const None_Custom_Detail = () => {
 
     const categoryMap = {
         masterPiece : "명화",
+        koreanPainting : "동양화",
+        photoIllustration: "사진/일러스트",
         fengShui : "풍수",
         authorCollection: "작가 컬렉션",
-        photoIllustration: "사진/일러스트",
     };
 
     // 주문 항목 구현
@@ -530,18 +531,9 @@ const None_Custom_Detail = () => {
                                 </button>
                             )}
                         </div>
-
                         <span className="mt-3 text-base font-bold">{product.title}</span>
                         <div className=" text-sm text-gray-500 mt-1"> {product.author}</div>
-                        {/* 내 의견 */}
-
-                        {/* 고모부 의견 */}
-                        {/* <div className="flex justify-between"><span className="text-[19px] font-bold">{product.title}</span> <span className="h-6 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full w-fit">다른 그림보기</span></div>
-                        <div className="flex justify-between text-sm text-gray-500 mt-1"> {product.author} <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full w-fit">다른 작가보기</span></div> */}
-                        {/* 고모부 의견 */}
                     </div>
-                        
-                    {/* <hr className='border-[1px] border-gray-200 opacity-80' /> */}
 
                     {/* 사이즈 입력 */}
                     <div className="flex flex-col">

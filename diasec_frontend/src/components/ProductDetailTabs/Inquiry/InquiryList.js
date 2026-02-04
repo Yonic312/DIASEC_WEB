@@ -114,7 +114,7 @@ const InquiryList = ({ pid }) => {
     return (
         <div className='w-full mt-10 text-sm'>
             <div className='flex justify-between items-center border-b pb-4 mb-4'>
-                <h2 className='text-lg font-semibold'>문의 <span className='text-gray-500'>{inquiries.length}</span></h2>
+                <h2 className='text-lg font-semibold ml-1'>문의 <span className='text-gray-500'>{inquiries.length}</span></h2>
                 <button 
                     onClick={() => {
                         if(!member) {
@@ -123,7 +123,7 @@ const InquiryList = ({ pid }) => {
                         }
                         navigate(`/inquiryForm?pid=${pid}`)
                     }}
-                    className="px-4 py-2 border text-sm text-gray-700 hover:bg-gray-100">문의하기</button>
+                    className="px-4 py-2 border text-sm text-gray-700 hover:bg-gray-100 mr-1">문의하기</button>
             </div>
 
             <div className="grid grid-cols-4 text-center px-4 py-2 bg-gray-100 text-gray-500 font-semibold border-t border-b">

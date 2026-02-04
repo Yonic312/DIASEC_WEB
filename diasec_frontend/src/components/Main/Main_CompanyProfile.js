@@ -151,7 +151,7 @@ const Main_CompanyProfile = () => {
                             src={item.video}
                             title="GS홈쇼핑 방송 영상"
                             frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-media; gyroscope; picture-in-picture"
+                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                             className="w-full h-64 rounded-lg"
                             ></iframe>

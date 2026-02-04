@@ -17,12 +17,13 @@ const Header_Menu = () => {
         { key : 'koreanPainting',       label: '동양화',         link:'/main_Items?type=koreanPainting' },
         { key : 'photoIllustration', label: '사진 / 일러스트',     link:'/main_Items?type=photoIllustration' },
         { key : 'fengShui',          label: '풍수그림',           link:'/main_Items?type=fengShui'},
-        { key : 'Contemporary', label:'현대작가', link:'' },
-        // { key : 'authorCollection',  label: '작가갤러리',          link:'/main_Items?type=authorCollection'},
         { key : 'customFrame',       label: '맞춤액자 / 사진보정',  link: '/customFrames' },
-        { key : 'companyOrder',      label: '기업주문',           link: '/bizOrderBoard' },
-        // { key : 'registerAuthor',    label: '작가등록',           link: '/authorRegisterIntro' },
         { key : 'event',             label: '이벤트',             link: '/mainEvent'},
+        // { key : 'companyOrder',      label: '기업주문',           link: '/bizOrderBoard' },
+        // { key : 'registerAuthor',    label: '작가등록',           link: '/authorRegisterIntro' },
+        // { key : 'Contemporary', label:'현대작가', link:'' },
+        // { key : 'authorCollection',  label: '작가갤러리',          link:'/main_Items?type=authorCollection'},
+        
     ]), []);
 
     const categories = useMemo(
@@ -225,7 +226,7 @@ const Header_Menu = () => {
 
     // 데스크톱 메뉴 (기존)
     return (
-        <div className="relative hidden md:block items-center w-full border-b-[1px]"
+        <div className="relative hidden md:block items-center w-full border-b-[1px] px-2"
             onMouseLeave={scheduleClose}
             onMouseEnter={() => {
                 if (closeTimerRef.current) clearTimeout(closeTimerRef.current);

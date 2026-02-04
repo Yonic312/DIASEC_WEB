@@ -26,10 +26,10 @@
             console.log("[popupClose] postMessage payload:", payload);
 
             if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(payload, "https://diasec.co.kr");
-            console.log("[popupClose] postMessage sent");
+                window.opener.postMessage(payload, "http://localhost:3001");
+                console.log("[popupClose] postMessage sent");
             } else {
-            console.log("[popupClose] opener missing -> cannot postMessage");
+                console.log("[popupClose] opener missing -> cannot postMessage");
             }
 
             window.close();

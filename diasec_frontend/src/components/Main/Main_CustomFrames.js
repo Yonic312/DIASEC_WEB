@@ -798,7 +798,7 @@ const Main_CustomFrames = () => {
                 </div>
             </div>
 
-            {/* 보정 비교 */}
+            {/* 보정 */}
             <div>
                 <div className="text-center mt-20 mb-3">
                     <h2 className='
@@ -808,7 +808,7 @@ const Main_CustomFrames = () => {
                 <div>
                     {/* 보정 비교 */}
                     <div className='
-                        xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[230px]
+                        xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
                         aspect-[450/670] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
                         xl:p-6 lg:p-5 md:p-4 p-2
                         shadow-xl'>
@@ -820,7 +820,7 @@ const Main_CustomFrames = () => {
                             <img src={
                                 showAfter ? current.after : current.before}
                                 alt="보정 비교" 
-                                className='rounded-xl transition duration-500 shadow-lg max-w-full' 
+                                className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
                             />
                             <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
                                 <button
@@ -867,7 +867,7 @@ const Main_CustomFrames = () => {
                         </div>
                         <span
                         className="
-                            flex justify-center items-center
+                            flex flex-col justify-center items-center
                             mt-4
                             md:text-sm text-[clamp(11px,1.8252vw,14px)]
                             font-medium tracking-wide
@@ -875,13 +875,13 @@ const Main_CustomFrames = () => {
                             px-4
                         "
                         >
-                        원본사진과 보정사진을 <span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!
+                        원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
                     </span>
                     </div>
                 </div>
             </div>
+            {/* /보정 */}
             
-            {/* 보정 서비스 안내 */}
             <div className='
                 md:mx-auto mx-4
                 max-w-3xl bg-white border border-[#D0AC88] rounded-2xl shadow-md 

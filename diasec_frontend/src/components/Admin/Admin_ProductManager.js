@@ -233,10 +233,10 @@ const Admin_ProductManager = () => {
 
     const categoryMap = {
         masterPiece: '명화',
-        fengShui: '풍수',
-        photoIllustration: '사진/일러스트',
-        authorCollection: '작가별',
         koreanPainting: '동양화',
+        photoIllustration: '사진/일러스트',
+        fengShui: '풍수',
+        authorCollection: '작가',
         customFrames: '맞춤액자'
     };
 
@@ -527,10 +527,11 @@ const Admin_ProductManager = () => {
                             <label>
                                 카테고리
                                 <select value={editData.category || ''} onChange={e => setEditData(prev => ({ ...prev, category: e.target.value }))} className="border p-2 w-full mt-1 mb-1">
+                                    <option value="전체">전체</option>
                                     <option value="masterPiece">명화</option>
-                                    <option value="fengShui">풍수</option>
-                                    <option value="photoIllustration">사진/일러스트</option>
                                     <option value="koreanPainting">동양화</option>
+                                    <option value="photoIllustration">사진/일러스트</option>
+                                    <option value="fengShui">풍수</option>
                                     <option value="authorCollection">작가별</option>
                                     <option value="customFrames">맞춤액자</option>
                                 </select>

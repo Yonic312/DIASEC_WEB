@@ -100,7 +100,7 @@ function Layout() {
 
     useEffect(() => {
         const handler = async (e) => {
-            console.log("[GLOBAL message]", e.origin, e.data);
+            // console.log("[GLOBAL message]", e.origin, e.data);
 
             if (e.origin !== "https://diasec.co.kr") return;
 

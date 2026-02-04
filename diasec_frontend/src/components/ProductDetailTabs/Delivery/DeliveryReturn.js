@@ -5,11 +5,11 @@ const DeliveryReturn = () => {
             md:text-[15px] text-[clamp(13px,1.955vw,15px)]">
             <span 
                 className="
-                    mt-5 font-bold
+                    mt-5 ml-1 font-bold
                     md:text-2xl text-[clamp(20px,3.128vw,24px)]">배송 / 환불 안내</span>
             <hr/>
             
-            <section>
+            <section className="mx-1">
                 <span 
                     className="
                         md:text-xl text-[clamp(18px,2.607vw,20px)] 
@@ -23,7 +23,7 @@ const DeliveryReturn = () => {
 
             <hr/>
 
-            <section>
+            <section className="mx-1">
                 <span 
                     className="
                         md:text-xl text-[clamp(18px,2.607vw,20px)]
@@ -39,7 +39,7 @@ const DeliveryReturn = () => {
 
             <hr/>
 
-            <section>
+            <section className="mx-1">
                 <span 
                     className="
                         md:text-xl text-[clamp(18px,2.607vw,20px)] 
@@ -51,7 +51,7 @@ const DeliveryReturn = () => {
 
             <hr/>
 
-            <section>
+            <section className="mx-1">
                 <span 
                     className="
                         md:text-xl text-[clamp(18px,2.607vw,20px)] 
@@ -65,7 +65,7 @@ const DeliveryReturn = () => {
 
             <hr/>
 
-            <div>
+            <div className="mx-1">
                 <span 
                     className="
                         md:text-xl text-[clamp(18px,2.607vw,20px)] 
@@ -78,7 +78,7 @@ const DeliveryReturn = () => {
                         <li>디지털 콘텐츠 등 복제가 가능한 상품의 제공이 시작된 경우</li>
                     </ul>
             </div>
-            <span className="md:text-base text-[clamp(14px,2.085vw,16px)] text-gray-600 mt-2">※ 맞춤 제작 액자 상품의 경우, 제작이 시작된 이후에는 단순 변심으로 인한 교환 및 환불이 불가하오니 신중한 구매 부탁드립니다.</span>
+            <span className="md:text-base text-[clamp(14px,2.085vw,16px)] text-gray-600 mt-2 ml-1">※ 맞춤 제작 액자 상품의 경우, 제작이 시작된 이후에는 단순 변심으로 인한 교환 및 환불이 불가하오니 신중한 구매 부탁드립니다.</span>
         </div>
     )
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const Order_Status = () => {
     const API = process.env.REACT_APP_API_BASE;
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
     const [orderList, setOrderList] = useState([]);
     const [statusFilter, setStatusFilter] = useState('전체');
     const [categoryFilter, setCategoryFilter] = useState('전체'); // 카테고리 필터
@@ -93,7 +95,7 @@ const Order_Status = () => {
         console.log("usedCredit : " , usedCredit);
         fetch(`${API}/admin/order/update-status`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json '},
+            headers: { 'Content-Type': 'application/json'},
             credentials: "include",
             body: JSON.stringify({ itemId, orderStatus: newStatus, id, usedCredit, oid})
         })
@@ -120,24 +122,65 @@ const Order_Status = () => {
 
     // 카테고리 매핑
     const categoryMap = {
-        wall : '벽걸이',
-        table: '탁상용',
-        clock: '시계',
-        fengShui: '풍수',
         masterPiece: '명화',
+        koreanPainting: '동양화',
+        photoIllustration: '사진/일러스트',
+        fengShui: '풍수',
         authorCollection: '작가',
-        lease: '리스',
-        masterPiece_wall: '명화(벽걸이)',
-        masterPiece_table: '명화(탁상용)',
-        masterPiece_clock: '명화(시계)',
-        fengShui_wall: '풍수(벽걸이)',
-        fengShui_table: '풍수(탁상용)',
-        fengShui_clock: '풍수(시계)',
-        authorCollection_wall: '작가(벽걸이)',
-        authorCollection_table: '작가(탁상용)',
-        authorCollection_clock: '작가(시계)',
         customFrames: '맞춤액자'
     }
+
+    // 상세 페이지로 넘어갈때 검색조건도 넘어감
+    useEffect(() => {
+        const spStatus = searchParams.get("status") || '전체';
+        const spCategory = searchParams.get("category") || "전체";
+        const spKeyword = searchParams.get("keyword") || "";
+        const spStart = searchParams.get("startDate");
+        const spEnd = searchParams.get("endDate");
+        const spPage = parseInt(searchParams.get("page") || "1", 10);
+
+        // URL에 날짜가 있으면 그걸 사용
+        if (spStart && spEnd) {
+            setStartDate(spStart);
+            setEndDate(spEnd);
+        } else {
+            // 없으면 기존처럼 기본 1개월 세팅
+            const today = new Date();
+            const end = today.toISOString().split('T')[0];
+            const oneMonthEarly = new Date(today);
+            oneMonthEarly.setMonth(oneMonthEarly.getMonth() - 1);
+            const start = oneMonthEarly.toISOString().split('T')[0];
+            setStartDate(start);
+            setEndDate(end);
+        }
+
+        setStatusFilter(spStatus);
+        setCategoryFilter(spCategory);
+        setKeyword(spKeyword);
+        setCurrentPage(spPage);
+    }, []);
+
+    // 상태가 바뀌면 URL도 수정
+    useEffect(() => {
+        // 날짜가 아직 설정되기 전이면 저장X
+        if (!startDate || !endDate) return;
+
+        setSearchParams({
+            status: statusFilter,
+            category: categoryFilter,
+            keyword,
+            startDate,
+            endDate,
+            page: String(currentPage),
+        }, {replace: true});
+    }, [statusFilter, categoryFilter, keyword, startDate, endDate, currentPage]);
+
+    // 검색조건 바뀌면 페이지 1로 리셋
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter, categoryFilter, startDate, endDate, keyword]);
+
+    // 상세 페이지로 넘어갈때 검색조건도 넘어감 //
 
     // 상세페이지 (모달창)
     const [selectedItem, setSelectedItem] = useState(null);
@@ -204,7 +247,6 @@ const Order_Status = () => {
     }
 
     // 페이징
-    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
     const totalPages = Math.max(1, Math.ceil(orderList.length / itemsPerPage));
@@ -229,19 +271,14 @@ const Order_Status = () => {
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     className="w-[120px] h-[40px] border text-center bg-white"
-                >
-                    <option value="전체">전체 카테고리</option>
-                    <option value="masterPiece_wall">명화(벽걸이)</option>
-                    <option value="masterPiece_table">명화(탁상용)</option>
-                    <option value="masterPiece_clock">명화(시계)</option>
-                    <option value="fengShui_wall">풍수(벽걸이)</option>
-                    <option value="fengShui_table">풍수(탁상용)</option>
-                    <option value="fengShui_clock">풍수(시계)</option>
-                    <option value="authorCollection_wall">작가(벽걸이)</option>
-                    <option value="authorCollection_table">작가(탁상용)</option>
-                    <option value="authorCollection_clock">작가(시계)</option>
+                >   
+                    <option value="전체">전체</option>
+                    <option value="masterPiece">명화</option>
+                    <option value="koreanPainting">동양화</option>
+                    <option value="photoIllustration">사진/일러스트</option>
+                    <option value="fengShui">풍수</option>
+                    <option value="authorCollection">작가별</option>
                     <option value="customFrames">맞춤액자</option>
-                    <option value="lease">리스</option>
                 </select>
                 <button className="w-[65px] h-[40px] border bg-white" onClick={handleToday}>오늘</button>
                 <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(1)}>1개월</button>
@@ -253,10 +290,6 @@ const Order_Status = () => {
                 <input type="date" className="w-[130px] h-[40px] border text-center" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 
                 <input type="text" placeholder="회원ID 또는 상품명" className="w-[180px] h-[40px] border text-sm px-3" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
-
-                {/* <button className="w-[64px] h-[40px] border text-sm font-bold bg-[#555555] text-white"
-                    onClick={fetchOrders}>조회
-                </button> */}
             </div>
             
             {currentItems.length === 0 ? (
@@ -290,7 +323,10 @@ const Order_Status = () => {
                                     <tr key={idx} 
                                         className="hover:bg-gray-100 border-b cursor-pointer"
                                         onClick={() => {
-                                            navigate(`/admin/order_Detail/${item.itemId}`, { state: { orderCount: item.orderCount } });
+                                            const qs = searchParams.toString();
+                                            navigate(`/admin/order_Detail/${item.itemId}?${qs}`, { 
+                                                state: { orderCount: item.orderCount } 
+                                            });
                                         }}
                                     >
                                         <td className="p-3">{isSameOid ? '' : item.oid}</td>

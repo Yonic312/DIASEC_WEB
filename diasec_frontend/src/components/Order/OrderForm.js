@@ -645,7 +645,7 @@ const OrderForm = () => {
                 <hr/>
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start
-                    mt-3 ml-3 mb-3">
+                    mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
                         md:text-base text-[clamp(11px,2.085vw,16px)]">
                         주문자 이름
@@ -658,7 +658,7 @@ const OrderForm = () => {
 
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
-                    mt-3 ml-3 mb-3">
+                    mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
                         md:text-base text-[clamp(11px,2.085vw,16px)]">
                         주문자 연락처
@@ -766,7 +766,6 @@ const OrderForm = () => {
             </div>
 
             <div className="w-full mx-auto mb-10">
-                <hr />
                 {member ? (
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
@@ -802,7 +801,7 @@ const OrderForm = () => {
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
                     text-[clamp(11px,2.085vw,16px)]
-                    mt-3 ml-3 mb-3">
+                    mt-3 mx-3 mb-3">
                     <div className="w-[150px] md:text-base">
                         받는 사람
                     </div>
@@ -820,15 +819,15 @@ const OrderForm = () => {
                         주소
                     </div>
                     <div className="
-                        md:w-auto w-full flex flex-col gap-2
+                        md:w-auto w-full flex flex-col gap-2 pr-2
                         text-[clamp(11px,2.085vw,16px)]">
                         <div className="flex">
                             <input type="text"  value={postcode} readOnly placeholder="우편번호" 
                                 className="md:w-[200px] w-1/2 border-[1px] h-8 pl-2" />
                             <button className="h-8 bg-black text-white border-opacity-15 md:px-4 px-1  ml-3" onClick={openPostcodePopup}>주소검색</button>
                         </div>
-                        <input type="text" value={address} readOnly placeholder="기본주소" className="border-[1px] md:w-[400px] w-full h-8 pl-2" />
-                        <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} placeholder="나머지 주소(선택 입력 가능)" className="border-[1px] h-8 pl-2" />
+                        <input type="text" value={address} readOnly placeholder="기본주소" className="border-[1px] md:w-[400px] w-full h-8 px-2" />
+                        <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} placeholder="나머지 주소(선택 입력 가능)" className="border-[1px] h-8 px-2" />
                     </div>
                 </div>
 
@@ -879,7 +878,7 @@ const OrderForm = () => {
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
                     md:text-base text-[clamp(11px,2.085vw,16px)]
-                    mt-3 ml-3 mb-3">
+                    mt-3 mx-3 mb-3">
                     <div className="min-w-[150px]">
                         배송 메세지
                     </div>
@@ -895,7 +894,7 @@ const OrderForm = () => {
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
                     md:text-base text-[clamp(11px,2.085vw,16px)] 
-                    mt-3 ml-3 mb-3">
+                    mt-3 mx-3 mb-3">
                     <div className="min-w-[150px]">
                         구매자 요청사항
                     </div>
@@ -1017,7 +1016,7 @@ const OrderForm = () => {
                 w-full mx-auto mb-10
                 md:text-base text-[clamp(11px,2.085vw,16px)]">
                 <hr/>
-                <div className="flex flex-row items-center justify-between mt-3 ml-3 mb-3">
+                <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                     <div className="w-[150px]">
                         주문 금액
                     </div>
@@ -1026,7 +1025,7 @@ const OrderForm = () => {
                 <hr />
                 {deposit > 0 && (
                     <>
-                        <div className="flex flex-row items-center justify-between mt-3 ml-3 mb-3">
+                        <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                             <div className="w-[150px] text-sm">
                                 보증금
                             </div>
@@ -1036,7 +1035,7 @@ const OrderForm = () => {
                     </>
                 )}
                 
-                <div className="flex flex-row items-center justify-between mt-3 ml-3 mb-3">
+                <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
                         md:text-base text-[clamp(11px,2.085vw,16px)]">
                         배송비
@@ -1044,7 +1043,7 @@ const OrderForm = () => {
                     <span> {deliveryFee.toLocaleString()} 원</span>
                 </div>
                 <hr />
-                <div className="flex flex-row items-center justify-between mt-3 ml-3 mb-3">
+                <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
                         md:text-base text-[clamp(11px,2.085vw,16px)]">
                         할인
@@ -1053,7 +1052,7 @@ const OrderForm = () => {
                 </div>
                 <hr />
                 <div className="
-                    flex flex-row items-center justify-between mt-3 ml-3 mb-3 font-semibold 
+                    flex flex-row items-center justify-between mt-3 mx-3 mb-3 font-semibold 
                     md:text-lg text-[clamp(12px,2.3455vw,18px)]">
                     <div className="w-[150px]">
                         최종 결제 금액
@@ -1062,16 +1061,16 @@ const OrderForm = () => {
                 </div>
                 <hr/>
 
-                <div className='flex items-center md:text-sm text-[clamp(11px,1.8252vw,14px)] ml-2 mt-4'>
+                <div className='flex items-center md:text-sm text-[clamp(11px,1.8252vw,14px)] ml-3 mt-4'>
                     <input type="checkbox" id="agree" className="w-4 h-4 mr-2" />
                     <label htmlFor="agree">
                         결제 정보를 확인하였으며, 구매 진행에 동의합니다.
                     </label>
                 </div>
 
-                <div className='w-full h-[50px] md:text-lg text-[clamp(11px,2.3455vw,18px)] mt-2' 
+                <div className='w-full h-[50px] md:text-lg text-[clamp(11px,2.3455vw,18px)] px-3 mt-5'
                     onClick={handleOrder}>
-                    <button className="w-full h-[50px] bg-black text-white"> <span className='font-semibold'>{finalPrice.toLocaleString()}원</span> 결제하기 </button>
+                    <button className="w-full h-[50px] bg-black text-white "> <span className='font-semibold'>{finalPrice.toLocaleString()}원</span> 결제하기 </button>
                 </div>
             </div>
 
