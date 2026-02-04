@@ -81,9 +81,10 @@
     font-display: swap;
 }
 
-
+@import url('https://cdn.jsdelivr.net/npm/pretendard@latest/dist/web/variable/pretendardvariable.css');
 @import url('//fonts.googleapis.com/earlyaccess/notosanskr.css');
 
+
 body {
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard Variable','Noto Sans KR', sans-serif;
 }

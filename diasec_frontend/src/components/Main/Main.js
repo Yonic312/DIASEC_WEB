@@ -199,7 +199,7 @@ const Main = () => {
                 </div>
                 
                 <div className='flex flex-wrap justify-center items-center 
-                xl:gap-4 lg:gap-3 md:gap-2 gap-[2px]'>
+                    xl:gap-4 lg:gap-3 md:gap-2 gap-[2px]'>
                     {categoryList.map((item) => {
                         const isActive = bestCategory === item.name;
                         return (

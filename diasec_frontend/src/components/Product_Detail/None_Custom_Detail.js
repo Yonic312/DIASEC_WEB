@@ -658,20 +658,24 @@ const None_Custom_Detail = () => {
 
                         <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
                         <div className="flex flex-col items-end mt-3">
-                            <span className="text-sm text-gray-600">
-                                배송비: {totalPriceWithoutShipping <= 50000 ? SHIPPING_FEE.toLocaleString() : 0}원
+                            <span className="text-[13px] font-semibold text-gray-600">
+                                무료배송
                             </span>
                             {/* <span className="text-sm text-gray-600">
                                 상품가: {totalPriceWithoutShipping.toLocaleString()}원
                             </span> */}
-                            <span className="mt-2 text-base font-semibold text-gray-700">
+                            <span className="text-base font-semibold text-gray-700">
                                 총 결제금액 : <span className=" text-[#D0AC88]">{totalPriceWithoutShipping.toLocaleString()}원</span>
                             </span>
                         </div>
                         <div className="text-right">
-                            {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
+                            {/* {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
                                 <span className='text-[11.5px] text-green-600 mt-1'>(5만원 이상 구매 시 무료배송 적용)</span>
-                            )}
+                            )} */}
+                            <div className="text-[11px] font-semibold text-[#a57647]">
+                                제작 1~3일 배송 1~2일 (주문후 2~5일 수령)
+                            </div>
+
                             <div className="text-[11px] text-gray-500">
                                 {/* ※ 이미지를 기준으로 비율이 자동 조정됩니다<br /> */}
                                 <span>※ 제작 과정에서 ±1cm 오차가 발생할 수 있습니다</span>

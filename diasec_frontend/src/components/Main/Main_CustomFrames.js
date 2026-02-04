@@ -415,7 +415,7 @@ const Main_CustomFrames = () => {
                                 md:text-sm text-[clamp(10px,1.82vw,14px)]
                                 mt-2 text-600 font-medium text-center'
                         >
-                            사이즈 조정
+                            이미지 등록
                         </span>
                     </div>
 
@@ -446,6 +446,37 @@ const Main_CustomFrames = () => {
                                 md:text-sm text-[clamp(10px,1.82vw,14px)]
                                 mt-2 text-600 font-medium text-center'
                         >
+                            사이즈 조정
+                        </span>
+                    </div>
+
+                    <div className="flex items-center h-[36px]">
+                        {/* 선 */}
+                        <div className="w-[42px] h-[2px] bg-gray-300" />
+
+                        {/* 화살표 */}
+                        <div className="
+                            w-0 h-0
+                            border-t-[4px] border-t-transparent
+                            border-b-[4px] border-b-transparent
+                            border-l-[6px] border-l-gray-300
+                        "
+                        />
+                    </div>
+
+                    <div className="flex flex-col items-center w-[80px]">
+                        <div className='
+                                md:w-9 w-[clamp(24px,4.693vw,36px)] 
+                                md:h-9 h-[clamp(24px,4.693vw,36px)] 
+                                rounded-full bg-[#D0AC88] text-white 
+                                flex items-center justify-center font-semibold'>
+                            3
+                        </div>
+                        <span 
+                            className='
+                                md:text-sm text-[clamp(10px,1.82vw,14px)]
+                                mt-2 text-600 font-medium text-center'
+                        >
                             결제
                         </span>
                     </div>
@@ -456,7 +487,7 @@ const Main_CustomFrames = () => {
                             px-3
                             mt-2 text-gray-600
                             md:text-sm text-[clamp(10.5px,1.825vw,14px)]">
-                        오른쪽에서 사이즈를 조정해 원하는 크기를 확인하시고 결제를 하면 주문이 완료됩니다
+                        오른쪽에서 이미지 등록을 하신 후 사이즈를 조정해 결제를 하면 주문이 완료됩니다
                     </p>
                 </div>
             </div>
@@ -493,9 +524,11 @@ const Main_CustomFrames = () => {
                     h-fit flex flex-col flex-1 min-w-[296px] rounded-xl px-3 
                     md:py-[15px] py-[10px]
                     border-[1px] border-[#D0AC88]">
-                    <div className="hidden md:inline">
-                        <span className="text-2xl font-bold">맞춤액자</span>
+                    <div className="flex justify-center ">
+                        <span className="flex text-2xl text-[#6d6d6d] font-bold">맞춤액자</span>
                     </div>
+
+                    <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
 
                     {/* 이미지 업로드 */}
                     <div className="md:mt-5">
@@ -572,13 +605,10 @@ const Main_CustomFrames = () => {
                                     <svg className="w-10 h-10 text-[#D0AC88] mb-2" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 15.75V15a4.5 4.5 0 014.5-4.5h9A4.5 4.5 0 0121 15v.75m-9-4.5V21m0-9l-3 3m3-3l3 3" />
                                     </svg>
-                                    { imageSrc 
-                                        ? <span className="text-sm text-center">이미지가 업로드되었습니다 <br /> 사이즈를 조정해보세요</span>
-                                        : <span className="text-sm text-center">
+                                    <span className="text-sm text-center">
                                             여기를 클릭하거나 <br /> 이미지를 드래그해서 올려주세요 <br />
-                                            <span className="text-xs text-gray-500">(JPG, PNG 파일만 가능)</span>
-                                        </span>
-                                    }
+                                        <span className="text-xs text-gray-500">(JPG, PNG 파일만 가능)</span>
+                                    </span>
                                 </div>
                             </label>
                         </div>
@@ -589,7 +619,7 @@ const Main_CustomFrames = () => {
                     {/* 사이즈 입력 */}
                     <div className="flex flex-col">
                         <label className="text-sm font-semibold mt-2">사이즈 조정</label>
-                        <div className="flex gap-3 items-end mt-2">
+                        <div className="flex gap-3 items-end mt-1">
                             <div className="flex flex-col w-full">
                                 <span className="text-sm text-gray-500 mb-1">가로 (cm)</span>
                                 <input
@@ -653,7 +683,7 @@ const Main_CustomFrames = () => {
                                     (약 { Math.floor(width / 2.54) } x { Math.floor(height / 2.54) } inch)
                             </span>
                         </div>
-                        <span className="mt-1 text-[12.5px] text-gray-500">바를 움직여 사이즈를 조절하거나, 원하는 사이즈를 <br/> 직접 입력해 주세요.</span>
+                        <span className="mt-1 text-[14.5px] text-gray-500">바를 움직여 사이즈를 조절하거나, 원하는 사이즈를 직접 입력해 주세요.</span>
                         
                         {/* 결제 목록 */}
                         {selectedItem && (
@@ -747,21 +777,24 @@ const Main_CustomFrames = () => {
 
                         <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
                         <div className="flex flex-col items-end mt-3">
-                            <span className="text-sm text-gray-600">
-                                배송비: {totalPriceWithoutShipping <= 50000 ? SHIPPING_FEE.toLocaleString() : 0}원 
+                            <span className="text-[13px] font-semibold text-gray-600">
+                                무료배송
                             </span>
                             
                             {/* <span className="text-sm text-gray-600">
                                 상품가: {totalPriceWithoutShipping.toLocaleString()}원
                             </span> */}
                             <span className="text-base font-semibold text-gray-700">
-                                총 결제금액 : <span className=" text-[#D0AC88]">{totalPriceWithoutShipping.toLocaleString()}원</span>
+                                총 결제금액 : <span className=" text-[#a57647]">{totalPriceWithoutShipping.toLocaleString()}원</span>
                             </span>
                         </div>
                         <div className="text-right">
-                            {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
+                            {/* {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
                                 <span className='text-[11.5px] text-green-600 mt-1'>(5만원 이상 구매 시 무료배송 적용)</span>
-                            )}
+                            )} */}
+                            <div className="text-[11px] font-semibold text-[#a57647]">
+                                제작 1~3일 배송 1~2일 (주문후 2~5일 수령)
+                            </div>
                             <div className="text-[11px] text-gray-500">
                                 {/* ※ 이미지를 기준으로 비율이 자동 조정됩니다<br /> */}
                                 <span>※ 제작 과정에서 ±1cm 오차가 발생할 수 있습니다</span>

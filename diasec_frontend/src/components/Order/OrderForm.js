@@ -115,12 +115,18 @@ const OrderForm = () => {
     const [detailAddress, setDetailAddress] = useState('');
 
     useEffect(() => {
-        if (selectedAddress) {
-            setRecipient(selectedAddress.recipient || '');
-            setPostcode(selectedAddress.postcode || '');
-            setAddress(selectedAddress.address || '');
-            setDetailAddress(selectedAddress.detailAddress || '');
-        }
+        if (!selectedAddress) return;
+        
+        setRecipient(selectedAddress.recipient || '');
+        setPostcode(selectedAddress.postcode || '');
+        setAddress(selectedAddress.address || '');
+        setDetailAddress(selectedAddress.detailAddress || '');
+
+        const raw = (selectedAddress.recipientPhone || selectedAddress.phone || '').replace(/\s+/g, '-');
+        const [p1, p2, p3] = raw.split('-');
+        setRecipientPhone1(p1 || '010');
+        setRecipientPhone2(p2 || '');
+        setRecipientPhone3(p3 || '');
     }, [selectedAddress]);
 
     // 보증금 계산
@@ -964,11 +970,12 @@ const OrderForm = () => {
                 <div className="
                     flex flex-row h-[50px] items-center mt-3 mb-3 mx-2
                     md:text-base text-[clamp(11px,2.085vw,16px)]">
-                    {["무통장입금", "카드결제", "카카오페이", "실시간계좌이체"].map((method) => (
+                    {/* {["무통장입금", "카드결제", "카카오페이", "실시간계좌이체"].map((method) => ( */}
+                    {["무통장입금", "카드결제"].map((method) => (
                     <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}
-                        className={`w-[25%] h-full border-[1px] ${paymentMethod === method ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                        className={`w-[50%] h-full border-[1px] ${paymentMethod === method ? 'bg-black text-white' : 'bg-white text-black'}`}>
                         {method}
                     </button>
                     ))}

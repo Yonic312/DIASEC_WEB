@@ -617,10 +617,7 @@ const Main_Items = () => {
                                 mt-2 font-normal w-full grid border-t border-l border-black border-opacity-10
                                 max-h-[121px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300'
                         >
-                            {miniSortedLabels.length === 0 ? (
-                                <div>라벨이 없습니다.</div>
-                            ) : (
-                                miniSortedLabels.map((item, index) => (
+                            {miniSortedLabels.map((item, index) => (
                                     <div
                                         key={index}
                                         className='flex items-center px-1 justify-start h-10 border-r border-b border-black border-opacity-10 hover:bg-[#555555] hover:text-white'
@@ -630,7 +627,7 @@ const Main_Items = () => {
                                         <span className='text-gray-400'>&nbsp;({item.count})</span>
                                     </div>
                                 ))
-                            )}
+                            }
                         </div>
                     )}
                 </>
@@ -711,7 +708,7 @@ const Main_Items = () => {
                         <div 
                             className="
                                 md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                text-[#CDC9C3]"> 상품 <span className="text-[#555555]">{displayCount}</span>개
+                                text-[#CDC9C3]"> 상품 <span className="text-[#555555]">{totalCount}</span>개
                         </div>
                         
                         <div className='flex md:justify-end justify-center'>
