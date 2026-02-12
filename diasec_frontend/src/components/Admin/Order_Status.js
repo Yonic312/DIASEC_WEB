@@ -158,7 +158,7 @@ const Order_Status = () => {
         setCategoryFilter(spCategory);
         setKeyword(spKeyword);
         setCurrentPage(spPage);
-    }, []);
+    }, [searchParams]);
 
     // 상태가 바뀌면 URL도 수정
     useEffect(() => {

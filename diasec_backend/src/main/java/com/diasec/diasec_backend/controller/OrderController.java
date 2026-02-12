@@ -291,4 +291,15 @@ public class OrderController {
                     .body(Map.of("success", false, "message", e.getMessage()));
         }
     }
+
+    @GetMapping("/admin/count-by-status")
+    public ResponseEntity<?> countByStatus() {
+        try {
+            return ResponseEntity.ok(orderService.selectOrderItemCountsByStatus());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
 }

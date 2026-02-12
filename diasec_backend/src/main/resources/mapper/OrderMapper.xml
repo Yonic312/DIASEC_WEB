@@ -177,4 +177,12 @@
             retouch_note = #{retouchNote}
         WHERE item_id = #{itemId}
     </update>
+
+    <select id="selectOrderItemCountsByStatus" resultType="map">
+        SELECT
+            order_status AS status,
+            COUNT(*) AS cnt
+        FROM order_items
+        GROUP BY order_status
+    </select>
 </mapper>

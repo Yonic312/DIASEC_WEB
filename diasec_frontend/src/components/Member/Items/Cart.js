@@ -212,7 +212,51 @@ const Cart = () => {
             </div>
 
             {items.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">장바구니가 비었습니다.</div>
+                <div className="text-center py-24 text-gray-600 space-y-6">
+                    <div>
+                        <p className="text-lg font-semibold">장바구니가 비었습니다.</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                            마음에 드는 작품을 담아보세요
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-3 mt-6">
+                        <button
+                            onClick={() => navigate("/main_Items?type=masterPiece")}
+                            className="px-4 py-2 border rounded-xl hover:bg-gray-100"    
+                        >
+                            명화갤러리
+                        </button>
+
+                        <button 
+                            onClick={() => navigate("/main_Items?type=koreanPainting")}
+                            className="px-4 py-2 border rounded-xl hover:bg-gray-100"    
+                        >
+                            동양화
+                        </button>
+
+                        <button
+                            onClick={() => navigate("/main_Items?type=photoIllustration")}
+                            className="px-4 py-2 border rounded-xl hover:bg-gray-100"    
+                        >
+                            사진/일러스트
+                        </button>
+
+                        <button
+                            onClick={() => navigate("/main_Items?type=fengShui")}
+                            className="px-4 py-2 border rounded-xl hover:bg-gray-100"    
+                        >
+                            풍수그림
+                        </button>
+
+                        <button
+                            onClick={() => navigate("/customFrames")}
+                            className="px-4 py-2 bg-black text-white rounded-xl hover:opacity-90"    
+                        >
+                            맞춤액자/사진보정
+                        </button>
+                    </div>
+                </div>
             ) : (
                 <>
                     <div className="h-[540px] overflow-y-scroll space-y-2">

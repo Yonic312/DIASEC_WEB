@@ -605,7 +605,7 @@ const None_Custom_Detail = () => {
                                     (약 { Math.floor(width / 2.54) } x { Math.floor(height / 2.54) } inch)
                             </span>
                         </div>
-                        <span className="mt-1 text-[12.5px] text-gray-500">바를 움직여 사이즈를 조절하거나, 원하는 사이즈를 <br/> 직접 입력해 주세요.</span>
+                        <span className="mt-1 text-[14.5px] text-gray-500">바를 움직여 사이즈를 조절하거나, 원하는 사이즈를 직접 입력해 주세요.</span>
                         
                         {/* 결제 목록 */}
                         {selectedItem && (
@@ -672,7 +672,7 @@ const None_Custom_Detail = () => {
                             {/* {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
                                 <span className='text-[11.5px] text-green-600 mt-1'>(5만원 이상 구매 시 무료배송 적용)</span>
                             )} */}
-                            <div className="text-[11px] font-semibold text-[#a57647]">
+                            <div className="text-[13px] font-semibold text-[#a57647]">
                                 제작 1~3일 배송 1~2일 (주문후 2~5일 수령)
                             </div>
 
@@ -747,14 +747,15 @@ const None_Custom_Detail = () => {
                     onClick={() => {
                     setShowGuestChoice(false);
 
-                    const orderData = selectedItems.map(item => ({
+                    const orderData = customItems.map((it) => ({
                         pid: parseInt(pid),
                         title: product.title,
-                        price: item.price,
-                        thumbnail: topImages[0],
-                        size: item.size,
-                        category: category + '_' + frameType,
-                        quantity: item.quantity
+                        price: it.price,
+                        thumbnail: it.imageSrc,
+                        size: `${Math.floor(it.width)}cm x ${Math.floor(it.height)}cm`,
+                        category: `${category}_${frameType}`,
+                        quantity: 1,
+                        cid: null,
                     }));
 
                     navigate('/orderForm', { state : { orderItems: orderData, isGuest: true } });

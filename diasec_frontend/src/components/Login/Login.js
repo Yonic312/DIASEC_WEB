@@ -144,7 +144,7 @@ const Login = () => {
                                     onChange={(e) => setId(e.target.value)} 
                                     className="
                                         sm:w-[226px] w-[156px]
-                                        px-2 border-gray-300 border-[1px] h-8" 
+                                        px-2 border-gray-300 border-[1px] h-10" 
                                 />
                             </div>
                             <div className="
@@ -160,14 +160,14 @@ const Login = () => {
                                     onChange={(e) => setPassword(e.target.value)} 
                                     className="
                                         sm:w-[226px] w-[156px]
-                                        px-2 border-gray-300 border-[1px] h-8"
+                                        px-2 border-gray-300 border-[1px] h-10"
                                 />
                             </div>
                             <div className="flex w-full justify-center">
                                 <button type="submit" 
                                     className={`
                                         w-full bg-black text-white  
-                                        sm:p-4 p-3
+                                        h-[48px]
                                         sm:text-sm text-[12px]`}
                                 > 
                                     LOGIN 
@@ -178,15 +178,15 @@ const Login = () => {
 
                     <div className="flex flex-row gap-2 mb-3 justify-center">
                         <button type="button" className="
-                            border-[1px] w-1/2 h-[40px] 
+                            border-[1px] w-1/2 h-[48px]
                             sm:text-sm text-[12px]" onClick={() => navigate('/find_Id')}> 아이디 찾기 </button>
                         <button type="button" className="
-                            border-[1px] w-1/2 h-[40px] 
+                            border-[1px] w-1/2 h-[48px]
                             sm:text-sm text-[12px]" onClick={() => navigate('/find_Pwd')}> 비밀번호 찾기 </button>
                     </div>
 
                     <span className="
-                        flex justify-center mb-1 
+                        flex justify-center mb-1 font-semibold
                         sm:text-sm text-[12px]">소셜 로그인</span>
                     <div className="flex flex-row justify-center gap-4 mb-4">
                         <button
@@ -214,13 +214,13 @@ const Login = () => {
 
                     <div className="flex flex-row justify-center mt-3">
                         <button className=
-                            "border-[1px] w-full h-[40px] sm:text-sm text-[12px]" onClick={() => navigate('/join')} type="button">
+                            "border-[1px] w-full h-[48px] sm:text-sm text-[12px]" onClick={() => navigate('/join')} type="button">
                             회원가입 
                         </button>
                     </div>
                     <div className="flex flex-row justify-center mt-3">
                         <button className=
-                            "border-[1px] w-full h-[40px] sm:text-sm text-[12px]" onClick={() => navigate('/GuestOrderSearch')} type="button">
+                            "border-[1px] w-full h-[48px] sm:text-sm text-[12px]" onClick={() => navigate('/GuestOrderSearch')} type="button">
                             비회원 주문조회 
                         </button>
                     </div>

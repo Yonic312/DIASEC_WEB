@@ -631,9 +631,7 @@ const Main_Items = () => {
                         </div>
                     )}
                 </>
-            )}
-
-            {/* ------------- △ 상단 미니 셀렉터 ------------- */}
+            )} {/* ------------- △ 상단 미니 셀렉터 ------------- */}
 
             {!["masterPiece", "koreanPainting"].includes(type) && !author && (
                 <div className='flex md:justify-end justify-center mt-3'>
@@ -672,7 +670,7 @@ const Main_Items = () => {
                             alt={item.label}
                             className="w-full aspect-[220/220] object-cover border-b border-gray-200"
                         />
-                        <div className="py-2 text-center font-bold text-sm">
+                        <div className="py-2 text-center font-bold text-[15px] text-[#b29476]">
                             {item.label}
                             <span className='text-gray-40 font-normal'>({item.count})</span>
                         </div>

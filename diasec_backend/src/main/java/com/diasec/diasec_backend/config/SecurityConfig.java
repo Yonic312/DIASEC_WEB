@@ -77,7 +77,8 @@ public class SecurityConfig {
                     "/api/member/findId", "/api/member/findPwd",
                     "/api/member/check-id", "/api/member/check-password", 
                     "/api/member/check-email", "/api/member/me", "/api/member/check-phone", 
-                    "/api/member/link-social", "/api/member/link-social/pending"
+                    "/api/member/link-social", "/api/member/link-social/pending",
+                    "/api/sms/**"
                 ).permitAll()
 
                 // 4. 비회원 주문 관련

@@ -1,6 +1,7 @@
 package com.diasec.diasec_backend.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,5 +119,9 @@ public class OrderService {
 
     public boolean updateRetouchInfo(Long itemId, int retouchEnabled, String retouchTypes, String retouchNote) {
         return orderMapper.updateRetouchInfo(itemId, retouchEnabled, retouchTypes, retouchNote) > 0;
+    }
+
+    public List<Map<String, Object>> selectOrderItemCountsByStatus() {
+        return orderMapper.selectOrderItemCountsByStatus();
     }
 }

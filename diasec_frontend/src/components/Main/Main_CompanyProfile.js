@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 import p0 from '../../assets/company/0.jpg'
 import p1 from '../../assets/company/1.jpg'
 import p2 from '../../assets/company/2.jpg'
@@ -10,7 +12,177 @@ import i2 from '../../assets/company/i2.png'
 import i3 from '../../assets/company/i3.png'
 import i4 from '../../assets/company/i4.png'
 
+import bus from '../../assets/CompanyProfile/bus.jpg'
+import car from '../../assets/CompanyProfile/car.jpg'
+import time from '../../assets/CompanyProfile/time.jpg'
+import subway from '../../assets/CompanyProfile/subway.jpg'
+
 const Main_CompanyProfile = () => {
+    // 카카오지도 API
+    const KAKAO_KEY = process.env.REACT_APP_KAKAO_JS_KEY;
+
+    // 실제 주소
+    const COMPANY = {
+        name: "디아섹코리아",
+        address: "경기도 고양시 통일로 140 (10594) / 삼송 테크노벨리 A동 355호",
+        phone: "010-4231-5879",
+        hours: "AM 10:00 ~ PM 08:00 / 토·일, 공휴일 휴무"
+    };
+
+    const mapRef = useRef(null);
+    const kakaoLoadedRef = useRef(false);
+    const [mapError, setMapError] = useState(null);
+
+    // 카카오 스크립트 로드 함수 (컴포넌트 안에서 끝내기)
+    const loadKakaoScript = () => {
+        return new Promise((resolve, reject) => {
+
+            // 이미 스크립트 태그가 있음
+            const existing = document.querySelector('script[data-kakao-map="true"]');
+            if (existing) {
+                existing.addEventListener("load", () => resolve(window.kakao));
+                existing.addEventListener("error", () => reject(new Error("카카오 지도 로드 실패")));
+            }
+
+            const script = document.createElement("script");
+            script.async = true;
+            script.defer = true;
+            script.dataset.kakaoMap = "true";
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&autoload=false&libraries=services`;
+
+            script.onload = () => resolve(window.kakao);
+            script.onerror = () => reject(new Error("카카오 지도 스크립트 로드 실패"));
+
+            document.head.appendChild(script);
+        });
+    };
+
+    useEffect(() => {
+        if (!KAKAO_KEY) {
+            setMapError("REACT_APP_KAKAO_JS_KEY가 없습니다 (.env 확인)");
+            return;
+        }
+        if (!mapRef.current) return;
+        if (kakaoLoadedRef.current) return;
+
+        let mounted = true;
+        let resizeHandler = null;
+        let mediaQuery = null;
+
+        (async () => {
+            try {
+                const kakao = await loadKakaoScript();
+                if (!mounted) return;
+
+                // autoload=false라서 load 호출 필요
+                kakao.maps.load(() => {
+                    if (!mounted) return;
+
+                    kakaoLoadedRef.current = true;
+
+                    // 지도 먼저 생성 (임시 중심)
+                    const map = new kakao.maps.Map(mapRef.current, {
+                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                        level: 3,
+                    });
+
+                    // 주소 -> 좌표 변환
+                    const geocoder = new kakao.maps.services.Geocoder();
+                    geocoder.addressSearch(COMPANY.address, (result, status) => {
+                        if (!mounted) return;
+
+                        if (status !== kakao.maps.services.Status.OK || !result?.[0]) {
+                            setMapError("주소를 좌표로 변환하지 못했습니다. 주소를 확인해 주세요.");
+                            return;
+                        }
+
+                        const {y, x} = result[0];
+                        const pos = new kakao.maps.LatLng(y, x);
+
+                        // 지도 중심을 마커 위치로 이동
+                        map.setCenter(pos);
+
+                        const mediaQuery = window.matchMedia("(min-width: 640px)");
+                        
+                        const updateMapLevel = () => {
+                            // 지도 크기 조정
+                            map.setLevel(mediaQuery.matches ? 5 : 6);
+                        };
+
+                        updateMapLevel();
+
+                        // 마커
+                        const marker = new kakao.maps.Marker({ position: pos });
+                        marker.setMap(map);
+
+                        const label = document.createElement("span");
+                        label.textContent = "디아섹코리아";
+
+                        label.style.setProperty("display", "inline-flex", "important");
+                        label.style.setProperty("align-items", "center", "important");
+                        label.style.setProperty("justify-content", "center", "important");
+                        label.style.setProperty("width", "max-content", "important");
+                        label.style.setProperty("max-width", "none", "important");
+                        label.style.setProperty("min-width", "0", "important");
+
+                        label.style.height = "22px";
+                        label.style.padding = "0 8px";
+                        label.style.fontSize = "12px";
+                        label.style.fontWeight = "700";
+                        label.style.lineHeight = "22px";
+                        label.style.whiteSpace = "nowrap";
+                        label.style.background = "#fff";
+                        label.style.border = "1px solid #3b82f6";
+                        label.style.borderRadius = "4px";
+                        label.style.boxShadow = "0 1px 4px rgba(0,0,0,0.15)";
+
+                        const overlay = new kakao.maps.CustomOverlay({
+                            position: pos,
+                            content: label,
+                            yAnchor: 2.6,
+                        });
+
+                        overlay.setMap(map);
+
+                        // const info = new kakao.maps.InfoWindow({
+                        //     content: `
+                        //         <div style="
+                        //             display:flex;
+                        //             align-items:center;
+                        //             width:150px;
+                        //             height:28px;
+                        //             padding:0px 10px;
+                        //             font-size:12px;
+                        //             font-weight:700;
+                        //             text-align:center;
+                        //         ">${COMPANY.name}</div>
+                        //     `,
+                        // });
+                        // info.open(map, marker);
+
+                        resizeHandler = () => {
+                            kakao.maps.event.trigger(map, "resize");
+                            updateMapLevel();
+                            map.setCenter(pos);
+                        };
+
+                        mediaQuery.addEventListener("change", resizeHandler);
+                    });
+                });
+            } catch (e) {
+                if (!mounted) return;
+                setMapError(e?.message || "지도 로딩 실패");
+            }
+        })();
+
+        return () => {
+            mounted = false;
+            if (mediaQuery && resizeHandler) {
+                mediaQuery.removeEventListener("change", resizeHandler);
+            }
+        };
+    }, [KAKAO_KEY]);
+
     const history = [
         {
             year: "2007",
@@ -100,9 +272,9 @@ const Main_CompanyProfile = () => {
         },
         {
             icon: <img src={i3} className="w-32 h-32 text-[#a67a3e]" />,
-            title:"내구성과 안전에대한 설계",
+            title:"품질보증 10년",
             desc: 
-                `대형 작품도 변형 없이 장기보존할 수 있도록 자체 개발한 프레임을 사용하며 보존성과 안전성에 대한 설계를 하여 맞춘 자재만을 사용합니다`
+                `검증된 자재와 정밀한 압착 공법으로 제작하여 장기 보존과 안전성을 확보했습니다. 다아섹코리아는 이에 대한 책임으로 10년 품질보증을 제공합니다`
         },
         {
             icon: <img src={i4} className="w-32 h-32 text-[#a67a3e]" />,
@@ -110,8 +282,6 @@ const Main_CompanyProfile = () => {
             desc: 
                 `2007년 디아섹을 개발한 홍대 시각 디자이너가 운영하는 디아섹코리아입니다`
         },
-        
-        
     ]
     
      return (
@@ -234,7 +404,82 @@ const Main_CompanyProfile = () => {
                 break-keep md:mt-3 mt-[2px] text-3xl font-bold">
                     고객에 만족을 드리고자 합니다
             </h2>
-      </div>
+        </div>
+        
+        {/* 지도 */}
+        {/* 회사 위치 / 지도 */}
+        <div className="max-w-6xl mx-auto w-full px-6 pb-24">
+            <h2 className="text-left font-bold text-[#4b4b4b] text-[18px] mb-3">
+                회사위치 / 주소 : 경기도 고양시 통일로 140 (10594) / 삼송 테크노벨리 A동 355호
+            </h2>
+            
+            {/* 지도 */}
+            <div className="w-full border bg-white overflow-hidden">
+                <div className="w-full aspect-[1300/520]">
+                    <div ref={mapRef} className="w-full h-full" />
+                </div>
+            </div>
+
+            {mapError && (
+                <div className="mt-2 text-red-500 text-sm">{mapError}</div>
+            )}
+
+            {/* 아래 안내 표 */}
+            <div className="mt-8 border-t text-[clamp(11px,1.2vw,14px)]">
+                <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] border-b">
+                    <div className="flex items-center py-4 font-semibold text-gray-700">
+                        <img src={time} className="w-10 h-10" / >
+                        운영 시간
+                    </div>
+                    <div className="flex flex-col py-4 text-gray-700">
+                        <span className="font-semibold text-blue-700">{COMPANY.hours}</span>
+                        <span className="text-gray-500">(긴급사항 연락처: {COMPANY.phone})</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] border-b">
+                    <div className="flex items-center py-4 font-semibold text-gray-700">
+                        <img src={car} className="w-10 h-10" / >
+                        <span></span>승용차 이용시
+                    </div>
+                    <div className="flex flex-col py-4 text-gray-700">
+                        <span>네비게이션 주소: {COMPANY.address}</span>
+                        <span>Tip : 자동차로 3층까지 올라오십시오 (기둥번호 2번) / 주차가능</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] text-[clamp(11px,1.2vw,14px)] border-b">
+                <div className="flex items-center py-4 font-semibold text-gray-700">
+                    <img src={bus} className="w-10 h-10" / >
+                    <span></span>버스 이용시
+                </div>
+                <div className="py-4 text-gray-700">
+                    <div className="font-semibold text-blue-700">정류소명 : 삼송 한국지역난방공사</div>
+                    <div className="flex flex-col text-gray-500 mt-1">
+                        <span>
+                            경기북부(파주·삼송)에서 오시는 길 → N37, 17, 30, 31, 55, 567, 571, 701, 703, 705, 706, 708, 720, 730, 741, 773, 774, 761, 8722, 9703, 9709 (26년 현재 / 낮은 번호순)
+                        </span>
+                        <span>
+                            서울방향에서 오시는 길 → 17, 374, 567, 703, 705, 730, 790 (26년 현재 / 낮은 번호순)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] text-[clamp(11px,1.2vw,14px)]">
+                <div className="flex items-center py-4 font-semibold text-gray-700">
+                    <img src={subway} className="w-10 h-10" / >
+                    <span>지하철 이용시</span>
+                </div>
+                <div className="py-4 text-gray-700">
+                    <div className="flex flex-col text-gray-500">
+                        <span>지축역 1번 출구 → 도보 약10분거리</span>
+                        <span>삼송역 1번 출구 → 도보 약20분거리</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
   );
 };

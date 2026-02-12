@@ -78,7 +78,7 @@ const OrderTracking = () => {
                 className="
                     md:p-6 p-2
                     flex sm:gap-6 gap-[6px] items-start border rounded-lg">
-                <img src={item.items[0].title == '맞춤 액자' ? thumbCustom : item.thumbnail} alt={item.items[0].title} 
+                <img src={item.items[0].title == '맞춤 액자' ? thumbCustom : item.items[0].thumbnail} alt={item.items[0].title} 
                     className="
                         md:w-28 sm:w-[clamp(5rem,10.95vw,7rem)] w-[clamp(3rem,12.52vw,5rem)]
                         md:h-28 sm:h-[clamp(5rem,10.95vw,7rem)] h-[clamp(3rem,12.52vw,5rem)]

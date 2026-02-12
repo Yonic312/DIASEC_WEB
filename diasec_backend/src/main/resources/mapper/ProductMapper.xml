@@ -93,7 +93,7 @@
         (SELECT image_url FROM product_images WHERE pid = p.pid ORDER BY img_order ASC, created_at ASC LIMIT 1) AS imageUrl,
         (SELECT image_url FROM product_images WHERE pid = p.pid ORDER BY img_order ASC, created_at ASC LIMIT 1 OFFSET 1) AS hoverImageUrl
       FROM product p
-      where p.category=#{category} order by p.sales DESC, p.created_at ASC limit 20;
+      where p.category=#{category} order by p.sales DESC, p.created_at ASC limit 8;
     </select>
 
     <!-- 신규 상품 4개 가져오기 -->

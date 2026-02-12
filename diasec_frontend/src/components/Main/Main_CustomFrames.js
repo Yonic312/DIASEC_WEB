@@ -4,7 +4,8 @@ import { MemberContext } from '../../context/MemberContext';
 import { toast } from 'react-toastify';
 import { v4 as uuidv4 } from 'uuid';
 
-import bg from '../../assets/CustomFrames/p.png';
+import bg from '../../assets/CustomFrames/p.png'; // 전에 내가 만든 배경
+import bg2 from '../../assets/CustomFrames/p2.png'; // 현재 배경
 import ex from '../../assets/CustomFrames/ex.jpg';
 import icon_kakao from '../../assets/button/icon_kakao.png'
 import icon_naver from '../../assets/button/icon_naver.png'
@@ -18,6 +19,10 @@ import portrait_1 from '../../assets/custom_Frames/portrait_1.jpg';
 import portrait_2 from '../../assets/custom_Frames/portrait_2.jpg';
 import backlight_1 from '../../assets/custom_Frames/backlight_1.jpg';
 import backlight_2 from '../../assets/custom_Frames/backlight_2.jpg';
+import bg_1 from '../../assets/custom_Frames/bg_1.jpg';
+import bg_2 from '../../assets/custom_Frames/bg_2.jpg';
+import blur_1 from '../../assets/custom_Frames/blur_1.jpg';
+import blur_2 from '../../assets/custom_Frames/blur_2.jpg';
 
 const Main_CustomFrames = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -25,12 +30,11 @@ const Main_CustomFrames = () => {
     const navigate = useNavigate();
     const [customItems, setCustomItems] = useState([]); // 상품 여러개
 
-    const [width, setWidth] = useState('35.6');
+    const [width, setWidth] = useState(35.6);
     const [height, setHeight] = useState(27.9);
     const [imageSrc, setImageSrc] = useState(null);
     const [aspectRatio, setAspectRatio] = useState(null);
-
-    
+    const [defaultCfg, setDefaultCfg] = useState(null);
 
     useEffect(() => {
         setWidthInput(String(Math.floor(width)));
@@ -43,7 +47,7 @@ const Main_CustomFrames = () => {
     const [selectedItemId, setSelectedItemId] = useState(null);
     const selectedItem = customItems.find(item => item.id === selectedItemId);
 
-    const MIN_WIDTH = 35.6;
+    const MIN_WIDTH = 36;
 
     // ex 사진에 초기 설정
     useEffect(() => {
@@ -53,15 +57,59 @@ const Main_CustomFrames = () => {
         // 이미지 로드가 완료되면 실행되는 함수
         img.onload = () => {
             // 현재 설정된 width / height 값으로 비율을 계산
-            const ratio = width / height;
+            const ratio = img.width / img.height;
 
-            // 계산한 비율을 상태로 저장 (다른 곳에서 사용하기 위해)
-            setAspectRatio(ratio);
+            const maxW = ratio >= 1 ? 200.7 : 101.6;
+            const maxH = ratio >= 1 ? 101.6 : 200.7;
+
+            const baseW = MIN_WIDTH;
+            let baseH = parseFloat((baseW / ratio).toFixed(1));
+            let finalW = baseW;
+            let finalH = baseH;
+
+            if (baseH > maxH) {
+                finalH = maxH;
+                finalW = parseFloat((finalH * ratio).toFixed(1));
+            }
+
+            const cfg = {
+                width: finalW,
+                height: finalH,
+                aspectRatio: ratio,
+                maxWidth: maxW,
+                maxHeight: maxH,
+            }
+
+            setDefaultCfg(cfg);
+
+            setWidth(cfg.width);
+            setHeight(cfg.height);
+            setAspectRatio(cfg.aspectRatio);
+            setMaxWidth(cfg.maxWidth);
+            setMaxHeight(cfg.maxHeight);
+            setImageSrc(null);
+            setSelectedItemId(null);
         };
-
         // 이미지 src를 설정하여 로딩 시작
         img.src = ex;
     }, []);
+
+    // 아이템 0개면 기본사이즈로 리셋
+    const resetToDefault = () => {
+        if (!defaultCfg) return;
+
+        setSelectedItemId(null);
+        setImageSrc(null);
+
+        setWidth(defaultCfg.width);
+        setHeight(defaultCfg.height);
+        setAspectRatio(defaultCfg.aspectRatio);
+        setMaxWidth(defaultCfg.maxWidth);
+        setMaxHeight(defaultCfg.maxHeight);
+
+        setWidthInput(String(Math.floor(defaultCfg.width)));
+
+    };
 
     // 썸네일 이미지 클릭시 사이즈 수정 UI 반영
     useEffect(() => {
@@ -108,9 +156,18 @@ const Main_CustomFrames = () => {
         return new File([u8arr], filename, { type: mime });
     }
 
+    const MAX_SIZE = 20 * 1024 * 1024;
+
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
+
+        const tooBig = files.find(f => f.size > MAX_SIZE);
+        if (tooBig) {
+            alert(`20MB 초과 파일이 포함되어 있습니다. \n(${tooBig.name})`);
+            e.target.value = "";
+            return;
+        }
 
         files.forEach(file => {
             const reader = new FileReader();
@@ -215,7 +272,7 @@ const Main_CustomFrames = () => {
     }
 
     // cm to px 변환 비율
-    const CM_TO_PX = 2.74;
+    const CM_TO_PX = 2.2;
     const previewWidth = width * CM_TO_PX;
     const previewHeight = height * CM_TO_PX;
 
@@ -306,7 +363,7 @@ const Main_CustomFrames = () => {
     
     // 바로구매 (결제)
     const handleBuyNow = () => {
-        if (!customItems.length === 0) {
+        if (customItems.length === 0) {
             toast.warn("이미지를 등록해주세요.");
             return;
         }
@@ -345,10 +402,10 @@ const Main_CustomFrames = () => {
     const beforeAfterData = [
         { title: '피부 보정', before: faceDot_1, after: faceDot_2},
         { title: '얼굴 디테일 보정', before: faceENM_1, after: faceENM_2},
-        { title: '얼굴 라인·몸매 보정', before: portrait_1, after: portrait_2},
+        { title: '얼굴 라인·피부 결 리터칭', before: portrait_1, after: portrait_2},
         { title: '이미지 역광 및 색감보정', before: backlight_1, after: backlight_2},
-        { title: '불필요한 배경 삭제 및 변경', before: backlight_1, after: backlight_2},
-        { title: '업스케일링 (흐릿한 사진 선명보정)', before: backlight_1, after: backlight_2},
+        { title: '불필요한 배경 삭제 및 변경', before: bg_1, after: bg_2},
+        { title: '업스케일링 (흐릿한 사진 선명보정)', before: blur_1, after: blur_2},
     ];
     const retouchOptions = beforeAfterData.map(v => v.title);
 
@@ -496,7 +553,7 @@ const Main_CustomFrames = () => {
                 {/* 이미지창 */}
                 <div className="relative h-full ">
                     <img 
-                        src={bg}
+                        src={bg2}
                         className='
                             w-full h-auto aspect-[958/766]'
                         alt="배경"
@@ -509,7 +566,7 @@ const Main_CustomFrames = () => {
                         style={{
                             width: `${overlayWidthPct}%`,
                             height: `${overlayHeightPct}%`,
-                            top: '30%',
+                            top: '36%',
                             left: '50%',
                             transform: `translate(-50%, -50%)`,
                             // boxShadow: '-5px 5px 5px rgba(0, 0, 0, 0.4)',
@@ -584,7 +641,16 @@ const Main_CustomFrames = () => {
                                     e.stopPropagation();
                                     setIsDragging(false);
 
+                                    const MAX_SIZE = 20 * 1024 * 1024;
+
                                     const files = Array.from(e.dataTransfer.files);
+
+                                    const tooBig = files.find(f => f.size > MAX_SIZE);
+                                    if (tooBig) {
+                                        alert(`20MB 초과 파일이 포함되어 있습니다 \n(${tooBig.name})`);
+                                        return;
+                                    }
+
                                     if (files.length > 0) {
                                         const fakeEvent = { target: { files } };
                                         handleImageUpload(fakeEvent);
@@ -724,14 +790,33 @@ const Main_CustomFrames = () => {
                                                         setCustomItems(prev => {
                                                             const newItems = prev.filter ((it) => it.id !== deleteId);
 
+                                                            // 마지막 아이템 삭제면 즉시 기본 리셋
+                                                            if (newItems.length === 0) {
+                                                                setTimeout(() => resetToDefault(), 0);
+                                                                return [];
+                                                            }
+
                                                             if (selectedItemId === deleteId) {
-                                                                if (newItems.length > 0) {
-                                                                    setSelectedItemId(newItems[0].id);
-                                                                    setImageSrc(newItems[0].imageSrc);
-                                                                } else {
-                                                                    setSelectedItemId(null);
-                                                                    setImageSrc(null);
-                                                                }
+                                                                const first = newItems[0];
+
+                                                                setSelectedItemId(first.id);
+                                                                setImageSrc(first.imageSrc);
+
+                                                                setWidth(first.width);
+                                                                setHeight(first.height);
+                                                                setAspectRatio(first.aspectRatio);
+                                                                setMaxWidth(first.maxWidth);
+                                                                setMaxHeight(first.maxHeight);
+
+                                                                setWidthInput(String(Math.floor(first.width)));
+
+                                                                // if (newItems.length > 0) {
+                                                                //     setSelectedItemId(newItems[0].id);
+                                                                //     setImageSrc(newItems[0].imageSrc);
+                                                                // } else {
+                                                                //     setSelectedItemId(null);
+                                                                //     setImageSrc(null);
+                                                                // }
                                                             }
 
                                                             return newItems;
@@ -792,7 +877,7 @@ const Main_CustomFrames = () => {
                             {/* {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
                                 <span className='text-[11.5px] text-green-600 mt-1'>(5만원 이상 구매 시 무료배송 적용)</span>
                             )} */}
-                            <div className="text-[11px] font-semibold text-[#a57647]">
+                            <div className="text-[13px] font-semibold text-[#a57647]">
                                 제작 1~3일 배송 1~2일 (주문후 2~5일 수령)
                             </div>
                             <div className="text-[11px] text-gray-500">
@@ -1012,9 +1097,85 @@ const Main_CustomFrames = () => {
                     onClick={closeRetouchModal}
                 >
                     <div
-                        className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-5"
+                        className="w-full h-[800px] overflow-y-scroll max-w-lg bg-white rounded-2xl shadow-xl p-5 pt-0"
                         onClick={(e) => e.stopPropagation()}
                     >
+                        <div>
+                            {/* 보정 비교 */}
+                            {/* xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)]  */}
+                            <div className='
+                                w-[380px]
+                                aspect-[450/670] mx-auto bg-opacity-60 rounded-lg 
+                                xl:p-6 lg:p-5 md:p-4 p-2
+                            '>
+                                <h3 className='
+                                    lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
+                                    font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
+                                
+                                <div className='relative w-full flex justify-center items-center'>
+                                    <img src={
+                                        showAfter ? current.after : current.before}
+                                        alt="보정 비교" 
+                                        className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
+                                    />
+                                    <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
+                                        <button
+                                            className={`
+                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
+                                                px-4 py-1 rounded-full font-semibold transition ${
+                                                !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                            onClick = {() => setShowAfter(false)}
+                                            onMouseEnter={() => setShowAfter(false)}
+                                        >
+                                            원본사진
+                                        </button>
+                                        <button
+                                            className={`
+                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
+                                                px-4 py-1 rounded-full font-semibold transition ${
+                                                showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
+                                            }`}
+                                            onClick = {() => setShowAfter(true)}
+                                            onMouseEnter={() => setShowAfter(true)}
+                                        >
+                                            보정사진
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* 페이지 네이션 */}
+                                <div className="mt-6 flex justify-center gap-2">
+                                    {beforeAfterData.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            className={`
+                                                xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
+                                                xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
+                                                rounded-full transition ${
+                                                activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
+                                            }`}
+                                            onClick={() => {
+                                                setActiveIndex(idx);
+                                                setShowAfter(false);
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <span
+                                className="
+                                    flex flex-col justify-center items-center
+                                    mt-4
+                                    md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                    font-medium tracking-wide
+                                    text-gray-600
+                                    px-4
+                                "
+                                >
+                                원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
+                            </span>
+                            {/* 보정 비교 */}
+                        </div>
+                    </div>
                         <div className="flex items-start justify-between">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-800">보정 요청</h3>
@@ -1049,7 +1210,7 @@ const Main_CustomFrames = () => {
                             </label>
 
                             <div className={`mt-4 ${retouchDraft.enabled ? '' : 'opacity-50 pointer-events-none'}`}>
-                                <div className="text-sm font-semibold text-gray-700 mb-2">보정 항목 선택</div>
+                                <div className="text-[16px] font-semibold text-gray-700 ml-1 mb-2">보정 항목 선택</div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {retouchOptions.map(opt => {
@@ -1076,7 +1237,7 @@ const Main_CustomFrames = () => {
                                 </div>
 
                                 <div className="mt-4">
-                                    <div className="text-sm font-semibold text-gray-700 mb-2">요청사항</div>
+                                    <div className="text-[16px] font-semibold text-gray-700 ml-1 mb-2">요청사항</div>
                                     <textarea 
                                         rows={4}
                                         value={retouchDraft.note}
@@ -1085,7 +1246,10 @@ const Main_CustomFrames = () => {
                                         className="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                     />
                                     <p className="text-xs text-gray-500 mt-2">
-                                        ※ 난이도가 높은 보정은 상담 후 추가 비용이 발생할 수 있습니다
+                                        ※ 보정요청을 하시면 배송일이 늦어짐을 참고하시기 바랍니다
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        ※ 고난도 보정은 전화 상담을 통해 추가 비용 안내를 드립니다
                                     </p>
                                 </div>
                             </div>

@@ -15,11 +15,136 @@ const Join = () => {
     const [smsAgree, setSmsAgree] = useState(true);
     const [emailAgree, setEmailAgree] = useState(true);
 
+    // sms인증
+    const [smsCode, setSmsCode] = useState("");
+    const [smsSent, setSmsSent] = useState(false);
+    const [smsVerified, setSmsVerified] = useState(false);
+    const [remainSec, setRemainSec] = useState(0);
+    const timerRef = useRef(null);
+
+    const startTimer = (sec) => {
+        // 기존 타이머 있으면 제거
+        if (timerRef.current) clearInterval(timerRef.current);
+
+        setRemainSec(sec);
+
+        timerRef.current = setInterval(() => {
+            setRemainSec((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current);
+                    timerRef.current = null;
+                    return 0;
+                }
+                return prev - 1
+            });
+        }, 1000);
+    }
+
+    // 컴포넌트 언마운트 시 타이머 정리
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        }
+    }, []);
+
+    const logAxiosError = (title, err) => {
+        // axios 에러인지 확인
+        const isAxios = !!err?.isAxiosError;
+
+        console.group(`❌ ${title}`);
+        console.log("isAxiosError:", isAxios);
+        console.log("message:", err?.message);
+
+        if (err?.response) {
+            console.log("status:", err.response.status);
+            console.log("statusText:", err.response.statusText);
+            console.log("response.data:", err.response.data);
+            console.log("response.headers:", err.response.headers);
+        } else if (err?.request) {
+            console.log("request:", err.request);
+        } else {
+            console.log("error:", err);
+        }
+
+        console.log("config.url:", err?.config?.url);
+        console.log("config.method:", err?.config?.method);
+        console.log("config.data:", err?.config?.data);
+        console.groupEnd();
+    };
+
+    // 인증번호 발송 함수 추가
+    const handleSendSms = async () => {
+        const phoneNumber = `${phone1}-${phone2}-${phone3}`;
+
+        // 번호 기본 검증만
+        const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
+        if (!phoneRegex.test(phoneNumber)) {
+            toast.error("휴대폰 번호를 올바르게 입력해 주세요.");
+            return;
+        }
+
+        try {
+            const res = await axios.post(`${API}/sms/send`, {
+                type: "send",
+                to: phoneNumber
+            });
+
+            console.log("✅SMS SEND OK:", res.status, res.data);
+
+            setSmsSent(true);
+            setSmsVerified(false);
+            setSmsCode("")
+            startTimer(5 * 60);
+            toast.success("인증번호를 발송했습니다.");
+        } catch (e) {
+            logAxiosError("SMS SEND FAIL", e);
+            toast.error("인증번호 발송 실패");
+        }
+    };
+
+    // 인증확인 함수 추가
+    const handleVerifySms = async () => {
+        const phoneNumber = `${phone1}-${phone2}-${phone3}`;
+
+        if (!smsCode.trim()) {
+            toast.error("인증번호를 입력해주세요.");
+            return;
+        }
+
+        try {
+            const res = await axios.post(`${API}/sms/send`, {
+                type: "verify",
+                to: phoneNumber,
+                code: smsCode
+            });
+
+            console.log("✅SMS SEND OK:", res.status, res.data);
+
+            setSmsVerified(true);
+            toast.success("휴대폰 인증이 완료되었습니다.");
+        } catch (e) {
+            setSmsVerified(false);
+            toast.error("인증번호가 올바르지 않습니다.");
+        }
+    };
+
+    const confirmPwdRef = useRef();
+
+    // 아이디 중복확인 버튼 없애기
+    const [idChecked, setIdChecked] = useState(false);
+    const [idAvailable, setIdAvailable] = useState(null);
+
+    const [idFormatOk, setIdFormatOk] = useState(null);
+
+    // 비밀번호 중복확인 버튼 없애기
+    const [pwdMatch, setPwdMatch] = useState(null);
+
     // Ref 참조
     const idRef = useRef();
     const pwdRef = useRef();
     const nameRef = useRef();
-    const phoneRef = useRef();
+    const phoneRef1 = useRef();
+    const phoneRef2 = useRef();
     const emailRef = useRef();
 
     const [agree, setAgree] = useState({
@@ -48,39 +173,57 @@ const Join = () => {
     }
 
     // ✅ 중복확인 버튼용: 알림 있음
-    const checkIdDuplicate = async (silent = false) => {
-        const trimmedId = id.trim();
+    const checkIdDuplicate = async (idValue, silent = true) => {
+        const trimmedId = idValue.trim();
         const idRegex = /^[a-z0-9]{4,16}$/;
 
-        if (!trimmedId) {
-            if (!silent) toast.error('아이디를 입력해주세요.');
-            idRef.current?.focus();
-            return false;
-        }
+        setIdChecked(false);
+        setIdAvailable(null);
+
+        if (!trimmedId) return false;
         
         if (!idRegex.test(trimmedId)) {
+            setIdFormatOk(false);
             if (!silent) toast.error('아이디는 영문 소문자와 숫자 조합으로 4~16자여야 합니다.');
-            idRef.current?.focus();
+            // idRef.current?.focus();
             return false;
         }
+        setIdFormatOk(true);
 
         try {
-            const response = await axios.get(`${API}/member/check-id?id=${trimmedId}`);
+            const res = await axios.get(`${API}/member/check-id?id=${trimmedId}`);
+            const isDup = res.data === true;
 
-            if (response.data) {
-                toast.error('이미 사용 중인 아이디입니다.');
-                idRef.current?.focus();
+            setIdChecked(true);
+            setIdAvailable(!isDup);
+
+            if (isDup) {
+                // toast.error('이미 사용중인 아이디입니다.');
+                // idRef.current?.focus();
                 return false;
-            } else {
-                if (!silent) toast.success('사용 가능한 아이디입니다.');
-                return true;
             }
+            return true;
         } catch (error) {
-            toast.error('중복 확인 중 오류가 발생했습니다.');
+            toast.error('아이디 중복 확인 중 오류가 발생했습니다.');
             console.log(error);
             return false;
         }
     };
+
+    // 비밀번호 중복 체크
+    const validatePwdMatch = (silent = true) => {
+        if (!password || !confirmPassword) {
+            setPwdMatch(null);
+            return true; // 둘 중 하나 비어있으면 아직 판단하지 않음
+        }
+
+        const ok = password === confirmPassword;
+        setPwdMatch(ok);
+        if (!ok && !silent) {
+            toast.error('비밀번호가 일치하지 않습니다.');
+        }
+        return ok;
+    }
 
     // 비밀번호 형식 체크
     const isValidPassword = (password) => {
@@ -140,7 +283,7 @@ const Join = () => {
         const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
         if (!phoneRegex.test(phoneNumber)) {
             toast.error("휴대폰 번호를 올바르게 입력해 주세요.");
-            phoneRef.current?.focus();
+            phoneRef1.current?.focus();
             return false;
         }
 
@@ -148,7 +291,7 @@ const Join = () => {
             const res = await axios.get(`${API}/member/check-phone?phone=${phoneNumber}`);
             if (res.data) {
                 toast.error("이미 사용 중인 휴대폰 번호입니다.");
-                phoneRef.current?.focus();
+                phoneRef1.current?.focus();
                 return false;
             }
             return true;
@@ -174,9 +317,11 @@ const Join = () => {
 
     // 회원가입 제출
     const handleRegister = async (e) => {
+        e.preventDefault();
+
         const phoneNumber = `${phone1}-${phone2}-${phone3}`
 
-        e.preventDefault();
+        
         
         // 아이디 빈칸 체크
         const trimmedId = id.trim()
@@ -184,23 +329,47 @@ const Join = () => {
         if (!trimmedId) {
             toast.error('아이디를 입력해주세요.');
             idRef.current?.focus();
-            return false;
+            return;
         }
+
+        if (!/^[a-z0-9]{4,16}$/.test(trimmedId)) {
+            setIdFormatOk(false);
+            toast.error('아이디는 영문 소문자와 숫자 조합으로 4~16자여야 합니다.');
+            idRef.current?.focus();
+            return;
+        }
+
+        setIdFormatOk(true);
         
         // 아이디 중복 체크
-        const isIdAvailable = await checkIdDuplicate(true);
-        if (!isIdAvailable) return;
-        
+        const isIdAvailable = await checkIdDuplicate(trimmedId, true);
+        if (!isIdAvailable) {
+            idRef.current?.focus();
+            return;
+        } 
+
+         if (!password) {
+            toast.error('비밀번호를 입력해주세요.');
+            pwdRef.current?.focus();
+            return
+        }
+
         if (!isValidPassword(password)) {
             toast.error('비밀번호는 영문 대소문자, 숫자, 특수문자 중 2가지 이상 조합이며 8~16자여야 합니다.');
             pwdRef.current?.focus();
             return;
         }
 
+        if (!confirmPassword) {
+            toast.error('비밀번호 확인을 입력해주세요.');
+            confirmPwdRef.current?.focus();
+            return
+        }
+
         // 가입 전 체크
-        if (password !== confirmPassword) {
+        if (!validatePwdMatch(false)) {
             toast.error('비밀번호가 일치하지 않습니다.');
-            pwdRef.current?.focus();
+            confirmPwdRef.current?.focus();
             return
         }
 
@@ -209,10 +378,33 @@ const Join = () => {
             nameRef.current.focus();
             return;
         }
-        
-        if (!phoneNumber || phoneNumber.length < 10) {
+
+        if (!phone2.trim()) {
+            toast.error('휴대전화 중간 번호를 입력해주세요.');
+            phoneRef1.current.focus();
+            return;
+        }
+
+        if (phone2.length < 3) {
             toast.error('휴대전화 번호를 올바르게 입력해주세요.');
-            phoneRef.current.focus();
+            phoneRef1.current.focus();
+            return;
+        }
+
+        if (!phone3.trim()) {
+            toast.error('휴대전화 끝 번호를 입력해주세요.');
+            phoneRef2.current.focus();
+            return;
+        }
+
+        if (phone3.length < 4) {
+            toast.error('휴대전화 번호를 올바르게 입력해주세요.');
+            phoneRef2.current.focus();
+            return;
+        }
+
+        if (!smsVerified) {
+            toast.error("휴대폰 인증을 완료해주세요.");
             return;
         }
 
@@ -234,7 +426,7 @@ const Join = () => {
         }
 
         try {
-            const response = await axios.post(`${API}/member/register`, registrationData);
+            await axios.post(`${API}/member/register`, registrationData);
             toast.success('회원가입이 성공했습니다!');
             navigate('/join_success');
         } catch (error) {
@@ -244,7 +436,7 @@ const Join = () => {
 
     return (
         <div className="flex w-full">
-            <form className="flex flex-col w-full">
+            <form className="flex flex-col w-full" onSubmit={handleRegister}>
                 <div className="flex flex-col pt-20">
                         <span className="text-xl font-bold pl-3 pb-6">회원가입</span>                    
                 </div>
@@ -252,32 +444,58 @@ const Join = () => {
 
                     <hr/>
 
-                    <div className="flex flex-row items-center mt-3 ml-3 mb-3">
-                        <div className="sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
+                    <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
                             아이디 <span className="font-bold text-red-500">*</span>
                         </div>
-                        <div className="md:flex-row flex-col">
+                        <div className="flex flex-col w-full">
                             <div className="flex">
-                                <input type="text" id="id" ref={idRef} className="px-2 border-[1px] sm:w-[199px] w-[130px] h-7 mr-2 sm:text-base text-[14px]" 
+                                <input type="text" id="id" ref={idRef} className="px-2 border-[1px] w-full h-7 sm:text-base text-[14px]" 
                                     value={id}
-                                    onChange={(e) => setId(e.target.value)}
+                                    onChange={(e) => {
+                                        const v =e.target.value;
+                                        setId(v);
+
+                                        // 중복체크 결과 초기화
+                                        setIdChecked(false);
+                                        setIdAvailable(null);
+
+                                        // 형식 체크(비어있으면 아직 입력중이라 null)
+                                        const trimmed = v.trim();
+                                        const idRegex = /^[a-z0-9]{4,16}$/;
+                                        if (!trimmed) setIdFormatOk(null);
+                                        else setIdFormatOk(idRegex.test(trimmed));
+                                    }}
+                                    onBlur={(e) => checkIdDuplicate(e.target.value, true)}
                                 />
-                                <button type="button" onClick={() => checkIdDuplicate(false)} className=" border px-2 py-1 sm:text-sm text-[10px]">중복확인</button>
                             </div>
-                            <span className="sm:text-xs text-[10px] ml-1">(영문소문자/숫자, 4~16자)</span>
+                            <span className="sm:text-xs text-[10px]">(영문소문자/숫자, 4~16자)</span>
+                            <div>
+                                {idFormatOk === false && (
+                                    <span className="text-xs text-red-500">
+                                        아이디는 영어 소문자와 숫자 조합으로 4~16자여야 합니다.
+                                    </span>
+                                )}
+                                {idChecked && idAvailable === false && <span className="text-xs text-red-500">이미 사용중인 아이디입니다.</span>}
+                                {idChecked && idAvailable === true && <span className="text-xs text-green-600">사용 가능한 아이디입니다.</span>}
+                            </div>
                         </div>
                     </div>
 
                     <hr/>
 
-                    <div className="flex flex-row items-center mt-3 ml-3 mb-3">
-                        <div className="sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
+                    <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
                             비밀번호 <span className="font-bold text-red-500">*</span>
                         </div>
-                        <div className="md:flex-row flex-col">
+                       <div className="flex flex-col w-full">
                             <input type="password" id="pwd" ref={pwdRef} className="flex px-2 border-[1px] h-7 sm:text-base text-[14px]"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    setPwdMatch(null);
+                                }}
+                                onBlur={() => validatePwdMatch(true)}
                             />
                             <span className="sm:text-xs text-[10px] sm:ml-1">(영문/숫자/특수문자 2종 이상, 8~16자)</span>
                         </div>
@@ -285,22 +503,33 @@ const Join = () => {
 
                     <hr/>
 
-                    <div className="flex flex-row items-center mt-3 ml-3 mb-3">
-                        <div className="sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
+                    <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
                             비밀번호 확인 <span className="font-bold text-red-500">*</span>
                         </div>
-                        <input type="password" className="px-2 border-[1px] h-7 sm:text-base text-[14px]" 
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
+                        <div className="flex flex-col w-full">
+                            <input type="password" className="flex px-2 border-[1px] h-7 sm:text-base text-[14px]"
+                                value={confirmPassword}
+                                ref={confirmPwdRef}
+                                onChange={(e) => {
+                                    setConfirmPassword(e.target.value);
+                                    setPwdMatch(null);
+                                }}
+                                onBlur={() => validatePwdMatch()}
+                            />
+                            <div>
+                                {pwdMatch === false && <span className="text-xs text-red-500">비밀번호가 일치하지 않습니다.</span>}
+                                {pwdMatch === true && <span className="text-xs text-green-600">비밀번호가 일치합니다.</span>}
+                            </div>
+                        </div>
                     </div>
 
                     <hr/>
 
-                    <div className="flex flex-row items-center mt-3 ml-3 mb-3">
-                        <div className="sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
+                    <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
                             이름 <span className="font-bold text-red-500">*</span>
-                        </div>
+                                                    </div>
                         <input type="text" id="name" ref={nameRef} className="px-2 border-[1px] h-7 sm:text-base text-[14px]" 
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -309,48 +538,109 @@ const Join = () => {
 
                     <hr/>
 
-                    <div className="flex flex-row items-center mt-3 ml-3 mb-3">
-                        <div className="sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
+                    <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
                             휴대전화 <span className="font-bold text-red-500">*</span>
                         </div>
-                        <select 
-                            value={phone1} 
-                            onChange={(e) => setPhone1(e.target.value)}
-                            className="px-1 sm:w-[65px] w-[65px] border border-gray-300 sm:text-base text-[14px]"
-                        >
-                            <option>010</option>
-                            <option>011</option>
-                            <option>016</option>
-                            <option>017</option>
-                            <option>018</option>
-                            <option>019</option>
-                        </select>
-                        <span className="mx-[3px]">-</span>
-                        <input 
-                            type="text" 
-                            id="phone"
-                            ref={phoneRef}
-                            maxLength="4" 
-                            value={phone2} 
-                            onChange={(e) => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} 
-                            inputMode="numeric" 
-                            className="w-[58px] border border-gray-300 pl-1 sm:text-base text-[14px]"
-                        />
-                        <span className="mx-[3px]">-</span>
-                        <input type="text"
-                            id="phone"
-                            maxLength="4" 
-                            value={phone3} 
-                            onChange={(e) => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} 
-                            inputMode="numeric" 
-                            className="w-[58px] border border-gray-300 pl-1 sm:text-base text-[14px]"
-                        />
+                        <div>
+                            <div>
+                                <select 
+                                    value={phone1} 
+                                    onChange={(e) => setPhone1(e.target.value)}
+                                    className="px-1 sm:w-[65px] w-[65px] border border-gray-300 sm:text-base text-[14px]"
+                                >
+                                    <option>010</option>
+                                    <option>011</option>
+                                    <option>016</option>
+                                    <option>017</option>
+                                    <option>018</option>
+                                    <option>019</option>
+                                </select>
+                                <span className="mx-[3px]">-</span>
+                                <input 
+                                    type="text" 
+                                    id="phone2"
+                                    ref={phoneRef1}
+                                    maxLength="4" 
+                                    value={phone2} 
+                                    onChange={(e) => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} 
+                                    inputMode="numeric" 
+                                    className="w-[58px] border border-gray-300 pl-1 sm:text-base text-[14px]"
+                                />
+                                <span className="mx-[3px]">-</span>
+                                <input type="text"
+                                    id="phone3"
+                                    ref={phoneRef2}
+                                    maxLength="4" 
+                                    value={phone3} 
+                                    onChange={(e) => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} 
+                                    inputMode="numeric" 
+                                    className="w-[58px] border border-gray-300 pl-1 sm:text-base text-[14px]"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleSendSms}
+                                    disabled={smsVerified || remainSec > 0}
+                                    className="ml-1 px-2 py-1 border bg-black text-white text-[12px]"
+                                >
+                                    {smsSent ? "재전송" : "인증번호 받기"}
+                                </button>
+                            </div>
+                            <div>
+                                {smsSent && !smsVerified && (
+                                    <div className="w-full flex flex-row items-center mt-2">
+                                        <input 
+                                            type="text"
+                                            value={smsCode}
+                                            onChange={(e) => setSmsCode(e.target.value.replace(/[^0-9]/g, ""))}
+                                            maxLength={6}
+                                            inputMode="numeric"
+                                            placeholder="인증번호 6자리"
+                                            className="px-2 border-[1px] h-7 w-[140px] sm:text-base text-[14px]"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={handleVerifySms}
+                                            disabled={remainSec === 0}
+                                            className={`ml-2 px-2 py-1 border text-[12px] ${
+                                                remainSec === 0 ? "bg-gray-400 text-white" : "bg-black text-white"
+                                            }`}
+                                        >
+                                            확인
+                                        </button>
+                                        {smsSent && !smsVerified && (
+                                            <span className="ml-2 text-[12px] text-gray-700">
+                                                {remainSec > 0 && (
+                                                    <>
+                                                        {String(Math.floor(remainSec / 60)).padStart(2, "0")}:
+                                                        {String(remainSec % 60).padStart(2, "0")}
+                                                    </>
+                                                )}
+                                            </span>
+                                        )}
+
+                                        {remainSec === 0 && (
+                                            <span className="text-[12px] text-red-500">
+                                                인증번호가 만료되었습니다. 재전송 해주세요.
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
+                                {smsVerified && (
+                                    <div className="w-full px-3 mt-2 mb-3">
+                                        <span className="text-[12px] text-green-600">휴대폰 인증 완료</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <hr/>
 
-                    <div className="flex flex-row items-center mt-3 ml-3 mb-3">
-                        <div className="sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
+                    <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
                             이메일 <span className="font-bold text-red-500">*</span>
                         </div>
                         <input type="text" id="email" className="px-2 border-[1px] h-7 sm:text-base text-[14px]" 
@@ -608,7 +898,7 @@ const Join = () => {
                     <hr/>
                     <span className="mt-3 ml-3 mb-3 sm:text-xs text-[11px]">[필수] 개인정보 수집 및 이용 동의</span>
                     <div className="ml-3 mr-3 mb-3 p-4 whitespace-pre-line overflow-y-scroll h-40 sm:text-sm text-[12px] border-[1px] text-gray-500">
-                        {`■ 수집하는 개인정보 항목 ( 서비스 이전에 수정해야 함 사이트에 맞게!!!!!!!!!! )
+                        {`■ 수집하는 개인정보 항목
                         회사는 회원가입, 상담, 서비스 신청 등등을 위해 아래와 같은 개인정보를 수집하고 있습니다.
                         ο 수집항목 : 이름 , 생년월일 , 성별 , 로그인ID , 비밀번호 , 비밀번호 질문과 답변 , 자택 전화번호 , 자택 주소 , 휴대전화번호 , 이메일 , 직업 , 회사명 , 부서 , 직책 , 회사전화번호 , 취미 , 결혼여부 , 기념일 , 법정대리인정보 , 서비스 이용기록 , 접속 로그 , 접속 IP 정보 , 결제기록
                         ο 개인정보 수집방법 : 홈페이지(회원가입) , 서면양식
@@ -642,8 +932,10 @@ const Join = () => {
                     <input type="checkbox" checked={agree.marketing} onChange={(e) => handleIndividual('marketing', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/><span className="sm:text-xs text-[11px]">동의함</span></div>
                 </div>
                 <hr/>
-                <button className="flex justify-center py-4 sm:text-base text-[12px] bg-black text-white rounded-sm mb-20"
-                    onClick={handleRegister}> 
+                <button
+                    type="submit" 
+                    className="flex justify-center py-4 sm:text-base text-[12px] bg-black text-white rounded-sm mb-20"
+                > 
                     회원가입
                 </button>
             </form>

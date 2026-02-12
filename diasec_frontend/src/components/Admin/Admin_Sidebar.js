@@ -1,48 +1,64 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import { MemberContext } from '../../context/MemberContext'
 import axios from 'axios';
 
 const Admin_Sidebar = () => {
     const API = process.env.REACT_APP_API_BASE;
-    const { member, setMember } = useContext(MemberContext);
+    const { member } = useContext(MemberContext);
     const navigate = useNavigate();
 
     const [ inquiryUnanswered,setInquiryUnanswered ] = useState(0);
+
     const [inquiries, setInquiries] = useState([]);
 
     const [pendingAuthorCount, setPendingAuthorCount] = useState(0);
     const [pendingWorkCount, setPendingWorkCount] = useState(0);
 
-    const [orderCounts, setOrderCounts] = useState({
-        입금대기: 0,
-        결제완료: 0,
-    });
+    const [orderCounts, setOrderCounts] = useState({});
+
+    // 토글 상태
+    const [openOrderStatus, setOpenOrderStatus] = useState(false);
+
+    // 표시 순서(원하는대로)
+    const ORDER_STATUS_LIST = useMemo(() => ([
+        '입금대기',
+        '결제완료',
+        '배송준비중',
+        '배송중',
+        '배송완료',
+        '취소요청',
+        '취소',
+        '교환신청',
+        '교환회수완료',
+        '교환배송중',
+        '교환완료',
+        '반품신청',
+        '반품회수완료',
+        '환불처리중',
+        '환불완료'
+    ]), []);
+
+    // 전체 합계(토글 버튼에 표시)
+    const totalOrderCount = ORDER_STATUS_LIST.reduce(
+        (sum, s) => sum + (orderCounts[s] || 0),
+        0
+    );
 
     // 주문 상태별 개수 불러오기
     useEffect(() => {
-        if (!member) return;
-
-        axios.post(`${API}/order/list`, {
-            id: member.id,
-            startDate: '2000-01-01',
-            endDate: new Date().toISOString().split('T')[0],
-            status: '전체'
-        }, { withCredentials: true})
+        axios.get(`${API}/order/admin/count-by-status`, { withCredentials: true })
         .then(res => {
-            if (Array.isArray(res.data)) {
-                const counts = { 입금대기: 0, 결제완료: 0 };
-                res.data.forEach(order => {
-                    order.items.forEach(item => {
-                        if (item.orderStatus === '입금대기') counts.입금대기 += 1;
-                        if (item.orderStatus === '결제완료') counts.결제완료 += 1;
-                    });
-                });
-                setOrderCounts(counts);
-            }
+            const map = {};
+            (res.data || []).forEach(r => {
+                const status = r.status;
+                const cnt = Number(r.cnt || 0);
+                map[status] = cnt;
+            });
+            setOrderCounts(map);
         })
         .catch(err => console.error("주문 상태 불러오기 실패", err));
-    }, [member])
+    }, [API])
 
     // 🔹 추가: 작가/작품 대기 카운트 로드
     useEffect(() => {
@@ -88,7 +104,33 @@ const Admin_Sidebar = () => {
             <button className="text-sm opacity-65" onClick={() => navigate('/admin_CollectionManager')}>컬렉션 관리</button>
             
             <span className="text-lg font-bold mt-10">주문 관리</span>
-            <button className="text-sm opacity-65" onClick={() => navigate('/admin/order_Status')}>주문 상태 변경({orderCounts.입금대기}건 / {orderCounts.결제완료}건)</button>
+            
+            <div className="w-full">
+                <button className="text-sm opacity-65" onClick={() => navigate('/admin/order_Status')}>
+                    주문 상태 변경 &nbsp;
+                </button>
+                <button type="button" className="text-sm opacity-65" onClick={() => setOpenOrderStatus(v => !v)}>
+                    {totalOrderCount}건 {openOrderStatus ? '▲' : '▼'}
+                </button>
+
+                {openOrderStatus && (
+                    <div className="mt-1 w-full flex flex-col gap-1">
+                        {ORDER_STATUS_LIST.map(status => (
+                            <button
+                                key={status}
+                                type="button"
+                                className="w-full text-[13px] opacity-70 flex items-center justify-between hover:opacity-100"
+                                onClick={() => navigate(`/admin/order_Status?status=${encodeURIComponent(status)}`)}
+                            >
+                                <span>{status}</span>
+                                <span>
+                                    {(orderCounts[status] || 0).toLocaleString()}건
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             <span className="text-lg font-bold mt-10">정보 관리</span>
             <button className="text-sm opacity-65" onClick={() => navigate('/admin_MemberManager')}>회원 정보 관리</button>

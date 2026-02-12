@@ -35,6 +35,8 @@ const Main = () => {
     const [best_Items, setBest_Items] = useState([]);
     const [new_Items, setNew_Items] = useState([]);
     const [categoryList, setCategoryList] = useState([]);
+    // 작가 카테고리는 빼기
+    const filteredCategoryList = categoryList.filter(c => c.name !== 'authorCollection');
     const [reviewIndex, setReviewIndex] = useState(0); // 리뷰 슬라이드
 
     // 마우스 호버 상태 저장(img)
@@ -186,21 +188,21 @@ const Main = () => {
                     text-center'>
                     <span className='
                         md:text-3xl text-[clamp(18px,3.911vw,30px)]
-                        font-bold tracking-wide text-gray-800 inline-block'
+                        font-bold tracking-wide text-[#b29476] inline-block'
                     >
                         인기작품
                     </span>
-                    <p className='
+                    {/* <p className='
                         md:text-base text-[clamp(11px,2.086vw,16px)]
                         xl:mt-3 lg:mt-2 mt-1 
                         text-gray-600'>
                         현재 가장 주목받는 인기작품을 만나보세요.
-                    </p>
+                    </p> */}
                 </div>
                 
                 <div className='flex flex-wrap justify-center items-center 
                     xl:gap-4 lg:gap-3 md:gap-2 gap-[2px]'>
-                    {categoryList.map((item) => {
+                    {filteredCategoryList.map((item) => {
                         const isActive = bestCategory === item.name;
                         return (
                             <div
@@ -212,8 +214,8 @@ const Main = () => {
                                     md:text-base text-[clamp(12px,2.2vw,16px)]
                                     relative px-4 py-1 rounded-full transition-all duration-300 font-medium
                                     ${isActive
-                                        ? 'text-white bg-[#a67a3e]'
-                                        : 'text-gray-700 hover:text-[#a67a3e] hover:bg-gray-100'}
+                                        ? 'text-white bg-[#d0ac88]'
+                                        : 'text-gray-700 hover:text-[#d0ac88] hover:bg-gray-100'}
                                     `}
                                 >
                                     <span className='relative inline-block'>
@@ -277,20 +279,20 @@ const Main = () => {
                     text-center'>
                     <span className='
                         md:text-3xl text-[clamp(18px,3.911vw,30px)]
-                        font-bold tracking-wide text-gray-800 inline-block'>
+                        font-bold tracking-wide text-[#d0ac88] inline-block'>
                         신규작품
                     </span>
-                    <p className='
+                    {/* <p className='
                         md:text-base text-[clamp(11px,2.086vw,16px)]
                         xl:mt-3 lg:mt-2 mt-1 
                         text-gray-600'>
                         새롭게 등록된 최신 작품들을 확인해보세요.
-                    </p>
+                    </p> */}
                 </div>
                 
                 <div className='flex flex-wrap justify-center items-center 
                 xl:gap-4 lg:gap-3 md:gap-2 gap-[2px]'>
-                    {categoryList.map((item) => {
+                    {filteredCategoryList.map((item) => {
                         const isActive = newCategory === item.name;
                         return (
                             <div
@@ -302,7 +304,7 @@ const Main = () => {
                                     md:text-base text-[clamp(12px,2.2vw,16px)]
                                     relative px-4 py-1 rounded-full transition-all duration-300 font-medium
                                     ${isActive
-                                        ? 'text-white bg-[#a67a3e]'
+                                        ? 'text-white bg-[#d0ac88]'
                                         : 'text-gray-700 hover:text-[#a67a3e] hover:bg-gray-100'}
                                     `}
                                 >
@@ -358,101 +360,105 @@ const Main = () => {
                 </div>
             </div>
             {/* /신규작품 */}
-
-            {/* 맞춤액자 배너 */}
-            <div>
-                <img src={customFrame} className='w-full aspect-[1300/240] cursor-pointer' onClick={() => navigate('/customFrames')}/>
-            </div>
-            {/* /맞춤액자 배너 */} 
-
-            {/* 보정 */}
-            <div>
-                <div className="text-center mt-20 mb-3">
-                    <h2 className='
-                        md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
-                        font-bold text-gray-800'>보정 서비스 미리보기</h2>
-                </div>
+            
+            {/*                     
+                {false && (맞춤액자 배너 )}
                 <div>
-                    {/* 보정 비교
-                        xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
-                    */}
-                    <div className='
-                        max-w-[550px] w-[61%]
-                        aspect-[450/670] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
-                        xl:p-6 lg:p-5 md:p-4 p-2
-                        shadow-xl'>
-                        <h3 className='
-                            lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
-                            font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
-                        
-                        <div className='relative w-full flex justify-center items-center'>
-                            <img src={
-                                showAfter ? current.after : current.before}
-                                alt="보정 비교" 
-                                className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
-                            />
-                            <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
-                                <button
-                                    className={`
-                                        lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                        px-4 py-1 rounded-full font-semibold transition ${
-                                        !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
-                                    onClick = {() => setShowAfter(false)}
-                                    onMouseEnter={() => setShowAfter(false)}
-                                >
-                                    원본사진
-                                </button>
-                                <button
-                                    className={`
-                                        lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                        px-4 py-1 rounded-full font-semibold transition ${
-                                        showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
-                                    }`}
-                                    onClick = {() => setShowAfter(true)}
-                                    onMouseEnter={() => setShowAfter(true)}
-                                >
-                                    보정사진
-                                </button>
-                            </div>
-                        </div>
+                    <img src={customFrame} className='w-full aspect-[1300/240] cursor-pointer' onClick={() => navigate('/customFrames')}/>
+                </div>
+                {false && (맞춤액자 배너 )}
+            */}
 
-                        {/* 페이지 네이션 */}
-                        <div className="mt-6 flex justify-center gap-2">
-                            {beforeAfterData.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`
-                                        xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
-                                        xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
-                                        rounded-full transition ${
-                                        activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
-                                    }`}
-                                    onClick={() => {
-                                        setActiveIndex(idx);
-                                        setShowAfter(false);
-                                    }}
+            {/*             
+                {false && (보정)}
+                <div>
+                    <div className="text-center mt-20 mb-3">
+                        <h2 className='
+                            md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
+                            font-bold text-gray-800'>보정 서비스 미리보기</h2>
+                    </div>
+                    <div>
+                        {false && (보정 비교
+                            xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
+                        )}
+                        <div className='
+                            max-w-[550px] w-[61%]
+                            aspect-[450/670] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
+                            xl:p-6 lg:p-5 md:p-4 p-2
+                            shadow-xl'>
+                            <h3 className='
+                                lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
+                                font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
+                            
+                            <div className='relative w-full flex justify-center items-center'>
+                                <img src={
+                                    showAfter ? current.after : current.before}
+                                    alt="보정 비교" 
+                                    className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
                                 />
-                            ))}
+                                <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {false &&  (transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다)}
+                                    <button
+                                        className={`
+                                            lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
+                                            px-4 py-1 rounded-full font-semibold transition ${
+                                            !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                        onClick = {() => setShowAfter(false)}
+                                        onMouseEnter={() => setShowAfter(false)}
+                                    >
+                                        원본사진
+                                    </button>
+                                    <button
+                                        className={`
+                                            lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
+                                            px-4 py-1 rounded-full font-semibold transition ${
+                                            showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
+                                        }`}
+                                        onClick = {() => setShowAfter(true)}
+                                        onMouseEnter={() => setShowAfter(true)}
+                                    >
+                                        보정사진
+                                    </button>
+                                </div>
+                            </div>
+
+                            {false && (페이지 네이션)}
+                            <div className="mt-6 flex justify-center gap-2">
+                                {beforeAfterData.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        className={`
+                                            xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
+                                            xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
+                                            rounded-full transition ${
+                                            activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
+                                        }`}
+                                        onClick={() => {
+                                            setActiveIndex(idx);
+                                            setShowAfter(false);
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            <span
+                            className="
+                                flex flex-col justify-center items-center
+                                mt-4
+                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                font-medium tracking-wide
+                                text-gray-600
+                                px-4
+                            "
+                            >
+                            원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
+                        </span>
                         </div>
-                        <span
-                        className="
-                            flex flex-col justify-center items-center
-                            mt-4
-                            md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                            font-medium tracking-wide
-                            text-gray-600
-                            px-4
-                        "
-                        >
-                        원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
-                    </span>
                     </div>
                 </div>
-            </div>
-            {/* /보정 */}   
+                {false && (보정)}
+            */}
 
             {/* 이벤트 배너 */}
-            <div>
+            {/* <div>
                 <h2 className="
                     md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
                     font-bold text-center mb-2">고객님을 위한 이벤트</h2>
@@ -493,7 +499,7 @@ const Main = () => {
                                         </h3>
                                         <p className="
                                             lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)]
-                                            text-gray-500 line-clamp-2"> {/* clamp-2는 최대 2줄까지만 텍스트 출력 */}
+                                            text-gray-500 line-clamp-2"> {false && (clamp-2는 최대 2줄까지만 텍스트 출력)}
                                             {event.description || '이벤트에 참여하고 혜택을 받아보세요.'}
                                         </p>
                                     </div>
@@ -502,7 +508,7 @@ const Main = () => {
                         ))}
                     </div>
 
-                    {/* 좌우 버튼 */}
+                    {false && (좌우 버튼)}
                     {events.length > 3 && (
                         <div className="absolute top-1/3 -translate-y-1/2 w-full flex justify-between px-4 z-10">
                             <button
@@ -534,7 +540,7 @@ const Main = () => {
                         </div>
                     )}
                 </div>
-            </div>
+            </div> */}
             {/* /이벤트 배너 */}
 
             {/* 🔶 리뷰 썸네일 슬라이더 영역 */}

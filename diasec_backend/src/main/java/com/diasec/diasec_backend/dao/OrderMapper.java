@@ -1,6 +1,7 @@
 package com.diasec.diasec_backend.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -59,4 +60,7 @@ public interface OrderMapper {
     void updateGuestPassword(@Param("oid") Long oid, @Param("encodedPw") String encodedPw);
 
     int updateRetouchInfo(Long itemId, int retouchEnabled, String retouchTypes, String retouchNote);
+
+    // 사이드바 상태 검색
+    List<Map<String, Object>> selectOrderItemCountsByStatus();
 }

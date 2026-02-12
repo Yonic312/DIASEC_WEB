@@ -25,10 +25,22 @@ const OrderForm = () => {
     );
 
     const isGuest = location.state?.isGuest || !member;
+    const [guestPwdMatch, setGuestPwdMatch] = useState(null);
 
     // 비회원 주문조회 비밀번호
     const [guestPassword, setGuestPassword] = useState('');
     const [guestPasswordConfirm, setGuestPasswordConfirm] = useState('');
+
+    useEffect(() => {
+        if (!isGuest) return;
+
+        if (!guestPassword || !guestPasswordConfirm) {
+            setGuestPwdMatch(null);
+            return;
+        }
+
+        setGuestPwdMatch(guestPassword === guestPasswordConfirm);
+    }, [isGuest, guestPassword, guestPasswordConfirm]);
 
     const [paymentMethod, setPaymentMethod] = useState('');
 
@@ -149,7 +161,7 @@ const OrderForm = () => {
 
     // 총합 계산 ( 최종 결제금액 )
     const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const deliveryFee = (totalPrice) >= 50000 ? 0 : 3000; // 배송비
+    const deliveryFee = 0; // 배송비
     const finalPrice = Math.max(totalPrice - usedCredit + deliveryFee + deposit, 0);
     
 
@@ -166,7 +178,7 @@ const OrderForm = () => {
                 return false;
             }
 
-            if (guestPassword !== guestPasswordConfirm) {
+            if (guestPwdMatch === false) {
                 toast.error("비회원 주문 비밀번호가 일치하지 않습니다.");
                 return false;
             }
@@ -394,6 +406,7 @@ const OrderForm = () => {
 
     // 인치 -> cm 변환
     const convertInchToCm = (size) => {
+        if (!size) return "";
         if (!size.includes('X')) return size;
         const [inchW, inchH] = size.split(/[xX]/).map(s => s.trim());
         const cmW = (parseFloat(inchW) * 2.54).toFixed(1);
@@ -724,25 +737,33 @@ const OrderForm = () => {
                                     type="password"
                                     value={guestPassword}
                                     onChange={(e) => setGuestPassword(e.target.value)}
-                                    placeholder=""
                                     className="md:w-[200px] w-full border-[1px] h-8 px-2"
                                 />
-                                <span 
-                                    className="
-                                        md:text-xs text-[clamp(7px,1.5645vw,12px)] 
-                                        ml-1">(6자 이상 20자 이하)
+                                <span className="md:text-xs text-[clamp(7px,1.5645vw,12px)] ml-1">
+                                    (6자 이상 20자 이하)
                                 </span>
                             </div>
                         </div>
+
                         <hr/>
                         <div className="flex md:flex-row flex-col items-start mt-3 ml-3 mb-3 ">
                             <div className=" w-[150px] md:text-base">비밀번호 확인</div>
-                            <input
-                                type="password"
-                                value={guestPasswordConfirm}
-                                onChange={(e) => setGuestPasswordConfirm(e.target.value)}
-                                className="md:w-[200px] border-[1px] h-8 px-2"
-                            />
+                            <div className="flex flex-col">
+                                <input
+                                    type="password"
+                                    value={guestPasswordConfirm}
+                                    onChange={(e) => setGuestPasswordConfirm(e.target.value)}
+                                    className="md:w-[200px] border-[1px] h-8 px-2"
+                                />
+
+                                {/* 실시간 일치 여부 표시 */}
+                                {guestPwdMatch === false && (
+                                    <span className="text-xs text-red-500 mt-1">비밀번호가 일치하지 않습니다.</span>
+                                )}
+                                {guestPwdMatch === true && (
+                                    <span className="text-xs text-green-600 mt-1">비밀번호가 일치합니다.</span>
+                                )}
+                            </div>
                         </div>
                     </>    
                 )}
