@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.diasec.diasec_backend.service.CartService;
 import com.diasec.diasec_backend.service.CreditService;
@@ -185,10 +189,57 @@ public class OrderController {
     }
 
     // 주문 반품 신청
-    @PostMapping("/claim")
-    public ResponseEntity<?> handleReturnRequest(@RequestBody OrderItemsVo vo) {
-        boolean success = orderService.processClaim(vo);
-        return ResponseEntity.ok(Map.of("success", success));
+    @PostMapping(value="/claim", consumes = "multipart/form-data")
+    public ResponseEntity<?> claim(
+        @RequestParam Long itemId,
+        @RequestParam String claimType,
+        @RequestParam String reason,
+        @RequestParam(required=false) String detail,
+
+        @RequestParam(required=false) String bankName,
+        @RequestParam(required=false) String accountNumber,
+        @RequestParam(required=false) String accountHolder,
+
+        @RequestPart(required=false) List<MultipartFile> images
+    ) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            OrderItemsVo vo = new OrderItemsVo();
+            vo.setItemId(itemId);
+
+            // 상태값 통일
+            String status = "반품".equals(claimType) ? "반품신청" : "교환신청";
+            vo.setOrderStatus(status);
+
+            vo.setReason(reason);
+            vo.setDetail(detail);
+
+            if ("반품".equals(claimType)) {
+                vo.setBankName(bankName);
+                vo.setAccountNumber(accountNumber);
+                vo.setAccountHolder(accountHolder);
+            } else {
+                vo.setBankName(null);
+                vo.setAccountNumber(null);
+                vo.setAccountHolder(null);
+            }
+
+            boolean success = orderService.processClaim(vo);
+            if (!success) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "교환/반품 요청 처리에 실패했습니다."
+                ));
+            }
+
+            // 이미지 저장(없으면 그냥 통과)
+            orderService.saveClaimImages(itemId, images);
+
+            return ResponseEntity.ok(Map.of("success", true));
+        }  catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
     }
 
     // 주문내역 삭제

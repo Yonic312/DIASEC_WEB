@@ -19,21 +19,41 @@ const SupportMain = () => {
     }
 
     // FAQ top5 가져오기
-    const [topFaqs, setTopFaqs] = useState([]);
+    const [faqs, setFaqs] = useState([
+        "회원", 
+        "주문",
+        "결제",
+        "배송",
+        "취소 및 환불",
+        "보정 및 시안 수정",
+        "기타"
+    ]);
 
-    useEffect(() => {
-        const fetchTopFaqs = async () => {
-            try {
-                const res = await fetch(`${API}/faq/top5`);
-                const data = await res.json();
-                setTopFaqs(data);
-            } catch (err) {
-                console.error('FAQ TOP5 불러오기 실패', err);
-            }
-        };
+    const categoryMap = {
+        "회원" : "member",
+        "주문" : "order",
+        "결제" : "payment",
+        "배송" : "shipping",
+        "취소 및 환불" : "cancel",
+        "보정 및 시안 수정" : "design",
+        "기타" : "etc"
+    };
+
+
+
+    // useEffect(() => {
+    //     const fetchTopFaqs = async () => {
+    //         try {
+    //             const res = await fetch(`${API}/faq/top5`);
+    //             const data = await res.json();
+    //             setTopFaqs(data);
+    //         } catch (err) {
+    //             console.error('FAQ TOP5 불러오기 실패', err);
+    //         }
+    //     };
         
-        fetchTopFaqs();
-    }, []);
+    //     fetchTopFaqs();
+    // }, []);
 
     // 공지사항 불러오기
     const [latestNotices, setLatestNotices] = useState([]);
@@ -82,25 +102,28 @@ const SupportMain = () => {
                     />
                 </div>
 
-                {/* FAQ TOP5 */}
+                {/* FAQ 카테고리 */}
                 <div className="mt-14">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="
                             md:text-lg text-[clamp(16px,2.346vw,18px)] 
-                            font-semibold cursor-pointer" onClick={() => navigate('/faq')}>자주 묻는 질문 TOP5</h2>
+                            font-semibold cursor-pointer" onClick={() => navigate('/faq')}>자주 묻는 질문</h2>
                     </div>
                     <div className="
                         grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 
                         md:text-sm text-[clamp(12px,2vw,14px)]">
-                        {topFaqs.map((faq, i) => (
+                        {faqs.map((faq, i) => (
                             <div key={`${faq.faq_id}-${i}`} 
                                 className="
                                     border rounded-lg 
                                     md:p-5 p-3
                                     hover:shadow-md cursor-pointer bg-white transition"
-                                onClick={() => navigate(`/faqMain?keyword=${encodeURIComponent(faq.question)}`)}
+                                onClick={() => {
+                                    const key = categoryMap[faq] || "all";
+                                    navigate(`/faqMain?category=${encodeURIComponent(key)}`);
+                                }}
                             >
-                                <span className="text-orange-500 font-bold mr-2">Q.</span>{faq.question}
+                                <span className="text-orange-500 font-bold mr-1">Q.</span>{faq}
                             </div>
                         ))}
                     </div>
@@ -111,7 +134,7 @@ const SupportMain = () => {
                         grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 border-t pt-8 
                         md:text-sm text-[clamp(12px,1.825vw,14px)]">
                     {[
-                        { icon: <BsTelephone className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, title: '전화 상담', desc: '010-4231-5879' },
+                        { icon: <BsTelephone className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, title: '전화 상담', desc: '02-389-5879' },
                         { icon: <BsChatDots className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, title: '채팅 상담', desc: '(카카오톡 채팅 상담 구현)' },
                         { 
                             icon: <BsEnvelope className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, 

@@ -94,7 +94,7 @@ public class MemberController {
         CreditVo creditVo = new CreditVo();
         creditVo.setId(member.getId());
         creditVo.setType("적립");
-        creditVo.setAmount(1000); // 회원가입 지원금
+        creditVo.setAmount(5000); // 회원가입 지원금
         creditVo.setDescription("회원가입 축하 적립");
         creditService.insertCreditHistory(creditVo);
         return "회원가입이 완료되었습니다.";
@@ -464,5 +464,11 @@ public class MemberController {
         memberService.modifyPassword(id, encodedPassword);
 
         return ResponseEntity.ok("비밀번호가 초기화되었습니다.");
+    }
+
+    @GetMapping("/credit")
+    public ResponseEntity<?> selectCreditById(@RequestParam String id) {
+        int credit = memberService.selectCreditById(id);
+        return ResponseEntity.ok(Map.of("credit", credit));
     }
 }

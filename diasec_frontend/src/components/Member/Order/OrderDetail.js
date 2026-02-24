@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { MemberContext } from '../../../context/MemberContext';
@@ -100,7 +101,6 @@ const OrderDetail = () => {
         }
     }
 
-    
     // 반품 신청
     const [showReturnForm, setShowReturnForm] = useState(false);
     const [claimType, setClaimType] = useState('반품'); // 교환 / 반품 선택버튼
@@ -109,8 +109,13 @@ const OrderDetail = () => {
     const [bankName, setBankName] = useState(''); // 은행명
     const [accountNumber, setAccountNumber] = useState(''); // 계좌번호
     const [accountHolder, setAccountHolder] = useState(''); // 계좌주
+    const MAX_CLAIM_IMAGES = 5;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-    const handleSubmitReturn = () => {
+    const [claimImages, setClaimImages] = useState([]);
+    const [isDraggingClaim, setIsDraggingClaim] = useState(false);
+
+    const handleSubmitReturn = async () => {
         if (!returnReason) {
             toast.error('사유를 선택해주세요.');
             return;
@@ -123,35 +128,71 @@ const OrderDetail = () => {
             }
         }
 
-        fetch(`${API}/order/claim`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: order.id,
-                oid: order.oid,
-                pid: order.items[0].pid,
-                usedCredit :order.usedCredit,
-                orderStatus: claimType === '반품' ? '반품신청' : '교환신청',
-                reason:returnReason,
-                detail: returnDetail,
-                ...(claimType === '반품' && {
-                bankName,
-                accountNumber,
-                accountHolder
-                })
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                toast.success(`${claimType} 요청이 접수되었습니다.`);
-                navigate('/orderList');
-            } else {
-                toast.error(`${claimType} 요청 실패 : + data.message`);
+        if (claimImages.length > MAX_CLAIM_IMAGES) {
+            toast.error(`이미지는 최대 ${MAX_CLAIM_IMAGES}장까지 가능합니다.`);
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('itemId', order.items[0].itemId);
+            formData.append('claimType', claimType);
+            formData.append('reason', returnReason);
+            if (returnDetail) formData.append('detail', returnDetail);
+
+            if (claimType === '반품') {
+                formData.append('bankName', bankName);
+                formData.append('accountNumber', accountNumber);
+                formData.append('accountHolder', accountHolder);
             }
-        })
-        .catch(err => toast.error('서버 오류'));
-    }
+
+            claimImages.forEach(file => formData.append('images', file));
+
+            console.log("claimType:", claimType);
+            console.log("returnReason:", returnReason);
+            console.log("returnDetail:", returnDetail);
+            console.log("itemId:", order?.items?.[0]?.itemId);
+            console.log("images:", claimImages.map(f => ({ name: f.name, size: f.size, type: f.type })));
+
+            // FormData 내부 확인
+            for (const [k, v] of formData.entries()) {
+                console.log("FD:", k, v);
+            }
+
+            const res = await axios.post(`${API}/order/claim`, formData,{
+                headers: { 'Content-Type': 'multipart/form-data' },
+                withCredentials: true,
+                });
+
+                if (res.data?.success) {
+                    toast.success(`${claimType} 요청이 접수되었습니다.`);
+                    setShowReturnForm(false);
+                    setClaimImages([]);
+                    navigate('/orderList');
+                } else {
+                    toast.error(`${claimType} 요청 실패 : ${res.data?.message || '처리 실패'}`);
+                }
+            } catch (err) {
+                console.error("CLAIM ERROR FULL:",err);
+
+                if (axios.isAxiosError(err)) {
+                    console.error("status:", err.response?.status);
+                    console.error("data:", err.response?.data);
+                    console.error("headers:", err.response?.headers);
+                    console.error("config:", err.config);
+
+                    const msg =
+                        err.response?.data?.message ||
+                        err.response?.data?.error ||
+                        err.message;
+
+                        toast.error(`서버 오류: ${msg}`);
+                } else {
+                    toast.error(`서버 오류: ${String(err)}`);
+                }
+            }
+        };
+    
 
     // 아이템 불러오기
     useEffect(() => {
@@ -197,6 +238,45 @@ const OrderDetail = () => {
         })
         .catch(err => toast.error('요청 실패'));
     };
+
+    const addClaimFiles = (files) => {
+        const incoming = Array.from(files || []);
+
+        // 이미지 파일만
+        const onlyImages = incoming.filter(f => f.type?.startsWith('image/'));
+        if (onlyImages.length !== incoming.length) {
+            toast.warn("이미지 파일만 업로드 가능합니다.");
+        }
+
+        // 용량 체크
+        const overs = onlyImages.find(f => f.size > MAX_FILE_SIZE);
+        if (overs) {
+            toast.error(`5MB 이하만 가능합니다: ${overs.name}`);
+            return;
+        }
+
+        // 개수 제한
+        setClaimImages(prev => {
+            const merged = [...prev, ...onlyImages];
+            if (merged.length > MAX_CLAIM_IMAGES) {
+                toast.error(`이미지는 최대 ${MAX_CLAIM_IMAGES}장까지 가능합니다.`);
+                return merged.slice(0, MAX_CLAIM_IMAGES);
+            }
+            return merged;
+        });
+    };
+
+    const handleClaimFileDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingClaim(false);
+        addClaimFiles(e.dataTransfer.files);
+    };
+
+    const handleClaimFileChange = (e) => {
+        addClaimFiles(e.target.files);
+        e.target.value = "";
+    }
 
     // 인치 -> cm 변환
     const convertInchToCm = (size) => {
@@ -258,7 +338,9 @@ const OrderDetail = () => {
                                     onClick={() => {
                                         setClaimType('교환');
                                         setShowReturnForm(true);
-                                    }}>
+                                        setClaimImages([]);
+                                    }}
+                                >
                                     교환/반품
                                 </button>
                                 {/* <button
@@ -317,9 +399,9 @@ const OrderDetail = () => {
 
             {/* 상품 정보 */}
             {order.items.map((item, index) => (
-                <div key={item.itemId || index} 
+                <div key={item.itemId || index}
                     className="
-                        flex sm:gap-6 gap-[6px] items-start border rounded-lg 
+                        flex sm:gap-6 gap-[6px] items-start border rounded-lg
                         md:p-6 p-2
                         bg-gray-50 cursor-pointer transition-transform hover:shadow-lg hover:bg-gray-200"
                     onClick={() => navigate(`/orderTracking/${item.itemId}`)}
@@ -331,11 +413,11 @@ const OrderDetail = () => {
                             object-cover rounded border" 
                     />
                     <div className="
-                        flex flex-col 
+                        flex flex-col
                         md:h-28 sm:h-[clamp(5rem,10.948vw,7rem)]
                         justify-between flex-1">
                             {/* md:text-lg sm:text-[14px] text-[9px] */}
-                        <div 
+                        <div
                             className="flex sm:justify-between sm:flex-row flex-col
                                 lg:text-lg md:text-[clamp(14px,1.759vw,18px)] text-[clamp(9px,1.8252vw,14px)]
                                 font-semibold mb-2">
@@ -346,7 +428,7 @@ const OrderDetail = () => {
                             <div className="flex sm:flex-row flex-col sm:justify-between">
                                 <div>
                                     {/*     md:text-sm sm:text-[11px] text-[9px] */}
-                                    <div 
+                                    <div
                                         className="
                                             lg:text-sm md:text-[clamp(11px,1.368vw,14px)] text-[clamp(9px,1.433vw,11px)]
                                             text-gray-500">
@@ -452,6 +534,121 @@ const OrderDetail = () => {
                         />
                     </>
                     )}
+
+                    <div className="mt-3">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-gray-700">
+                                {claimType} 증빙 이미지 (선택, 최대 {MAX_CLAIM_IMAGES}장)
+                            </span>
+                            <span className="text-xs text-gray-500">
+                                드래그로 순서 변경 가능
+                            </span>
+                        </div>
+
+                        <label
+                            htmlFor="claimInput"
+                            onDragEnter={(e) => {
+                                e.preventDefault();
+                                setIsDraggingClaim(true);
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                setIsDraggingClaim(false);
+                            }}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={handleClaimFileDrop}
+                            className={`w-full h-[120px] border-2 border-dashed flex items-center justify-center rounded-lg text-gray-500 cursor-pointer transition
+                                ${isDraggingClaim ? 'border-[#D0AC88] bg-[#fff7eb]' : 'border-gray-300 hover:border-[#D0AC88]'}`}
+                        >
+                            <input
+                                type="file"
+                                id="claimInput"
+                                multiple
+                                accept="image/*"
+                                onChange={handleClaimFileChange}
+                                className="hidden"
+                            />
+                            {isDraggingClaim ? '이미지를 놓으세요' : '여기를 클릭하거나 이미지를 드래그하세요'}
+                        </label>
+
+                        {claimImages.length > 0 && (
+                            <div className="mt-3">
+                                <DragDropContext
+                                    onDragEnd={(result) => {
+                                        if (!result.destination) return;
+                                        const updated = Array.from(claimImages);
+                                        const [moved] = updated.splice(result.source.index, 1);
+                                        updated.splice(result.destination.index, 0, moved);
+                                        setClaimImages(updated);
+                                    }}
+                                >
+                                    <Droppable droppableId="claimImgs" direction="horizontal">
+                                        {(provided) => (
+                                            <div
+                                                className="grid grid-cols-4 gap-2"
+                                                {...provided.droppableProps}
+                                                ref={provided.innerRef}
+                                            >
+                                                {claimImages.map((file, index) => (
+                                                    <Draggable
+                                                        key={file.name + index}
+                                                        draggableId={file.name + index}
+                                                        index={index}
+                                                    >
+                                                        {(provided) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}
+                                                                className="w-24"
+                                                            >   
+                                                                <div className="relative w-24 h-24">
+                                                                    <img
+                                                                        src={URL.createObjectURL(file)}
+                                                                        alt={`claim-${index}`}
+                                                                        className="w-24 h-24 object-cover border rounded"
+                                                                    />
+
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const updated = [...claimImages];
+                                                                            updated.splice(index, 1);
+                                                                            setClaimImages(updated);
+                                                                        }}
+                                                                        className="
+                                                                            absolute -top-2 -right-2 
+                                                                            w-6 h-6
+                                                                            bg-black text-white text-xs 
+                                                                            flex items-center justify-center
+                                                                            shadow
+                                                                        "
+                                                                    >
+                                                                        ✕
+                                                                    </button>
+                                                                </div>
+
+                                                                <div className="text-xs text-center mt-1">#{index + 1}</div>
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+
+                                <button
+                                    type="button"
+                                    className="mt-3 w-full border rounded py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onClick={() => setClaimImages([])}
+                                >
+                                    이미지 전체 삭제
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     <button
                         onClick={handleSubmitReturn}

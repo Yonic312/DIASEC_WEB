@@ -1,5 +1,6 @@
 package com.diasec.diasec_backend.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -145,5 +146,16 @@ public class ProductService {
     // 상품 개수 가져오기
     public int countProductsByCategoryAndAuthor(String category, String author) {
         return productMapper.countProductByCategoryAndAuthor(category, author);
+    }
+
+    public Map<String, List<ProductVo>> searchAllByTitle(String q) {
+
+        Map<String, List<ProductVo>> result = new LinkedHashMap<>();
+        result.put("masterPiece", productMapper.searchByCategoryAndTitle("masterPiece", q));
+        result.put("koreanPainting", productMapper.searchByCategoryAndTitle("koreanPainting", q));
+        result.put("photoIllustration", productMapper.searchByCategoryAndTitle("photoIllustration", q));
+        result.put("fengShui", productMapper.searchByCategoryAndTitle("fengShui", q));
+
+        return result;
     }
 }

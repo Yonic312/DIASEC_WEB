@@ -6,6 +6,7 @@ import icon_x from '../../assets/button/icon_x.png';
 import ProductDetailTabs from '../ProductDetailTabs/ProductDetailTabs';
 import { toast } from 'react-toastify';
 import bg from '../../assets/CustomFrames/p.png';
+import bg2 from '../../assets/CustomFrames/p2.png'; // 현재 배경
 
 const None_Custom_Detail = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -471,7 +472,7 @@ const None_Custom_Detail = () => {
                 {/* 이미지창 */}
                 <div className="relative h-full ">
                     <img 
-                        src={bg}
+                        src={bg2}
                         className='
                             w-full h-auto aspect-[958/766]'
                         alt="배경"
@@ -665,7 +666,7 @@ const None_Custom_Detail = () => {
                                 상품가: {totalPriceWithoutShipping.toLocaleString()}원
                             </span> */}
                             <span className="text-base font-semibold text-gray-700">
-                                총 결제금액 : <span className=" text-[#D0AC88]">{totalPriceWithoutShipping.toLocaleString()}원</span>
+                                총 결제금액 : <span className=" text-[#a57647]">{totalPriceWithoutShipping.toLocaleString()}원</span>
                             </span>
                         </div>
                         <div className="text-right">

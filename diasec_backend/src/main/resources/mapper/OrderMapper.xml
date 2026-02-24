@@ -83,7 +83,13 @@
             oi.lease_start as leaseStart, oi.lease_end as leaseEnd, tracking_number as trackingNumber, tracking_company as trackingCompany,
             oi.retouch_enabled as retouchEnabled,
             oi.retouch_types as retouchTypes,
-            oi.retouch_note as retouchNote
+            oi.retouch_note as retouchNote,
+
+            oi.return_reason as reason,
+            oi.return_detail as detail,
+            oi.bank_name as bankName,
+            oi.account_number as accountNumber,
+            oi.account_holder as accountHolder
         FROM order_items oi join orders o
         ON oi.oid = o.oid
         WHERE oi.oid = #{oid}
@@ -112,11 +118,18 @@
     <select id="selectOrderItemById" resultType="OrderItemsVo">
         SELECT 
             item_id as itemId, oid, cid, pid, category, title, quantity, price, deposit, 
-            period, size, thumbnail, order_status as orderStatus, lease_start as leaseStart, lease_end as leaseEnd,
+            period, size, thumbnail, order_status as orderStatus, 
+            lease_start as leaseStart, lease_end as leaseEnd,
             tracking_number as trackingNumber, tracking_company as trackingCompany,
             retouch_enabled as retouchEnabled,
             retouch_types as retouchTypes,
-            retouch_note as retouchNote
+            retouch_note as retouchNote,
+
+            return_reason as reason,
+            return_detail as detail,
+            bank_name as bankName,
+            account_number as accountNumber,
+            account_holder as accountHolder
         FROM order_items
         WHERE item_id = #{itemId}
     </select>
@@ -145,7 +158,8 @@
             bank_name = #{bankName},
             account_number = #{accountNumber},
             account_holder = #{accountHolder}
-        WHERE oid = #{oid} AND pid = #{pid}
+        <!-- WHERE oid = #{oid} AND pid = #{pid} -->
+        WHERE item_id = #{itemId}
     </update>
 
     <!-- 주문 항목 삭제 -->
@@ -185,4 +199,29 @@
         FROM order_items
         GROUP BY order_status
     </select>
+
+    <!-- 클레임 이미지 -->
+    <insert id="insertOrderItemClaimFile" parameterType="com.diasec.diasec_backend.vo.OrderItemClaimFileVo">
+        INSERT INTO order_item_claim_file (item_id, file_url, original_name, file_size, img_order)
+        VALUES (#{itemId}, #{fileUrl}, #{originalName}, #{fileSize}, #{imgOrder})
+    </insert>
+
+    <select id="selectOrderItemClaimFiles" resultType="com.diasec.diasec_backend.vo.OrderItemClaimFileVo">
+        SELECT
+            file_id AS fileId,
+            item_id AS itemId,
+            file_url AS fileUrl,
+            original_name AS originalName,
+            file_size AS fileSize,
+            img_order AS imgOrder,
+            created_at AS createdAt
+        FROM order_item_claim_file
+        WHERE item_id = #{itemId}
+        ORDER BY img_order ASC, file_id ASC
+    </select>
+
+    <delete id="deleteOrderItemClaimFiles">
+        DELETE FROM order_item_claim_file WHERE item_id =#{itemId}
+    </delete>
+    <!-- 클레임 이미지 !-->
 </mapper>

@@ -118,6 +118,11 @@ const OrderForm = () => {
                     }
                 })
                 .catch(err => console.error("배송지 불러오기 실패", err));
+            
+            axios.get(`${API}/member/credit`, { params: { id: member.id }})
+                .then(res => {
+                    setCredit(res.data.credit || 0);
+                })
         }
     }, [member]);
 
@@ -185,7 +190,7 @@ const OrderForm = () => {
         }
 
         if (!phone2.trim() || !phone3.trim()) {
-            toast.error("주문자 이름을 입력해주세요.");
+            toast.error("휴대폰 번호를 입력해주세요.");
             return false;
         }
 

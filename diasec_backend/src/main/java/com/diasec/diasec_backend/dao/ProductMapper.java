@@ -100,4 +100,10 @@ public interface ProductMapper {
         @Param("newCategory") String newCategory, 
         @Param("oldLabel") String oldLabel
     );
+
+    // 검색창에 가져오기
+    List<ProductVo> searchByCategoryAndTitle(
+        @Param("category") String category,
+        @Param("q") String q
+    );
 }

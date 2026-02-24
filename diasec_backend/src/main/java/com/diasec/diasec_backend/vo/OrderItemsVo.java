@@ -1,5 +1,7 @@
 package com.diasec.diasec_backend.vo;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -35,6 +37,9 @@ public class OrderItemsVo {
     private Integer retouchEnabled;
     private String retouchTypes;
     private String retouchNote;
+
+    // 이미지
+    private List<OrderItemClaimFileVo> claimFiles;
 
     // Join
     private String id;

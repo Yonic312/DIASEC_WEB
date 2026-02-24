@@ -64,6 +64,9 @@ import AuthorPage from './components/Author/AuthorPage'
 import FloatingButtons from './components/Button/FloatingButtons'
 import GuestOrderSearch from './components/Member/Order/GuestOrderSearch'
 import LinkSocial from "./components/Member/Modify/LinkSocial"
+import SearchResults from './components/Main/Main_SearchResults';
+import Terms from './components/Policy/Terms';
+import Privacy from './components/Policy/Privacy';
 
 import Admin_InquiryList from './components/Admin/Admin_InquiryList'
 import Admin_FAQManager from './components/Admin/Admin_FAQManager'
@@ -145,7 +148,7 @@ function Layout() {
             <FloatingButtons />
 
             {/* 헤더 */}
-            <div className="sticky top-0 z-50 w-full bg-white">
+            <div className="sticky z-[9999] top-0 w-full bg-white">
                 <div className="max-w-[2560px] h-[40px] mx-auto">
                     <Header />
                 </div>
@@ -263,6 +266,9 @@ function App() {
                     <Route path="/authorPage/:id" element={<AuthorPage />} />
                     <Route path="/guestOrderSearch" element={<GuestOrderSearch />} />
                     <Route path="/link-social" element={<LinkSocial />} />
+                    <Route path="/search" element={<SearchResults />} />
+                    <Route path="/policy/terms" element={<Terms />} />
+                    <Route path="/policy/privacy" element={<Privacy />} />
 
                     {/* 어드민 */}
                     <Route path="/admin/insert_Product" element={<Insert_Product/>} />

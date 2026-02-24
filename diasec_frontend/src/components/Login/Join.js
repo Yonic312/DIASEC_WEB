@@ -628,8 +628,8 @@ const Join = () => {
                                     </div>
                                 )}
 
-                                {smsVerified && (
-                                    <div className="w-full px-3 mt-2 mb-3">
+                                {smsVerified &&  (
+                                    <div className="w-full px-3 mt-2">
                                         <span className="text-[12px] text-green-600">휴대폰 인증 완료</span>
                                     </div>
                                 )}

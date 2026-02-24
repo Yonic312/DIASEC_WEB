@@ -243,4 +243,8 @@ public class MemberService {
     // public void linkNaver(String id, String naverUid) {
     //     memberMapper.updateNaverUid(id, naverUid);
     // }
+
+    public int selectCreditById(String id) {
+        return memberMapper.selectCreditById(id);
+    }
 }

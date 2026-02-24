@@ -25,7 +25,7 @@ const BankTransfer = ({
                         onChange={(e) => setBankAccount(e.target.value)} 
                         className="flex md:w-auto w-full border-[1px] pl-2 h-8">
                     <option disabled hidden value=""> - [선택해 주세요]</option>
-                    <option value="국민은행 023-21-0328534 (임정원)"> 국민은행 023-21-0328534 (임정원)</option>
+                    <option value="국민은행 023-21-0328534 (임정원)"> 국민은행 023-21-0328543 (임정원)</option>
                 </select>
             </div>
             <div className="

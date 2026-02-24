@@ -94,4 +94,10 @@
 
     </update>
 
+    <update id="markCreditRefundedIfNotYet">
+        UPDATE order_items
+        SET credit_refunded = 1
+        WHERE item_id = #{value}
+            AND (credit_refunded = 0 OR credit_refunded IS NULL)
+    </update>
 </mapper>

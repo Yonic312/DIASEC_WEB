@@ -30,4 +30,6 @@ public interface AdminOrderMapper {
 
     String selectThumbnailByItemId(@Param("itemId") Long itemId);
     int clearThumbnail(@Param("itemId") Long itemId);
+
+    int markCreditRefundedIfNotYet(Long itemId);
 }

@@ -222,7 +222,7 @@ const Main_CustomFrames = () => {
                         maxWidth,
                         maxHeight,
                         price,
-                        retouch: { enabled: false, types: [], note: '' },
+                        retouch: { types: [], note: '' },
                     };
                     setCustomItems(prev => [...prev, newItem]);
                     setSelectedItemId(newItem.id);
@@ -416,7 +416,6 @@ const Main_CustomFrames = () => {
     const [retouchModalOpen, setRetouchModalOpen] = useState(false);
     const [retouchTargetId, setRetouchTargetId] = useState(null);
     const [retouchDraft, setRetouchDraft] = useState({
-        enabled: false,
         types: [],
         note: '',
     })
@@ -425,7 +424,11 @@ const Main_CustomFrames = () => {
 
     const openRetouchModal = (item) => {
         setRetouchTargetId(item.id);
-        setRetouchDraft(item.retouch ?? { enabled:false, types: [], note: '' });
+        const r = item.retouch || {};
+        setRetouchDraft({
+            types: Array.isArray(r.types) ? r.types : [],
+            note: r.note ?? '',
+        });
         setRetouchModalOpen(true);
     };
 
@@ -452,7 +455,7 @@ const Main_CustomFrames = () => {
 
         setRetouchModalOpen(false);
         setRetouchTargetId(null);
-        toast.success("보정 요청이 저장되었습니다.");
+        toast.success("요청사항이 접수되었습니다. 보정 완료 시 문자로 안내해 드리겠습니다.");
     }
 
     return (
@@ -1093,11 +1096,11 @@ const Main_CustomFrames = () => {
             {/* 보정 요청 모달 */}
             {retouchModalOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-4"
+                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-4 mt-[74px]"
                     onClick={closeRetouchModal}
                 >
                     <div
-                        className="w-full h-[800px] overflow-y-scroll max-w-lg bg-white rounded-2xl shadow-xl p-5 pt-0"
+                        className="w-full h-[800px] overflow-y-scroll max-w-lg bg-white shadow-xl p-5 pt-0"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div>
@@ -1176,16 +1179,13 @@ const Main_CustomFrames = () => {
                             {/* 보정 비교 */}
                         </div>
                     </div>
-                        <div className="flex items-start justify-between">
-                            <div>
+                        <div className="relative flex items-start justify-between border-b-[1px]">
+                            <div className="absolute left-1/2 -translate-x-1/2">
                                 <h3 className="text-lg font-bold text-gray-800">보정 요청</h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    원하는 보정 항목을 선택하고 요청사항을 적어주세요.
-                                </p>
                             </div>
 
                             <button
-                                className="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600"
+                                className="ml-auto w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600"
                                 onClick={closeRetouchModal}
                             >
                                 ✕
@@ -1193,23 +1193,7 @@ const Main_CustomFrames = () => {
                         </div>
 
                         <div className="mt-4">
-                            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                <input
-                                    type="checkbox"
-                                    checked={retouchDraft.enabled}
-                                    onChange={(e) => 
-                                        setRetouchDraft(d => ({
-                                            ...d,
-                                            enabled: e.target.checked,
-                                            types: e.target.checked ? d.types : [],
-                                            note : e.target.checked ? d.note : '',
-                                        }))
-                                    }
-                                />
-                                이 사진 보정 요청할게요
-                            </label>
-
-                            <div className={`mt-4 ${retouchDraft.enabled ? '' : 'opacity-50 pointer-events-none'}`}>
+                            <div className={`mt-4`}>
                                 <div className="text-[16px] font-semibold text-gray-700 ml-1 mb-2">보정 항목 선택</div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

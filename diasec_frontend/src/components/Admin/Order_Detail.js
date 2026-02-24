@@ -70,24 +70,79 @@ const Order_Detail = () => {
         '반품신청', '반품회수완료', '환불처리중', '환불완료'
     ];
 
+    const SHOULD_DELETE_CLAIM_FILES_STATUS = new Set(['교환완료','환불완료']);
+
+    const deleteClaimFilesIfNeeded = async (item) => {
+        if (!item?.itemId) return;
+        if (!item.claimFiles?.length) return;
+
+        const res = await fetch(`${API}/admin/order/delete-claim-files`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ itemId: item.itemId }),
+        });
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || '클레임 이미지 삭제 실패');
+        return data.deleted ?? 0;
+    };
+
     // 진행상태 업데이트
-    const handleStatusChange = (itemId, newStatus, id, usedCredit, oid) => {
-        fetch(`${API}/admin/order/update-status`, {
+    const handleStatusChange = async (itemId, newStatus, id, usedCredit, oid) => {
+        console.log("DETAIL SEND", { itemId, newStatus, id, usedCredit, oid });
+
+        const item = order?.items?.[0];
+        if (!item) return;
+
+        // 1) 상태 변경 confirm
+        const ok = window.confirm(`주문 상태를 "${newStatus}"(으)로 변경할까요?`);
+        if (!ok) return;
+
+        const hasClaimFiles = item?.claimFiles?.length > 0;
+        const willDeleteClaimFiles = 
+            hasClaimFiles && SHOULD_DELETE_CLAIM_FILES_STATUS.has(newStatus);
+
+        // 2) 교환완료/환불완료로 바꾸고, 첨부 이미지가 있으면 추가 confirm
+        if (willDeleteClaimFiles) {
+            const ok2 = window.confirm(
+                `이 상태로 변경하면 클레임 첨부 이미지가 서버에서 삭제됩니다.\n` +
+                `백업이 필요하면 먼저 이미지를 다운로드하세요.\n` + 
+                `(삭제 후 복구 불가)\n진행할까요?`
+            );
+            if (!ok2) return;
+        }
+
+        try {
+            const res = await fetch(`${API}/admin/order/update-status`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json '},
+            headers: { 'Content-Type': 'application/json'},
             credentials: "include",
             body: JSON.stringify({ itemId, orderStatus: newStatus, id, usedCredit, oid})
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                toast.success('상태가 변경되었습니다.');
-                reload();
-            } else {
-                toast.error('상태 변경 실패');
-            }
-        })
-        .catch(err => console.error("상태 변경 요청 실패", err));
+        });
+        
+        const data = await res.json();
+
+        // 삭제/적립금 결과 토스트 (Order_Status와 동일)
+        if (data.deletedClaimFiles) {
+            toast.success(`클레임 첨부 이미지 (${data.deletedClaimFiles}개)`);
+        }
+        if (data.refundedAmount > 0) {
+            toast.success(`적립금 반환 (+${data.refundedAmount.toLocaleString()}원)`);
+        }
+
+        if (!data.success) {
+            toast.error("상태 변경 실패");
+            return;
+        }
+
+        toast.success("상태가 변경되었습니다.");
+
+        reload();
+        } catch (err) {
+            console.error(err.message || "처리 중 오류") ;
+            reload();
+        }
     };
     
     // 반품 신청
@@ -153,6 +208,9 @@ const Order_Detail = () => {
     }
 
     if (!order) return <div className="text-center py-20 text-gray-500">로딩 중...</div>;
+
+    const item = order.items[0];
+    const status = item?.orderStatus || '';
 
     const steps = ['입금대기', '결제완료', '배송준비중', '배송중', '배송완료'];
     const currentStepIndex = steps.indexOf(order.items[0].orderStatus);
@@ -362,6 +420,64 @@ const Order_Detail = () => {
         }
     }
 
+    const renderClaimInfo = () => {
+        const item = order?.items?.[0];
+        if (!item) return null;
+
+        const isClaim = [
+            '교환신청', '교환회수완료', '교환배송중', '교환완료',
+            '반품신청', '반품회수완료', '환불처리중', '환불완료',
+        ].includes(item.orderStatus);
+
+        if (!isClaim) return null;
+
+        return (
+            <div className="mt-4 p-4 rounded-lg border bg-white">
+                <div className="flex items-center justify-between">
+                    <div className="text-sm font-bold text-gray-900">클레임 접수 내용</div>
+                    <span className="px-2 py-0.5 text-xs rounded-full border bg-gray-50 text-gray-700">
+                        {item.orderStatus}
+                    </span>
+                </div>
+
+                <div className="mt-3 space-y-2 text-sm text-gray-800">
+                    <div className="flex gap-2">
+                        <div className="w-12 text-gray-500">사유</div>
+                        <div className="font-semibold">{item.reason || '-'}</div>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <div className="w-12 text-gray-500">상세</div>
+                        <div className="whitespace-pre-line">{item.detail || '-'}</div>
+                    </div>
+
+                    {(item.orderStatus.includes('반품') || item.orderStatus.includes('환불')) &&
+                        (item.bankName || item.accountNumber || item.accountHolder) && (
+                            <div className="pt-2 mt-2 border-t">
+                                <div className="text-xs font-semibold text-gray-700 mb-1">환불 계좌</div>
+                                <div className="text-sm">
+                                    {item.bankName} / {item.accountNumber} / {item.accountHolder}
+                                </div>
+                            </div>
+                        )}
+
+                        {item.claimFiles?.length > 0 && (
+                            <div className="pt-2 mt-2 border-t">
+                                <div className="text-xs font-semibold text-gray-700 mb-2">첨부 이미지</div>
+                                <div className="grid grid-cols-6 gap-2">
+                                    {item.claimFiles.map(f => (
+                                        <a key={f.fileId} href={f.fileUrl} target="_blank" rel="noreferrer">
+                                            <img src={f.fileUrl} alt="claim" className="w-20 h-20 object-cover rounded border" />
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="w-full bg-white px-8 py-10 shadow-md border border-gray-200 space-y-8 mb-20"
             ref={printRef}
@@ -397,7 +513,7 @@ const Order_Detail = () => {
                         <select
                             value={order.items[0].orderStatus}
                             onClick={(e) => e.stopPropagation()} 
-                            onChange={(e) => handleStatusChange(order.items[0].itemId, e.target.value, order.items[0].id, order.items[0].usedCredit, order.items[0].oid)}
+                            onChange={(e) => handleStatusChange(order.items[0].itemId, e.target.value, order.id, order.usedCredit, order.oid)}
                             className="border rounded px-2 py-1 text-sm">
                         {statusOptions.map(status => (
                             <option key={status} value={status}>{status}</option>
@@ -606,15 +722,14 @@ const Order_Detail = () => {
                 {['교환신청', '교환회수완료', '교환배송중', '교환완료'].includes(order.items[0].orderStatus) && (
                     <div>
                         <h3 className="font-semibold mb-4 text-lg">교환 진행 상황</h3>
-                        <div className="p-4 border rounded bg-yellow-50 text-sm text-yellow-700 font-medium">
+                        {renderClaimInfo()}
+                        <div className="p-4 mt-2 border rounded bg-yellow-50 text-sm text-yellow-700 font-medium">
+                            
                             {order.items[0].orderStatus === '교환신청' && (
                             <>
                                 교환 요청이 접수되었습니다.<br/>
-                                상품을 아래 주소로 선불 발송해 주세요.<br/><br/>
-                                <span className="font-normal text-gray-800">
-                                    경기 고양시 덕양구 통일로 140 (동산동, 삼송테크노밸리) A동 355호 <br/>
-                                    수신자: 디아섹 / 연락처 : 010-0000-0000
-                                </span>
+                                담당자가 신청 내용을 확인한 뒤, 교환 진행이 가능할 경우 회수/발송 안내를 드립니다. <br/>
+                                (확인 전에는 상품을 발송하지 마세요.)
                             </>
                             )}
                             {order.items[0].orderStatus === '교환회수완료' && (
@@ -636,7 +751,8 @@ const Order_Detail = () => {
                 {['반품신청', '반품회수완료', '환불처리중', '환불완료'].includes(order.items[0].orderStatus) && (
                     <div>
                         <h3 className="font-semibold mb-4 text-lg">반품 진행 상황</h3>
-                        <div className="p-4 border rounded bg-yellow-50 text-sm text-yellow-700 font-medium">
+                        {renderClaimInfo()}
+                        <div className="p-4 mt-2 border rounded bg-yellow-50 text-sm text-yellow-700 font-medium">
                             {order.items[0].orderStatus === '반품신청' && (
                             <>
                                 반품 요청이 접수되었습니다.<br/>
@@ -659,6 +775,7 @@ const Order_Detail = () => {
                         </div>
                     </div>
                 )}
+                
             </div> {/* 주문 진행 상황 */}
 
             {/* 배송 상태 단계 */}
@@ -857,7 +974,7 @@ const Order_Detail = () => {
                         </div>
                         
                         {/* 환불 정보 */}
-                        {order?.orderStatus?.includes('환불') || order?.orderStatus?.includes('반품') ? (
+                        {status?.includes('환불') || status?.includes('반품') ? (
                             <div className="mb-4 border p-4 rounded bg-gray-50">
                                 <h4 className='text-sm font-semibold mb-2 text-gray-700'>환불 계좌 정보</h4>
                                 <label className="block text-sm font-medium mt-2">은행명</label>

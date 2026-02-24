@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useMemo } from 'react';
+import { useContext, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { MemberContext } from '../../context/MemberContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,18 @@ const Header = () => {
 
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [openSections, setOpenSections] = useState(null); // 아코디언 열린 섹션 키들
+
+    const [supportOpen, setSupportOpen] = useState(false);
+    const supportRef = useRef(null);
+
+    const supportMenus = useMemo(() => ([
+        { label: "자주 묻는 질문", link: "/supportMain?tab=faq" },
+        { label: "공지사항", link: "/supportMain?tab=notice" },
+        { label: "후기게시판", link: "/supportMain?tab=" },
+        { label: "1:1문의", link: "/supportMain?tab=faq" },
+        { label: "기업컨설팅", link: "/" },
+        { label: "업무제휴", link: "/" },
+    ]), []);
 
     const toggleSection = (key) => {
         setOpenSections(prev => (prev === key ? null : key));
@@ -169,9 +181,25 @@ const Header = () => {
         };
     }, [drawerOpen]);
     
+    useEffect(() => {
+        const onDown = (e) => {
+            if (!supportRef.current) return;
+            if (!supportRef.current.contains(e.target)) setSupportOpen(false);
+        };
+
+        const onKey = (e) => {
+            if (e.key === "Escape") setSupportOpen(false);
+        };
+        document.addEventListener("mousedown", onDown);
+        window.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onDown);
+            window.removeEventListener("keydown", onKey);
+        };
+    }, []);
 
     return (
-        <div className="w-full h-full flex items-center justify-between px-2 bg-[#ecd2af]">
+        <div className="sticky z-[9999] top-0 w-full h-full flex items-center justify-between px-2 bg-[#ecd2af]">
             <div className="w-[1300px] h-full flex items-center justify-between mx-auto">
                 <div>
                     <button onClick={() => navigate('/')} className="font-bold text-lg">
@@ -187,33 +215,125 @@ const Header = () => {
                 </div>
 
                 <div className="
-                    text-[clamp(11px,1.0769vw,14px)]
-                    xl:gap-4 lg:gap-3 md:gap-2
-                    md:flex hidden text-xs">
-                    {member ? (
-                        <>  
-                            {/* 관리자 */}
-                            {member.role === 'ADMIN' && (
-                                <>
-                                    <button onClick={() => navigate('/admin/insert_Product')}>관리자페이지</button>
-                                    <span className="opacity-15">|</span>
-                                </>
-                            )}
-                            <button onClick={handleLogout}>로그아웃</button>
-                            <span className="opacity-15">|</span>
-                            <button onClick={() => navigate('/modify')}>마이페이지</button>
-                            <span className="opacity-15">|</span>
-                            <button onClick={() => navigate('/cart')}>장바구니</button>
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={() => navigate('/userLogin')}>로그인</button>
-                            <span className="opacity-15">|</span>
-                            <button onClick={() => navigate('/join')}>회원가입</button>
-                        </>
-                    )}  
+                        h-full
+                        text-[clamp(11px,1.0769vw,14px)]
+                        xl:gap-4 lg:gap-3 md:gap-2
+                        md:flex hidden text-xs">
+                    <div className="
+                        md:text-[clamp(11px,1.0769vw,14px)]
+                        xl:gap-4 lg:gap-3 md:gap-2
+                        md:flex hidden text-xs
+                        flex-row items-center
+                        "
+                    >
+                        {member ? (
+                            <>  
+                                {/* 관리자 */}
+                                {member.role === 'ADMIN' && (
+                                    <>
+                                        <button onClick={() => navigate('/admin/insert_Product')}>관리자페이지</button>
+                                        <span className="opacity-15">|</span>
+                                    </>
+                                )}
+                                <button onClick={handleLogout}>로그아웃</button>
+                                <span className="opacity-15">|</span>
+                                <button onClick={() => navigate('/modify')}>마이페이지</button>
+                                <span className="opacity-15">|</span>
+                                <button onClick={() => navigate('/cart')}>장바구니</button>
+                            </>
+                        ) : (
+                            <>
+                                <button onClick={() => navigate('/userLogin')}>로그인</button>
+                                <span className="opacity-15">|</span>
+                                <button onClick={() => navigate('/join')}>회원가입</button>
+                            </>
+                        )}  
                         <span className="opacity-15">|</span>
-                        <button onClick={() => navigate('/supportMain')}>고객센터</button>
+                        <div
+                            ref={supportRef}
+                            className="relative h-full"
+                            onMouseEnter={() => setSupportOpen(true)}
+                            onMouseLeave={() => setSupportOpen(false)}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => navigate('/supportMain')}
+                                className="
+                                    inline-flex items-center gap-1
+                                    px-2 py-1 rounded-full h-full
+                                    transition
+                                "
+                            >
+                                고객센터
+                            </button>
+                            <div
+                                className={`
+                                    absolute right-0 top-full
+                                    w-[180px]
+                                    rounded-2xl
+                                    bg-white/95 backdrop-blur
+                                    border border-black/10
+                                    shadow-xl
+                                    overflow-hidden
+                                    transition
+                                    ${supportOpen
+                                        ? "opacity-100 translate-y-0 visible"
+                                        : "opacity-0 -translate-y-1 invisible pointer-events-none"}
+                                `}
+                            >
+                                <div className="py-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => { navigate("/faqMain"); setSupportOpen(false);}}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-700 bg-white hover:bg-[#ecd2af]/35 transition"
+                                    >
+                                        자주 묻는 질문
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => { navigate("/supportMyInquiryList"); setSupportOpen(false);}}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-700 bg-white hover:bg-[#ecd2af]/35 transition"
+                                    >
+                                        1:1문의
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => { navigate("/noticeList"); setSupportOpen(false);}}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-700 bg-white hover:bg-[#ecd2af]/35 transition"
+                                    >
+                                        공지사항
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => { navigate("/reviewBoard"); setSupportOpen(false);}}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-700 bg-white hover:bg-[#ecd2af]/35 transition"
+                                    >
+                                        후기게시판
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => { navigate("/supportMyInquiryList"); setSupportOpen(false);}}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-700 bg-white hover:bg-[#ecd2af]/35 transition"
+                                    >
+                                        기업컨설팅
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => { navigate("/supportMyInquiryList"); setSupportOpen(false);}}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-700 bg-white hover:bg-[#ecd2af]/35 transition"
+                                    >
+                                        업무제휴
+                                    </button>
+                                </div>      
+                            </div>
+                            
+                        </div>
+                    </div>
                 </div>
 
                 <button
@@ -331,14 +451,14 @@ const Header = () => {
                     <div className="rounded-2xl bg-gray-50 border border-gray-200 shadow-sm">
                         {/* 상단 회원 정보 */}
                         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-600">
-                            {(member?.name?.[0] ?? 'G').toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-[15px] font-medium text-gray-800 truncate">
-                            {member ? (member.name || member.email || member.id) : '게스트'}
-                            </p>
-                        </div>
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-600">
+                                {(member?.name?.[0] ?? 'G').toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-[15px] font-medium text-gray-800 truncate">
+                                {member ? (member.name || member.email || member.id) : '게스트'}
+                                </p>
+                            </div>
                         </div>
 
                         {/* 메뉴 버튼들 */}

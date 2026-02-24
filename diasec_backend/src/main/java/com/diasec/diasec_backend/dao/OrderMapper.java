@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.diasec.diasec_backend.vo.OrderItemClaimFileVo;
 import com.diasec.diasec_backend.vo.OrderItemsVo;
 import com.diasec.diasec_backend.vo.OrderVo;
 
@@ -63,4 +64,9 @@ public interface OrderMapper {
 
     // 사이드바 상태 검색
     List<Map<String, Object>> selectOrderItemCountsByStatus();
+
+    // 클레임 이미지 정보 저장
+    int insertOrderItemClaimFile(OrderItemClaimFileVo vo);
+    List<OrderItemClaimFileVo> selectOrderItemClaimFiles(long itemId);
+    int deleteOrderItemClaimFiles(long itemId);
 }

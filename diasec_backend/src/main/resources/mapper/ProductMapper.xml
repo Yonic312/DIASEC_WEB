@@ -238,4 +238,17 @@
         SET category = #{newCategory}
         WHERE author = #{oldLabel}
     </update>
+
+    <select id="searchByCategoryAndTitle" resultType="com.diasec.diasec_backend.vo.ProductVo">
+        SELECT
+            p.pid, p.title, p.price, p.category, p.author, p.created_at as createdAt, p.sort_order as sortOrder, p.sales,
+            (SELECT image_url FROM product_images WHERE pid = p.pid ORDER BY img_order ASC LIMIT 1) AS imageUrl,
+            (SELECT image_url FROM product_images WHERE pid = p.pid ORDER BY img_order ASC LIMIT 1 OFFSET 1) AS hoverImageUrl
+        FROM product p
+        WHERE p.category = #{category}
+            AND p.title LIKE CONCAT('%', #{q}, '%')
+        ORDER BY
+            CASE WHEN p.sort_order = 0 THEN 9999 ELSE p.sort_order END ASC,
+            p.created_at DESC
+    </select>
   </mapper>

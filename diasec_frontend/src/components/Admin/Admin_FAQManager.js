@@ -16,10 +16,11 @@ const Admin_FAQManager = () => {
 
     const categoryMap = {
         member : '회원',
-        order : '주문 / 결제',
-        cancel : '취소 / 환불',
-        design : '시안 / 수정',
-        shipping : '배송 / 제작',
+        order : '주문',
+        payment : '결제',
+        shipping : '배송',
+        cancel : '취소 및 환불',
+        design : '보정 및 시안 수정',
         etc :'기타',
     };
 
@@ -118,6 +119,15 @@ const Admin_FAQManager = () => {
             });
 
             toast.success('FAQ가 등록되었습니다.');
+
+            // 입력값 초기화
+            setNewCategory('');
+            setNewQuestion('');
+            setNewAnswer('');
+
+            // 모달 닫기
+            setShowModal(false);
+
             setShowModal(false);
             const res = await axios.get(`${API}/faq/list`);
             setFaqs(res.data);
@@ -125,6 +135,13 @@ const Admin_FAQManager = () => {
             console.error('등록 실패', err);
             toast.error('등록에 실패했습니다.');
         }
+    }
+
+    const closeModal = () => {
+        setShowModal(false);
+        setNewCategory('');
+        setNewQuestion('');
+        setNewAnswer('');
     }
 
     return (
@@ -275,7 +292,7 @@ const Admin_FAQManager = () => {
                                   onChange={e => {setNewAnswer(e.target.value)}} className="border w-full p-2 mb-4" />
 
                         <div className='flex justify-end gap-2'>
-                            <button onClick={() => setShowModal(false)} className="bg-gray-300 px-4 py-2 rounded">취소</button>
+                            <button onClick={closeModal} className="bg-gray-300 px-4 py-2 rounded">취소</button>
                             <button onClick={handleAddFaq} className="bg-blue-600 text-white px-4 py-2 rounded">등록</button>
                         </div>
                     </div>

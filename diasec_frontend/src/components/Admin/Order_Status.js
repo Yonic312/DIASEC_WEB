@@ -90,25 +90,53 @@ const Order_Status = () => {
         .catch(err => console.error("전체 주문 불러오기 실패", err));
     };
 
+    const SHOULD_DELETE_CLAIM_FILES_STATUS = new Set(['교환완료', '환불완료']);
+
     // 진행상태 업데이트
-    const handleStatusChange = (itemId, newStatus, id, usedCredit, oid) => {
-        console.log("usedCredit : " , usedCredit);
-        fetch(`${API}/admin/order/update-status`, {
+    const handleStatusChange = async (itemId, newStatus, id, usedCredit, oid, hasClaimFiles) => {
+        const ok = window.confirm(`주문 상태를 "${newStatus}"(으)로 변경할까요?`);
+        if (!ok) return;
+
+        const willDelete = SHOULD_DELETE_CLAIM_FILES_STATUS.has(newStatus);
+
+        if (willDelete) {
+            const ok2 = window.confirm(
+                `이 상태로 변경하면 클레임 첨부 이미지가 서버에서 삭제됩니다.\n` +
+                `백업이 필요하면 먼저 이미지를 다운로드하세요.\n` +
+                `(삭제 후 복구 불가)\n진행할까요?`
+            );
+            if (!ok2) return;
+        }
+
+        try {
+            const res = await fetch(`${API}/admin/order/update-status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json'},
             credentials: "include",
             body: JSON.stringify({ itemId, orderStatus: newStatus, id, usedCredit, oid})
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                toast.success('상태가 변경되었습니다.');
-                fetchOrders();
-            } else {
-                toast.error('상태 변경 실패');
-            }
-        })
-        .catch(err => console.error("상태 변경 요청 실패", err));
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            toast.error('상태 변경 실패');
+            return;
+        }
+
+        toast.success('상태가 변경되었습니다.');
+
+        // 삭제/적립금 결과 토스트
+        if (data.deletedClaimFiles > 0) {
+            toast.success(`클레임 첨부 이미지 삭제 (${data.deletedClaimFiles}개)`);
+        }
+        if (data.refundedAmount > 0) {
+            toast.success(`적립금 반환 (+${data.refundedAmount.toLocaleString()}원)`);
+        }
+            fetchOrders();
+        } catch (err) {
+            console.error("상태 변경 요청 실패", err);
+            toast.error("서버 오류");
+        }
     };
 
     // 진행 상태 폰트색
@@ -360,7 +388,7 @@ const Order_Status = () => {
             )}
 
             <div className="text-right mt-1 text-xs text-red-500">
-                ※ 환불완료/교환완료 선택 시 적립금 자동 반환됨
+                ※ 환불완료로 상태 수정시 적립금 자동 반환됨
             </div>
 
             {/* 페이징 */}

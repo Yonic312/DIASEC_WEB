@@ -1,14 +1,18 @@
 package com.diasec.diasec_backend.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.diasec.diasec_backend.dao.CreditMapper;
 import com.diasec.diasec_backend.dao.OrderMapper;
+import com.diasec.diasec_backend.util.ImageUtil;
 import com.diasec.diasec_backend.vo.CreditVo;
+import com.diasec.diasec_backend.vo.OrderItemClaimFileVo;
 import com.diasec.diasec_backend.vo.OrderItemsVo;
 import com.diasec.diasec_backend.vo.OrderVo;
 
@@ -19,8 +23,11 @@ import lombok.RequiredArgsConstructor;
 public class OrderService {
     
     private final OrderMapper orderMapper;
-
     private final CreditService creditService;
+    private final ImageUtil imageUtil;
+
+    private static final int MAX_FILES = 5;
+    private static final long MAX_FILE_SIZE = 5L * 1024 * 1024;
 
     // OrderForm 주문 저장
     @Transactional
@@ -67,6 +74,11 @@ public class OrderService {
     public OrderVo selectOrderByOid(Long oid) {
         OrderVo order = orderMapper.selectOrderByOid(oid);
         List<OrderItemsVo> items = orderMapper.selectOrderItems(oid);
+
+        for (OrderItemsVo item : items) {
+            item.setClaimFiles(orderMapper.selectOrderItemClaimFiles(item.getItemId()));
+        }
+
         order.setItems(items);
         return order;
     }
@@ -83,10 +95,12 @@ public class OrderService {
         // 3. 상세페이지로 들어갈 itemId 개별 주문 상품 조회
         OrderItemsVo singleitem = orderMapper.selectOrderItemById(itemId);
 
+        // 3.1 주문 상품에 클레임 이미지 정보 조회
+        List<OrderItemClaimFileVo> files = orderMapper.selectOrderItemClaimFiles(itemId);
+        singleitem.setClaimFiles(files);
+
         // 4. 주문내역 items 리스트에 order_items 테이블 매핑
         order.setItems(List.of(singleitem));
-        System.out.println(order);
-
         return order;
     }
 
@@ -123,5 +137,54 @@ public class OrderService {
 
     public List<Map<String, Object>> selectOrderItemCountsByStatus() {
         return orderMapper.selectOrderItemCountsByStatus();
+    }
+
+    public void saveClaimImages(long itemId, List<MultipartFile> images) throws IOException {
+        
+        if (images == null || images.isEmpty()) {
+            return;
+        }
+
+        if (images.size() > MAX_FILES) {
+            throw new IllegalArgumentException("이미지는 최대" + MAX_FILES + "장까지 가능합니다.");
+        }
+
+        int order = 0;
+        for (MultipartFile f : images) {
+            if (f == null || f.isEmpty()) continue;
+
+            if (f.getSize() > MAX_FILE_SIZE) {
+                throw new IllegalArgumentException("파일은 5MB 이하만 가능합니다: " + f.getOriginalFilename());
+            }
+
+            String url = imageUtil.saveImage(f, "orderClaim");
+
+            OrderItemClaimFileVo vo = new OrderItemClaimFileVo();
+            vo.setItemId(itemId);
+            vo.setFileUrl(url);
+            vo.setOriginalName(f.getOriginalFilename());
+            vo.setFileSize(f.getSize());
+            vo.setImgOrder(order++);
+
+            orderMapper.insertOrderItemClaimFile(vo);
+        }
+    }
+
+    @Transactional
+    public int deleteClaimFiles(Long itemId) {
+        // 1) DB에서 파일 목록 조회
+        List<OrderItemClaimFileVo> files = orderMapper.selectOrderItemClaimFiles(itemId);
+
+        // 2) 실제 파일 삭제
+        if (files != null) {
+            for (OrderItemClaimFileVo f : files) {
+                if (f.getFileUrl() != null && !f.getFileUrl().isBlank()) {
+                    imageUtil.deleteImage(f.getFileUrl());
+                }
+            }
+        }
+
+        // 3) DB 레코드 삭제
+        return orderMapper.deleteOrderItemClaimFiles(itemId);
     }
 }

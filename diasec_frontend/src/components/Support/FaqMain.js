@@ -6,10 +6,11 @@ import { FiSearch } from 'react-icons/fi';
 const faqCategories = [
     { key: 'all', label: '전체' },
     { key: 'member', label: '회원' },
-    { key: 'order', label: '주문 / 결제' },
-    { key: 'cancel', label: '취소 / 환불' },
-    { key: 'design', label: '시안 / 수정' },
-    { key: 'shipping', label: '배송 / 제작' },
+    { key: 'order', label: '주문' },
+    { key: 'payment', label: '결제'},
+    { key: 'shipping', label: '배송' },
+    { key: 'cancel', label: '취소 및 환불' },
+    { key: 'design', label: '보정 및 시안수정' },
     { key: 'etc', label: '기타' },
 ]
 
@@ -17,13 +18,16 @@ const FaqMain = () => {
     const API = process.env.REACT_APP_API_BASE;
     const [faqList, setFaqList] = useState([]);
     const [expandedId, setExpandedId] = useState(null);
-    const [category, setCategory] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const faqsPerPage = 10; // 페이지별 게시글 개수
 
     // 메인에서 넘어오는 값 초기화
     const [searchParams] = useSearchParams();
+
+    const initialCategory = searchParams.get('category') || 'all';
     const initialKeyword = searchParams.get('keyword') || '';
+
+    const [category, setCategory] = useState(initialCategory);
     const [keyword, setKeyword] = useState(initialKeyword);
     const [inputValue, setInputValue] = useState(initialKeyword);
 

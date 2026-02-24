@@ -121,4 +121,8 @@
             #{id}, #{password}, #{name}, #{phone}, #{email}, #{nickname}, #{provider}, #{role}, #{kakao_uid}, #{naver_uid}
         )
     </insert>
+
+    <select id="selectCreditById" resultType="int">
+        SELECT credit FROM member WHERE id = #{id}
+    </select>
 </mapper>

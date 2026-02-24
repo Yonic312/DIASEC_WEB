@@ -267,8 +267,8 @@ const Cart = () => {
                             return (
                                 <div
                                     key={cid}
-                                    className="flex items-center gap-3 border rounded-xl p-3 bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
-                                    onClick={() => navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)}
+                                    className="flex items-center gap-3 border rounded-xl p-3 bg-gray-50 hover:bg-gray-100 transition"
+                                    onClick={() => {toggleOne(cid);}}
                                 >
                                     <input
                                         type="checkbox"
@@ -284,6 +284,10 @@ const Cart = () => {
                                         src={it.thumbnail}
                                         alt={it.title}
                                         className="w-20 h-20 object-cover rounded-lg border bg-white cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)
+                                        }}
                                     />
 
                                     <div className="flex-1 min-w-0">

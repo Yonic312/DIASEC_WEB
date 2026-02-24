@@ -88,3 +88,5 @@
 body {
   font-family: 'Pretendard Variable','Noto Sans KR', sans-serif;
 }
+
+html { scrollbar-gutter: stable; }

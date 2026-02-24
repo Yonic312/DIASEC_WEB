@@ -14,6 +14,12 @@ const Main_Items = () => {
     const author = queryParams.get("author");
     const type = queryParams.get("type");
 
+    // Main_SearchResults에서 검색어 보내면 받기
+    const qParam = queryParams.get("q");
+    useEffect(() => {
+        if (qParam) setTitleSearch(decodeURIComponent(qParam));
+    }, [qParam, type, author]);
+
     // 작가 목록 순서 상태
     const [sortMode, setSortMode] = useState('popular'); // 'popular' | 'name'
 
@@ -529,21 +535,23 @@ const Main_Items = () => {
                                         가나다순
                                     </span>
                                 </div>
-                                <div className='mr-1 relative md:w-[240px]'>
-                                    <input 
-                                        type="text"
-                                        placeholder="작가 이름을 검색하세요"
-                                        value={authorSearch}
-                                        onChange={(e) => setAuthorSearch(e.target.value)}
-                                        className='
-                                            w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
-                                            focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
-                                            md:text-sm text-[clamp(11px,1.8252vw,14px)]'
-                                    />
-                                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z"></path>
-                                    </svg>
-                                </div>
+                                {type !== "fengShui" && type !== "photoIllustration" && (
+                                    <div className='mr-1 relative md:w-[240px]'>
+                                        <input 
+                                            type="text"
+                                            placeholder="작가 이름을 검색하세요"
+                                            value={authorSearch}
+                                            onChange={(e) => setAuthorSearch(e.target.value)}
+                                            className='
+                                                w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
+                                                focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
+                                                md:text-sm text-[clamp(11px,1.8252vw,14px)]'
+                                        />
+                                        <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z"></path>
+                                        </svg>
+                                    </div>
+                                )}
                             </div>
                             {/* 시대 */}
                             {type === "masterPiece" && (

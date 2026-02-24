@@ -285,4 +285,18 @@ public class ProductController {
     ) {
         return ResponseEntity.ok(productService.countProductsByCategoryAndAuthor(category, author));
     }
+
+    @GetMapping("/search/all")
+    public ResponseEntity<Map<String, List<ProductVo>>> searchAll(@RequestParam("q") String q) {
+        String keyword = (q == null ? "" : q.trim());
+        if (keyword.isEmpty()) {
+            return ResponseEntity.ok(Map.of(
+                "masterPiece", List.of(),
+                "koreanPainting", List.of(),
+                "photoIllustration", List.of(),
+                "fengShui", List.of()
+            ));
+        }
+        return ResponseEntity.ok(productService.searchAllByTitle(keyword));
+    }
 }

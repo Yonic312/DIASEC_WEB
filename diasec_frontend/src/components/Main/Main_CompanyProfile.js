@@ -24,9 +24,8 @@ const Main_CompanyProfile = () => {
     // 실제 주소
     const COMPANY = {
         name: "디아섹코리아",
-        address: "경기도 고양시 통일로 140 (10594) / 삼송 테크노벨리 A동 355호",
+        address: "경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)",
         phone: "010-4231-5879",
-        hours: "AM 10:00 ~ PM 08:00 / 토·일, 공휴일 휴무"
     };
 
     const mapRef = useRef(null);
@@ -97,7 +96,8 @@ const Main_CompanyProfile = () => {
                         }
 
                         const {y, x} = result[0];
-                        const pos = new kakao.maps.LatLng(y, x);
+                        const pos = new kakao.maps.LatLng(37.6486, 126.9036);
+
 
                         // 지도 중심을 마커 위치로 이동
                         map.setCenter(pos);
@@ -143,22 +143,6 @@ const Main_CompanyProfile = () => {
                         });
 
                         overlay.setMap(map);
-
-                        // const info = new kakao.maps.InfoWindow({
-                        //     content: `
-                        //         <div style="
-                        //             display:flex;
-                        //             align-items:center;
-                        //             width:150px;
-                        //             height:28px;
-                        //             padding:0px 10px;
-                        //             font-size:12px;
-                        //             font-weight:700;
-                        //             text-align:center;
-                        //         ">${COMPANY.name}</div>
-                        //     `,
-                        // });
-                        // info.open(map, marker);
 
                         resizeHandler = () => {
                             kakao.maps.event.trigger(map, "resize");
@@ -410,7 +394,7 @@ const Main_CompanyProfile = () => {
         {/* 회사 위치 / 지도 */}
         <div className="max-w-6xl mx-auto w-full px-6 pb-24">
             <h2 className="text-left font-bold text-[#4b4b4b] text-[18px] mb-3">
-                회사위치 / 주소 : 경기도 고양시 통일로 140 (10594) / 삼송 테크노벨리 A동 355호
+                회사위치 / 주소 : 경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)
             </h2>
             
             {/* 지도 */}
@@ -432,8 +416,7 @@ const Main_CompanyProfile = () => {
                         운영 시간
                     </div>
                     <div className="flex flex-col py-4 text-gray-700">
-                        <span className="font-semibold text-blue-700">{COMPANY.hours}</span>
-                        <span className="text-gray-500">(긴급사항 연락처: {COMPANY.phone})</span>
+                        <span className="font-semibold text-blue-700">평일 09:00 ~ 18:00 (13:00 ~ 14:00 점심시간) <br/> ※ 토·일요일, 공휴일 휴무</span>
                     </div>
                 </div>
 
@@ -455,13 +438,13 @@ const Main_CompanyProfile = () => {
                     <span></span>버스 이용시
                 </div>
                 <div className="py-4 text-gray-700">
-                    <div className="font-semibold text-blue-700">정류소명 : 삼송 한국지역난방공사</div>
+                    <div className="font-semibold text-black">정류소명 : 삼송 한국지역난방공사</div>
                     <div className="flex flex-col text-gray-500 mt-1">
                         <span>
-                            경기북부(파주·삼송)에서 오시는 길 → N37, 17, 30, 31, 55, 567, 571, 701, 703, 705, 706, 708, 720, 730, 741, 773, 774, 761, 8722, 9703, 9709 (26년 현재 / 낮은 번호순)
+                            경기북부(파주·삼송)에서 오시는 길 → N37, 17, 30, 31, 55, 567, 571, 701, 703, 705, 706, 708, 720, 730, 741, 773, 774, 761, 8722, 9703, 9709 (26년 현재)
                         </span>
                         <span>
-                            서울방향에서 오시는 길 → 17, 374, 567, 703, 705, 730, 790 (26년 현재 / 낮은 번호순)
+                            서울방향에서 오시는 길 → 17, 374, 567, 703, 705, 730, 790 (26년 현재)
                         </span>
                     </div>
                 </div>
@@ -474,7 +457,7 @@ const Main_CompanyProfile = () => {
                 </div>
                 <div className="py-4 text-gray-700">
                     <div className="flex flex-col text-gray-500">
-                        <span>지축역 1번 출구 → 도보 약10분거리</span>
+                        <span>지축역 1번 출구 → 도보 약20분거리</span>
                         <span>삼송역 1번 출구 → 도보 약20분거리</span>
                     </div>
                 </div>

@@ -56,4 +56,6 @@ public interface MemberMapper {
 
     int updateKakaoUid(@Param("id") String id, @Param("kakaoUid") String kakaoUid);
     int updateNaverUid(@Param("id") String id, @Param("naverUid") String naverUid);
+
+    int selectCreditById(String id);
 }

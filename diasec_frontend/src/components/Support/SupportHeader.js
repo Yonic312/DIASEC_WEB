@@ -1,13 +1,17 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const tabs = ['고객센터홈', '자주 묻는 질문', '공지사항', '후기게시판', '1:1 문의'];
+const tabs = [
+    // '고객센터홈', 
+    '자주 묻는 질문', '1:1 문의','공지사항', '후기게시판', '기업컨설팅', '업무제휴'];
 
 const routes = {
-    '고객센터홈': '/supportMain',
+    // '고객센터홈': '/supportMain',
     '자주 묻는 질문' : '/faqMain',
     '공지사항' : '/noticeList',
     '후기게시판' : '/reviewBoard',
     '1:1 문의' : '/supportMyInquiryList',
+    '업무제휴' : '1',
+    '기업컨설팅' : '2',
 };
 
 const SupportHeader = () => {
@@ -21,8 +25,10 @@ const SupportHeader = () => {
         <>
             <h1 
                 className='
-                    md:text-3xl text-[clamp(16px,3.91vw,30px)]
-                    font-bold mb-10'>
+                    w-fit md:text-3xl text-[clamp(16px,3.91vw,30px)]
+                    font-bold mb-10 cursor-pointer'
+                onClick={() => {navigate("/supportMain")}}
+            >
                 고객센터
             </h1>
             <div 
@@ -38,8 +44,8 @@ const SupportHeader = () => {
                         }}
                         className={`relative pb-2 ${
                             activeTab === tab
-                                ? 'text-black font-semibold after:absolute after:left-0 md:after:-bottom-1 after:bottom-[6px] after:w-full after:h-0.5 after:bg-[#555555]'
-                                : 'text-gray-500 hover:text-black'
+                                ? 'text-black after:absolute after:left-0 md:after:-bottom-1 after:bottom-[6px] after:w-full after:h-0.5 after:bg-[#555555]'
+                                : 'text-black'
                         }`}
                     >
                         {tab}
