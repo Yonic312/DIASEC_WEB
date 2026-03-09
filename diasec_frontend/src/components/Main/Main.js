@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
+import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
 
 // 배너
 import customFrame from '../../assets/banner/customFrame.png';
@@ -27,6 +28,7 @@ const getData = async (API, url,config = {}) => {
     return res.data;
 }
 
+// 인기작품, 신규작품 포함
 const Main = () => {
     const API = process.env.REACT_APP_API_BASE;
     const navigate = useNavigate();
@@ -35,6 +37,9 @@ const Main = () => {
     const [best_Items, setBest_Items] = useState([]);
     const [new_Items, setNew_Items] = useState([]);
     const [categoryList, setCategoryList] = useState([]);
+    const [bestPriceMap, setBestPriceMap] = useState({});
+    const [newPriceMap, setNewPriceMap] = useState({});
+
     // 작가 카테고리는 빼기
     const filteredCategoryList = categoryList.filter(c => c.name !== 'authorCollection');
     const [reviewIndex, setReviewIndex] = useState(0); // 리뷰 슬라이드
@@ -102,6 +107,112 @@ const Main = () => {
 
         return () => controller.abort();
     }, [API]);
+
+    // 이미지 실제 크기 읽는 함수
+    const loadImageSize = (src) => {
+        return new Promise((resolve, reject) => {
+            if (!src) {
+                reject(new Error("이미지 URL 없음"));
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => resolve({ width: img.width, height: img.height });
+            img.onerror = reject;
+            img.src = src;
+        })
+    }
+
+    // 인기 상품 가격 계산
+    useEffect(() => {
+        let cancelled = false;
+
+        const run = async () => {
+            try {
+                const entries = await Promise.all(
+                    best_Items.map(async (item) => {
+                        try {
+                            const { width, height } = await loadImageSize(item.imageUrl);
+                            const ratio = width / height;
+                            const cfg = getMinFrameConfigByRatio(ratio);
+                            return [item.pid, cfg.price];
+                        } catch (e) {
+                            console.error("인기작품 가격 map 생성 실패:", item.pid, e);
+                            return [item.pid, null];
+                        }
+                    })
+                );
+
+                if (cancelled) return;
+                setBestPriceMap(Object.fromEntries(entries));
+            } catch (e) {
+                console.error("인기작품 가격 map 생성 실패:", e);
+                if (!cancelled) setBestPriceMap({});
+            }
+        };
+
+        if (best_Items.length > 0) {
+            run();
+        } else {
+            setBestPriceMap({});
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [best_Items]);
+
+    // 신규 상품 가격 계산
+    useEffect(() => {
+        let cancelled = false;
+
+        const run = async () => {
+            try {
+                const entries = await Promise.all(
+                    new_Items.map(async (item) => {
+                        try {
+                            const { width, height } = await loadImageSize(item.imageUrl);
+                            const ratio = width / height;
+                            const cfg = getMinFrameConfigByRatio(ratio);
+
+                            console.log('신규 가격 계산', {
+                                pid: item.pid,
+                                title: item.title,
+                                imageUrl: item.imageUrl,
+                                naturalWidth: width,
+                                naturalHeight: height,
+                                ratio,
+                                minWidth: cfg.width,
+                                minHeight: cfg.height,
+                                price: cfg.price,
+                            });
+
+                            return [item.pid, cfg.price];
+                        } catch (e) {
+                            console.error("신규작품 가격 map 생성 실패:", item.pid, e);
+                            return [item.pid, null];
+                        }
+                    })
+                );
+
+                if (cancelled) return;
+                setNewPriceMap(Object.fromEntries(entries));
+            } catch (e) {
+                console.error("신규작품 가격 map 생성 실패:", e);
+                if (!cancelled) setNewPriceMap({});
+            }
+        };
+
+        if (new_Items.length > 0) {
+            run();
+        } else {
+            setNewPriceMap({});
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [new_Items]);
     
     // [보정] 사진 befor / after
     const beforeAfterData = [
@@ -263,7 +374,16 @@ const Main = () => {
                                 <span className="
                                     lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)]
                                     line-clamp-1
-                                    font-bold text-[#CDC9C3]">{item.author}</span>
+                                    font-bold text-[#CDC9C3]">
+                                        {item.author}
+                                </span>
+
+                                <span className="
+                                    text-[15px]
+                                    font-semibold text-[#a67a3e] mt-[2px]">
+                                    {bestPriceMap[item.pid] ? `${bestPriceMap[item.pid].toLocaleString()}원~` : ''}
+
+                                </span>
                                 <hr className="my-1" />
                             </div>
                         )
@@ -350,9 +470,19 @@ const Main = () => {
                                     lg:text-[18px] text-[clamp(16px,1.759vw,18px)]
                                     line-clamp-1
                                     font-bold mt-4">{item.title}</span>
+
                                 <span className="
                                     lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)]
-                                    font-bold text-[#CDC9C3]">{item.author}</span>
+                                    font-bold text-[#CDC9C3]">
+                                    {item.author}
+                                </span>
+
+                                <span className="
+                                    text-[15px]
+                                    font-semibold text-[#a67a3e] mt-[2px]">
+                                    {newPriceMap[item.pid] ? `${newPriceMap[item.pid].toLocaleString()}원~` : ''}
+                                </span>
+
                                 <hr className="my-1" />
                             </div>
                         )

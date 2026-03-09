@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from 'axios';
+import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
 import pic_author from '../../assets/collections/author.png';
 import pic_photoIllustration from '../../assets/collections/photoIllustration.png'
 import pic_fungShui from '../../assets/collections/fungShui.png';
@@ -327,6 +328,8 @@ const Main_Items = () => {
     // 마우스 호버 상태 저장(img)
     const [hoveredPid, setHoveredPid] = useState(null);
 
+    const [itemPriceMap, setItemPriceMap] = useState({});
+
     // 작가 목록 가져오기
     const filteredLabels = labels.filter(item => {
         const matchesPeriod = !selectedPeriod || item.times === selectedPeriod;
@@ -460,6 +463,71 @@ const Main_Items = () => {
     }, [type, author, homeLoading, homeHasMore, homeProducts.length]);
 
     const displayCount = author ? filteredAuthorProducts.length : 0;
+
+    const loadImageSize = (src) => {
+        return new Promise((resolve, reject) => {
+            if (!src) {
+                reject(new Error("이미지 URL 없음"));
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => resolve({ width: img.width, height: img.height });
+            img.onerror = reject;
+            img.src = src;
+        });
+    };
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const run = async () => {
+            try {
+                const entries = await Promise.all(
+                    displayProducts.map(async (product) => {
+                        try {
+                            const { width, height } = await loadImageSize(product.imageUrl);
+                            const ratio = width / height;
+                            const cfg = getMinFrameConfigByRatio(ratio);
+
+                            console.log('Main_Items 가격 계산', {
+                                pid: product.pid,
+                                title: product.title,
+                                imageUrl: product.imageUrl,
+                                naturalWidth: width,
+                                naturalHeight: height,
+                                ratio,
+                                minWidth: cfg.width,
+                                minHeight: cfg.height,
+                                price: cfg.price,
+                            });
+
+                            return [product.pid, cfg.price];
+                        } catch (e) {
+                            console.error("Main_Items 가격 계산 실패:", product.pid, e);
+                            return [product.pid, null];
+                        }
+                    })
+                );
+
+                if (cancelled) return;
+                setItemPriceMap(Object.fromEntries(entries));
+            } catch (e) {
+                console.error("Main_Items 가격 map 생성 실패:", e);
+                if (!cancelled) setItemPriceMap({});
+            }
+        };
+
+        if (displayProducts.length > 0) {
+            run();
+        } else {
+            setItemPriceMap({});
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [displayProducts]);
 
     return (
         <div>
@@ -774,13 +842,25 @@ const Main_Items = () => {
                                     </div>
 
                                     <span className="
-                                            lg:text-[18px] text-[clamp(16px,1.759vw,18px)]
-                                            line-clamp-1
-                                            font-bold mt-2">{product.title}</span>
-                                        <span className="
-                                            lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)]
-                                            line-clamp-1
-                                            font-bold text-[#83807d]">{product.author}</span>
+                                        lg:text-[18px] text-[clamp(16px,1.759vw,18px)]
+                                        line-clamp-1
+                                        font-bold mt-2">
+                                        {product.title}
+                                    </span>
+
+                                    <span className="
+                                        lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)]
+                                        line-clamp-1
+                                        font-bold text-[#83807d]">
+                                        {product.author}
+                                    </span>
+
+                                    <span className="
+                                        lg:text-[15px] text-[clamp(13px,1.46vw,15px)]
+                                        font-semibold text-[#a67a3e] mt-[2px]">
+                                        {itemPriceMap[product.pid] ? `${itemPriceMap[product.pid].toLocaleString()}원~` : ''}
+                                    </span>
+
                                     <hr className="my-1" />
                                 </div>
                             );

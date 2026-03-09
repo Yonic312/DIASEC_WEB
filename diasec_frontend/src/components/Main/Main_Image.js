@@ -10,12 +10,16 @@ import p7_1 from '../../assets/p7_1.png'
 import p8 from '../../assets/p8.jpg'
 import p8_1 from '../../assets/p8_1.png'
 import p8_2 from '../../assets/p8_2.png'
+import p9 from '../../assets/p9.jpg'
+import p9_1 from '../../assets/p9_1.png'
+import p10 from '../../assets/p10.jpg'
+import p10_1 from '../../assets/p10_1.png'
 
 const images = [
     { src: p7, text: p7_1, title: "보존의 철학에서 태어난 디아섹", desc: `50여 년 전, 스위스의 한 부부는\n 가족의 행복한 순간을 오래도록 간직하고자 노력했습니다 \n 그 마음은 지금도 디아섹에 고스란히 담겨 있습니다` },
     { src: p8, text: p8_1, img:p8_2, title: "디아섹은 테두리에 프레임이 없습니다", desc: `프레임이 없으면, 작품은 더 선명해집니다.` },
-    { src: p3, text: p7_1, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
-    { src: p4, text: p7_1, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." }
+    { src: p9, text: p9_1, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
+    { src: p10, text: p10_1, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." }
 ];
 
 const Main_Image = () => {
@@ -35,6 +39,7 @@ const Main_Image = () => {
     const [overlayImgVisible, setOverlayImgVisible] = useState(false);
     const [prevOverlayImgVisible, setPrevOverlayImgVisible] = useState(false);
     const overlayImgTimerRef = useRef(null);
+    const overlayImgVisibleRef = useRef(false);
 
     const goTo = (next) => {
         isManualRef.current = true;
@@ -94,6 +99,10 @@ const Main_Image = () => {
     }, [currentIndex]);
 
     useEffect(() => {
+        overlayImgVisibleRef.current = overlayImgVisible;
+    }, [overlayImgVisible]);
+
+    useEffect(() => {
         darkOpacityRef.current = darkOpacity;
     }, [darkOpacity]);
 
@@ -108,7 +117,7 @@ const Main_Image = () => {
 
                 // 자동일 때는 항상 최대 어두움으로 "이전 슬라이드" 고정
                 setPrevHoldOpacity(DARKEN_MAX);
-                setPrevOverlayImgVisible(overlayImgVisible);
+                setPrevOverlayImgVisible(overlayImgVisibleRef.current);
             
                 const next = (prev + 1) % images.length;
 

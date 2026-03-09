@@ -2,8 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { X, Search } from 'lucide-react';
 import axios from 'axios';
+
 import diasec1 from '../../assets/dropDownMenu/diasec/1.jpg'; 
 import diasec2 from '../../assets/dropDownMenu/diasec/2.jpg';
+
+import custom1 from '../../assets/dropDownMenu/customFrame/c1.jpg'; 
+import custom2 from '../../assets/dropDownMenu/customFrame/c2.jpg'; 
+import custom3 from '../../assets/dropDownMenu/customFrame/c3.jpg'; 
+import custom4 from '../../assets/dropDownMenu/customFrame/c4.jpg'; 
+import custom5 from '../../assets/dropDownMenu/customFrame/c5.jpg'; 
+import custom6 from '../../assets/dropDownMenu/customFrame/c6.jpg'; 
 
 const Header_Menu = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -116,8 +124,9 @@ const Header_Menu = () => {
         
     ]), []);
 
+    // 드롭메뉴 사용하는지?
     const categories = useMemo(
-        () => ['masterPiece', 'koreanPainting', 'fengShui', 'authorCollection', 'photoIllustration'], []
+        () => ['masterPiece', 'koreanPainting', 'fengShui', 'authorCollection', 'photoIllustration', 'customFrame'], []
     );
 
     const PAGE_SIZE = 15;
@@ -133,8 +142,21 @@ const Header_Menu = () => {
     // 드롭다운/드로어에 쓸 하위 항목 (서버 데이터)
     const [dropdown, setDropdown] = useState({
         diasec: [{ label: '회사소개', img: diasec1, link: '/main_CompanyProfile'}, { label: '디아섹이란', img: diasec2, link: '/introduce'}], 
-        masterPiece: [], koreanPainting: [], photoIllustration: [], fengShui: [], authorCollection: [], 
-        customFrame: [], companyOrder: [], registerAuthor: [], event: []
+        masterPiece: [], 
+        koreanPainting: [], 
+        photoIllustration: [], 
+        fengShui: [], 
+        authorCollection: [], 
+        customFrame: [
+            { label: '웨딩사진', img:custom1, link:'/customFrames?preset=wedding'}, 
+            { label: '가족', img:custom2, link:'/customFrames?preset=family'}, 
+            { label: '반려동물', img:custom3, link:'/customFrames?preset=pet'}, 
+            { label: '아기', img:custom4, link:'/customFrames?preset=baby'}, 
+            { label: '프로필', img:custom5, link:'/customFrames?preset=profile'},
+            { label: '매장용', img:custom6, link:'/customFrames?preset=store'}],
+        companyOrder: [], 
+        registerAuthor: [], 
+        event: []
     });
 
     const pageRef = useRef(page);
@@ -154,6 +176,11 @@ const Header_Menu = () => {
         urls.forEach(warmImageCache);
     }
 
+    const fetchCategories = useMemo(
+        () => ['masterPiece', 'koreanPainting', 'fengShui', 'authorCollection', 'photoIllustration'],
+        []
+    );
+
     // 초기 데이터 로드
     useEffect(() => {
         let cancelled = false;
@@ -162,7 +189,7 @@ const Header_Menu = () => {
         const preload = async () => {
             try{
                 const results = await Promise.all (
-                    categories.map(async (key) => {
+                    fetchCategories.map(async (key) => {
                         // 서버에서 해당 카테고리의 첫 페이지 데이터를 가져옴
                         const { data } = await axios.get(`${API}/collections/allItems/paged`, {
                             params: {
@@ -214,11 +241,11 @@ const Header_Menu = () => {
 
         preload();
         return () => { cancelled = true; };
-    }, [API, categories, PAGE_SIZE]);
+    }, [API, fetchCategories, PAGE_SIZE]);
 
     // 더 불러오기
     const fetchMore = async (key) => {
-        if (!categories.includes(key)) return;
+        if (!fetchCategories.includes(key)) return;
 
         const p = pageRef.current[key];
         if (!p || p.loading || !p.hasMore) {
@@ -434,7 +461,7 @@ const Header_Menu = () => {
                     onScroll={(e) => {
                         if (!activeKey) return;
                         // 페이징 대상 카테고리 아니면 무시
-                        if (!categories.includes(activeKey)) return;
+                        if (!fetchCategories.includes(activeKey)) return;
 
                         const el = e.currentTarget;
                         const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 80;
@@ -461,7 +488,7 @@ const Header_Menu = () => {
                             </div>
                         ))}
                     </div>
-                    {categories.includes(activeKey) && page[activeKey]?.loading && (
+                    {fetchCategories.includes(activeKey) && page[activeKey]?.loading && (
                         <div className="text-center py-3 text-[12px] text-gray-500">불러오는 중...</div>
                     )}
                 </div>

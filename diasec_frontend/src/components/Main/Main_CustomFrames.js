@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MemberContext } from '../../context/MemberContext';
 import { toast } from 'react-toastify';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,12 +23,31 @@ import bg_1 from '../../assets/custom_Frames/bg_1.jpg';
 import bg_2 from '../../assets/custom_Frames/bg_2.jpg';
 import blur_1 from '../../assets/custom_Frames/blur_1.jpg';
 import blur_2 from '../../assets/custom_Frames/blur_2.jpg';
+import custom1 from '../../assets/dropDownMenu/customFrame/c1.jpg';
+import custom2 from '../../assets/dropDownMenu/customFrame/c2.jpg';
+import custom3 from '../../assets/dropDownMenu/customFrame/c3.jpg';
+import custom4 from '../../assets/dropDownMenu/customFrame/c4.jpg';
+import custom5 from '../../assets/dropDownMenu/customFrame/c5.jpg';
+import custom6 from '../../assets/dropDownMenu/customFrame/c6.jpg';
+
+const presetImageMap = {
+    wedding: custom1,
+    family: custom2,
+    pet: custom3,
+    baby: custom4,
+    profile: custom5,
+    store: custom6,
+}
 
 const Main_CustomFrames = () => {
     const API = process.env.REACT_APP_API_BASE;
     const {member, setMember} = useContext(MemberContext);
     const navigate = useNavigate();
-    const [customItems, setCustomItems] = useState([]); // 상품 여러개
+    const location = useLocation();
+    const [customItems, setCustomItems] = useState([]); // 상품 
+    const searchParams = new URLSearchParams(location.search);
+    const presetKey = searchParams.get('preset');
+    const initialExampleImage = presetImageMap[presetKey] || ex;
 
     const [width, setWidth] = useState(35.6);
     const [height, setHeight] = useState(27.9);
@@ -100,8 +119,8 @@ const Main_CustomFrames = () => {
             setWidthInput(String(Math.floor(cfg.width)));
         };
         // 이미지 src를 설정하여 로딩 시작
-        img.src = ex;
-    }, []);
+        img.src = initialExampleImage;
+    }, [initialExampleImage]);
 
     // 아이템 0개면 기본사이즈로 리셋
     const resetToDefault = () => {
@@ -350,6 +369,13 @@ const Main_CustomFrames = () => {
     const paperWidthPct = (paperWpx / BASE_BG_W) * 100;
     const paperHeightPct = (paperHpx / BASE_BG_H) * 100;
     // A4 ~ A1 오버레이 //
+
+    useEffect(() => {
+        if (!aspectRatio) return;
+
+        // 가로 이미지면 종이도 가로, 세로 이미지면 종이도 세로
+        setPaperRotate(aspectRatio >= 1);
+    }, [aspectRatio]);
 
     // 계산
     const calculateCumulativePrice = (area) => {
@@ -706,7 +732,7 @@ const Main_CustomFrames = () => {
 
                     {/* 입력 사이즈에 따라 겹쳐서 표시 */}
                     <img 
-                        src={imageSrc || ex}
+                        src={imageSrc || initialExampleImage}
                         alt="입력한 프레임"
                         className="absolute object-cover"
                         style={{
