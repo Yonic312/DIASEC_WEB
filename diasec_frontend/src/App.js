@@ -57,6 +57,7 @@ import CustomFrames from './components/Main/Main_CustomFrames'
 import BizOrderBoard from './components/Biz/BizOrderBoard'
 import Biz_OrderWrite from './components/Biz/Biz_OrderWrite'
 import Main_CompanyProfile from './components/Main/Main_CompanyProfile'
+import MyRetouchList from './components/Member/Order/MyRetouchList'
 // import LeasePage from './components/Lease/LeasePage'
 import AuthorRegisterIntro from './components/Author/AuthorRegisterIntro'
 import AuthorRegisterForm from './components/Author/AuthorRegisterForm'
@@ -81,6 +82,7 @@ import Admin_BizList from './components/Admin/Admin_BizList'
 import Admin_BizView from './components/Admin/Admin_BizView'
 // import Admin_Lease_Status from './components/Admin/Lease_Status'
 import Admin_AuthorManager from './components/Admin/AuthorManager'
+import Admin_RetouchList from './components/Admin/AdminRetouchList'
 
 
 import Footer from './components/Footer/Footer'
@@ -94,8 +96,9 @@ function Layout() {
     const path = location.pathname;
     const isItems = location.pathname === '/' || location.pathname === '/main_Items_Clock';
     const isMain = location.pathname === '/';
+
     const isMember = ['/modify', '/changePwd', '/orderList', '/orderDetail', '/orderList_Claim' , '/addrList', '/addrModify', '/myInquiryList', '/reviewWrite', '/supportInquiryForm',
-                      '/addrRegister', '/wishList', '/creditHistory', '/orderTracking'].some(p => path.startsWith(p)) || path.startsWith('/addrModify/') || path.startsWith('/orderDetail');
+                      '/addrRegister', '/wishList', '/creditHistory', '/orderTracking', '/mypage/retouch'].some(p => path.startsWith(p)) || path.startsWith('/addrModify/') || path.startsWith('/orderDetail');
     const isAdmin = path.startsWith('/admin');
 
     const navigate = useNavigate();
@@ -260,6 +263,7 @@ function App() {
                     <Route path="/bizOrderBoard" element={<BizOrderBoard />} />
                     <Route path="/biz_OrderWrite" element={<Biz_OrderWrite />} />
                     <Route path="/main_CompanyProfile" element={<Main_CompanyProfile />} />
+                    <Route path="/mypage/retouch" element={<MyRetouchList />} />
                     {/* <Route path="/leasePage" element={<LeasePage />} /> */}
                     <Route path="/authorRegisterIntro" element={<AuthorRegisterIntro />} />
                     <Route path="/authorRegisterForm" element={<AuthorRegisterForm />} />
@@ -278,6 +282,7 @@ function App() {
                     <Route path="/admin/biz/view/:id" element={<Admin_BizView />} />
                     {/* <Route path="/admin/lease_Status" element={<Admin_Lease_Status />} /> */}
                     <Route path="/admin_AuthorManager" element={<Admin_AuthorManager />} />
+                    <Route path="/admin_AdminRetouchList" element={<Admin_RetouchList />} />
                     
                 </Route>
             </Routes>

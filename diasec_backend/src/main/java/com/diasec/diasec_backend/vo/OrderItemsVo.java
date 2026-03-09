@@ -22,6 +22,7 @@ public class OrderItemsVo {
     private String orderStatus;
     private String trackingNumber;
     private String trackingCompany;
+    private String finishType;
 
     private String leaseStart;
     private String leaseEnd;

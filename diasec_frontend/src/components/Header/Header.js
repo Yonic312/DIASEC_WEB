@@ -237,7 +237,7 @@ const Header = () => {
                                 )}
                                 <button onClick={handleLogout}>로그아웃</button>
                                 <span className="opacity-15">|</span>
-                                <button onClick={() => navigate('/modify')}>마이페이지</button>
+                                <button onClick={() => navigate('/orderList')}>마이페이지</button>
                                 <span className="opacity-15">|</span>
                                 <button onClick={() => navigate('/cart')}>장바구니</button>
                             </>
@@ -269,7 +269,7 @@ const Header = () => {
                             <div
                                 className={`
                                     absolute right-0 top-full
-                                    w-[180px]
+                                    w-[110px]
                                     rounded-2xl
                                     bg-white/95 backdrop-blur
                                     border border-black/10
@@ -281,7 +281,7 @@ const Header = () => {
                                         : "opacity-0 -translate-y-1 invisible pointer-events-none"}
                                 `}
                             >
-                                <div className="py-2">
+                                <div className="py-2 bg-white">
                                     <button
                                         type="button"
                                         onClick={() => { navigate("/faqMain"); setSupportOpen(false);}}
@@ -289,7 +289,7 @@ const Header = () => {
                                     >
                                         자주 묻는 질문
                                     </button>
-
+                                    
                                     <button
                                         type="button"
                                         onClick={() => { navigate("/supportMyInquiryList"); setSupportOpen(false);}}
@@ -297,7 +297,7 @@ const Header = () => {
                                     >
                                         1:1문의
                                     </button>
-
+                                    
                                     <button
                                         type="button"
                                         onClick={() => { navigate("/noticeList"); setSupportOpen(false);}}
@@ -331,7 +331,6 @@ const Header = () => {
                                     </button>
                                 </div>      
                             </div>
-                            
                         </div>
                     </div>
                 </div>
@@ -480,7 +479,7 @@ const Header = () => {
                             )}
                             <li>
                                 <button
-                                onClick={() => { navigate('/modify'); setDrawerOpen(false); }}
+                                onClick={() => { navigate('/orderList'); setDrawerOpen(false); }}
                                 className="flex items-center gap-2 w-full px-4 py-3 text-[14px] text-gray-700 hover:bg-gray-100 transition"
                                 >
                                 <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24">

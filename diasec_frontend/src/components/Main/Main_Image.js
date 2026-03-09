@@ -4,24 +4,123 @@ import p1 from '../../assets/p1.jpg'
 import p2 from '../../assets/p2.jpg'
 import p3 from '../../assets/p3.jpg'
 import p4 from '../../assets/p4.jpg'
+import p5 from '../../assets/p5.jpg'
+import p7 from '../../assets/p7.jpg'
+import p7_1 from '../../assets/p7_1.png'
+import p8 from '../../assets/p8.jpg'
+import p8_1 from '../../assets/p8_1.png'
+import p8_2 from '../../assets/p8_2.png'
 
-// 여기만 수정하면됨! ( 사진 위에서 추가하고 아래 추가 )
 const images = [
-    { src: p1, title: "보존의 철학에서 태어난 디아섹", desc: `50여 년 전, 스위스의 한 부부는\n 가족의 행복한 순간을 오래도록 간직하고자 노력했습니다 \n 그 마음은 지금도 디아섹에 고스란히 담겨 있습니다` },
-    { src: p2, title: "디아섹은 테두리에 프레임이 없습니다", desc: `프레임이 없으면, 작품은 더 선명해집니다.` },
-    { src: p3, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
-    { src: p4, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." }
-  ];
+    { src: p7, text: p7_1, title: "보존의 철학에서 태어난 디아섹", desc: `50여 년 전, 스위스의 한 부부는\n 가족의 행복한 순간을 오래도록 간직하고자 노력했습니다 \n 그 마음은 지금도 디아섹에 고스란히 담겨 있습니다` },
+    { src: p8, text: p8_1, img:p8_2, title: "디아섹은 테두리에 프레임이 없습니다", desc: `프레임이 없으면, 작품은 더 선명해집니다.` },
+    { src: p3, text: p7_1, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
+    { src: p4, text: p7_1, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." }
+];
 
 const Main_Image = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const intervalRef = useRef(null);
 
+    const DARKEN_DURATION_MS = 2500; // 몇 초 동안 어두워질지
+    const TRANSITION_MS = 1000; // 슬라이드 옆으로 이동하는 시간
+    const DARKEN_MAX = 0.4;
+    const [darkOpacity, setDarkOpacity] = useState(0);
+    const [prevIndex, setPrevIndex] = useState(null);
+    const [prevHoldOpacity, setPrevHoldOpacity] = useState(0);
+    const prevTimeoutRef = useRef(null);
+    const darkOpacityRef = useRef(0);
+    const isManualRef = useRef(false);
+    const overlayRefs = useRef([]);
+    const [overlayImgVisible, setOverlayImgVisible] = useState(false);
+    const [prevOverlayImgVisible, setPrevOverlayImgVisible] = useState(false);
+    const overlayImgTimerRef = useRef(null);
+
+    const goTo = (next) => {
+        isManualRef.current = true;
+
+        if (intervalRef.current) clearInterval(intervalRef.current);
+
+        const prevOverlayEl = overlayRefs.current[currentIndex];
+        const visibleOpacity = prevOverlayEl
+            ? parseFloat(getComputedStyle(prevOverlayEl).opacity) || 0
+            : 0;
+
+        setPrevHoldOpacity(visibleOpacity);
+        setPrevOverlayImgVisible(overlayImgVisible);
+
+        setPrevIndex(currentIndex);
+        setCurrentIndex(next);
+
+        if (prevTimeoutRef.current) clearTimeout(prevTimeoutRef.current);
+        prevTimeoutRef.current = setTimeout(() => {
+            setPrevIndex(null);
+            isManualRef.current = false;
+        },TRANSITION_MS);
+
+        startSlider();
+    }
+
+    useEffect(() => {
+        // 슬라이드 바뀔 때마다 다시 시작
+        setDarkOpacity(0);
+
+        const raf = requestAnimationFrame(() => {
+            setDarkOpacity(DARKEN_MAX);
+        });
+
+        return () => cancelAnimationFrame(raf);
+    }, [currentIndex]);
+
+    // 2번 이미지 바뀔때 이미지 등장 타이머 관리
+    useEffect(() => {
+        if (overlayImgTimerRef.current) {
+            clearTimeout(overlayImgTimerRef.current);
+        }
+
+        setOverlayImgVisible(false);
+
+        if (images[currentIndex]?.img) {
+            overlayImgTimerRef.current = setTimeout(() => {
+                setOverlayImgVisible(true);
+            }, 1800);
+        }
+
+        return () => {
+            if (overlayImgTimerRef.current) {
+                clearTimeout(overlayImgTimerRef.current);
+            }
+        };
+    }, [currentIndex]);
+
+    useEffect(() => {
+        darkOpacityRef.current = darkOpacity;
+    }, [darkOpacity]);
+
     const startSlider = () => {
         if (intervalRef.current) clearInterval(intervalRef.current);
+
         intervalRef.current = setInterval(() => {
-            setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
-        }, 4000);
+            isManualRef.current = false;
+
+            setCurrentIndex((prev) => {
+                setPrevIndex(prev);
+
+                // 자동일 때는 항상 최대 어두움으로 "이전 슬라이드" 고정
+                setPrevHoldOpacity(DARKEN_MAX);
+                setPrevOverlayImgVisible(overlayImgVisible);
+            
+                const next = (prev + 1) % images.length;
+
+                if (prevTimeoutRef.current) clearTimeout(prevTimeoutRef.current);
+                prevTimeoutRef.current = setTimeout(() => {
+                    setPrevIndex(null);
+                    setPrevOverlayImgVisible(false);
+                }, TRANSITION_MS);
+
+                return next;
+            });
+        }, 6000); // 한 슬라이드 머무는 총 시간
     };
 
     useEffect(() => {
@@ -31,21 +130,28 @@ const Main_Image = () => {
         };
     }, []);
 
-    const handleIndicatorClick = (index) => {
-        setCurrentIndex(index);
-        startSlider(); // 슬라이더 타이머 초기화
-    }
+    const handleIndicatorClick = (index) => goTo(index);
 
     // 좌우 버튼
     const handlePrev = () => {
-        setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-        startSlider();
-    }
+        const next = (currentIndex - 1 + images.length) % images.length;
+        goTo(next);
+    };
 
     const handleNext = () => {
-        setCurrentIndex(prev => (prev + 1) % images.length);
-        startSlider();
+        const next = (currentIndex + 1) % images.length;
+        goTo(next);
     }
+
+    // const handlePrev = () => {
+    //     setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+    //     startSlider();
+    // }
+
+    // const handleNext = () => {
+    //     setCurrentIndex(prev => (prev + 1) % images.length);
+    //     startSlider();
+    // }
 
     return (
         <div className="relative w-full aspect-[1300/600] xl:aspect-auto h-auto xl:h-[600px] overflow-hidden flex justify-center">
@@ -55,20 +161,82 @@ const Main_Image = () => {
                     style={{ 
                         transform: `translateX(-${currentIndex * 25}%)`, 
                         width: `${images.length * 100}%` }}
-                >
-                        {images.map((img, idx) => (
-                            <div key = {idx} className="flex w-full h-full justify-center">
-                                <img 
-                                    src = {img.src}
-                                    // className="w-auto h-full object-cover mx-auto"
-                                    className="w-auto h-full object-cover mx-auto"
-                                />
-                            </div>
-                        ))}
+                >   
+
+                        {/* 이미지 ☆ */}
+                        {images.map((img, idx) => {
+                            const isActive = idx === currentIndex;
+                            const isPrev = idx === prevIndex;
+
+                            const isNoDarkSlide = idx === 1;
+
+                            const overlayOpacity = isNoDarkSlide
+                                ? 0
+                                : isActive
+                                    ? darkOpacity
+                                    : isPrev
+                                        ? prevHoldOpacity
+                                        : 0;
+                             const overlayImgOpacity =
+                                isActive
+                                    ? (overlayImgVisible ? 1 : 0)
+                                    : isPrev
+                                        ? (prevOverlayImgVisible ? 1 : 0)
+                                        : 0;
+
+                            return(
+                                <div key = {idx} className="relative flex w-full h-full justify-center">
+                                    {/* 배경 이미지 */}
+                                    <img 
+                                        src = {img.src}
+                                        className="w-auto h-full object-cover mx-auto"
+                                        alt=""
+                                    />
+                                    
+                                    {/* 이미지 나타나는 것 (희원님) */}
+                                    {img.img && (
+                                        <img
+                                            src = {img.img}
+                                            className="absolute w-auto h-full object-cover mx-auto"
+                                            alt=""
+                                            style={{
+                                                opacity: overlayImgOpacity,
+                                                transition: isActive
+                                                    ? 'opacity 2500ms ease'
+                                                    : isPrev
+                                                        ? 'none'
+                                                        : 'opacity 300ms ease',
+                                            }}
+                                        />
+                                    )}
+
+                                    {/* 어두워지는 오버레이 */}
+                                    <div
+                                        ref={(el) => (overlayRefs.current[idx] = el)}
+                                        className="absolute inset-0 pointer-events-none"
+                                        style={{
+                                            background: "black",
+                                            opacity: overlayOpacity,
+                                            transition: isNoDarkSlide 
+                                                ? "none" 
+                                                : isActive
+                                                    ? `opacity ${DARKEN_DURATION_MS}ms linear` 
+                                                    : "none",
+                                        }}
+                                    />
+
+                                    <img 
+                                        src={img.text}
+                                        alt=""
+                                        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                    />
+                                </div>
+                            )
+                        })}
                 </div>
 
                 {/* 텍스트 오버레이 (현재 이미지에만 표시됨) */}
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white text-center px-4 pointer-events-none whitespace-pre-line">
+                {/* <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white text-center px-4 pointer-events-none whitespace-pre-line">
                     <h2
                         key={currentIndex + '-title'}
                         className="
@@ -88,7 +256,7 @@ const Main_Image = () => {
                         >
                         {images[currentIndex].desc}
                     </p>
-                </div>
+                </div> */}
             </div> 
 
             {/* 버튼 */}

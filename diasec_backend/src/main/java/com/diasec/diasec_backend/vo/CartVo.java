@@ -13,5 +13,6 @@ public class CartVo {
     private String thumbnail;
     private String size;
     private int quantity;
+    private String finishType;
     private String createdAt;
 }

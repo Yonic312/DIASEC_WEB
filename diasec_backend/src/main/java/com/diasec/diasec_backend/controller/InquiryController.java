@@ -1,5 +1,7 @@
 package com.diasec.diasec_backend.controller;
 
+import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -144,4 +146,33 @@ public class InquiryController {
         return ResponseEntity.ok(inquiryService.selectUnanswered());
     }
 
+    // 마이페이지 고객 문의 삭제
+    @DeleteMapping("/my/{iid}")
+    public ResponseEntity<?> deleteMyInquiry(@PathVariable Long iid, Principal principal) {
+        String loginId = principal.getName();
+        inquiryService.deleteMyInquiry(iid, loginId);
+        return ResponseEntity.ok("삭제 완료");
+    }
+    
+    // 마이페이지 고객 문의 수정
+    @PatchMapping(value = "/my/{iid}/with-images", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateMyInquiryWithImages(
+        @PathVariable Long iid,
+        @RequestParam String title,
+        @RequestParam String content,
+        @RequestParam String category,
+        @RequestParam String isPrivate,
+        @RequestParam(required = false) List<String> keepUrls,
+        @RequestParam(value = "images", required = false) List<MultipartFile> images,
+        Principal principal
+    ) {
+        String loginId = principal.getName();
+
+        if (keepUrls == null) keepUrls = Collections.emptyList();
+
+        inquiryService.updateMyInquiryWithImages(
+            iid, loginId, title, content, category, isPrivate, keepUrls, images
+        );
+        return ResponseEntity.ok("수정 완료");
+    }
 }

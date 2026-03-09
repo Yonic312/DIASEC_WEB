@@ -214,6 +214,8 @@ public class MemberService {
         vo.setName((nickname != null && !nickname.isBlank()) ? nickname : "소셜회원");
         vo.setProvider(provider);
         vo.setRole("USER");
+        vo.setSmsAgree(true);
+        vo.setEmailAgree(true);
 
         // web회원처럼 id/password가 없으니:
         // id는 이메일 앞부분+UUID 같은 걸로 생성하거나, DB가 id PK면 필수임

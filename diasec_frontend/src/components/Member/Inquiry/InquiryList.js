@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MemberContext } from '../../../context/MemberContext';
+import { toast } from 'react-toastify';
 
 const InquiryList = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -110,7 +111,27 @@ const InquiryList = () => {
     currentPage * itemsPerPage
     );
 
+    const handleDelete = async (iid) => {
+        if (!window.confirm("문의글을 삭제할까요?")) return;
 
+        try {
+            const res = await fetch(`${API}/inquiry/my/${iid}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+
+            const msg = await res.text();
+            if (!res.ok) throw new Error(msg);
+
+            alert("삭제 완료");
+            // 다시 조회
+            const r = await fetch(`${API}/inquiry/myList?id=${member?.id}`, { credentials: "include" });
+            setInquiries(await r.json());
+            setOpenIdx(null);
+        } catch (e) {
+            toast.error(e.message || "삭제 실패");
+        }
+    }
 
     return (
         <div className="flex flex-col w-full mb-20">
@@ -258,13 +279,17 @@ const InquiryList = () => {
                                         border-b text-center items-center  
                                         cursor-pointer hover:bg-gray-50 transition"
                                 >
+                                    {/* 카테고리 */}
                                     <div className="text-gray-700">
                                         {activeTab === 'product'
                                         ? inq.productName || '상품명 미지정'
                                         : categoryLabel[inq.category] || inq.category}
                                     </div>
+                                    {/* 제목 */}
                                     <div className="line-clamp-1">{inq.title}</div>
+                                    {/* 문의날짜 */}
                                     <div className="text-gray-500">{inq.createdAt?.slice(0, 10)}</div>
+                                    {/* 문의상태 */}
                                     <div>
                                         <span className={` 
                                             md:text-xs text-[clamp(10px,1.564vw,12px)]
@@ -281,6 +306,7 @@ const InquiryList = () => {
                                     <div className="
                                         md:p-6 p-[clamp(0.5rem,4.999vw,1.25rem)]
                                         bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 mt-2 shadow-sm">
+                                        
                                         <div className="mb-6">
                                             <div className="mb-2">
                                                     <span 
@@ -323,6 +349,25 @@ const InquiryList = () => {
                                                 ))}
                                             </div>
                                         )}
+
+                                        <div className="mt-4 mb-2 flex justify-end gap-2">
+                                            {inq.status !== "답변완료" && (
+                                                <>
+                                                    <button
+                                                        className="px-3 py-1 border rounded hover:bg-gray-100"
+                                                        onClick={() => navigate("/supportInquiryForm", { state: { mode: "edit", inquiry: inq, returnTo: "/myInquiryList" } })}
+                                                    >
+                                                        수정
+                                                    </button>
+                                                </>
+                                            )}
+                                            <button
+                                                className="px-3 py-1 border border-red-300 text-red-600 rounded hover:bg-red-50"
+                                                onClick={() => handleDelete(inq.iid)}
+                                            >
+                                                삭제
+                                            </button>
+                                        </div>
 
                                         <hr /><br/>
                                         

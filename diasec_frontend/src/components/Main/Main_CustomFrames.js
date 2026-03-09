@@ -49,6 +49,15 @@ const Main_CustomFrames = () => {
 
     const MIN_WIDTH = 36;
 
+    // 중간 가져오기
+    const getMidWidth = (minW, maxW, maxH, ratio) => {
+        const actualMaxW = Math.min(maxW, maxH * ratio);
+
+        const midW = (minW + actualMaxW) / 2;
+
+        return parseFloat(midW.toFixed(1));
+    };
+
     // ex 사진에 초기 설정
     useEffect(() => {
         // 새 이미지 객체 생성 (비동기로 이미지 로딩 가능)
@@ -62,19 +71,17 @@ const Main_CustomFrames = () => {
             const maxW = ratio >= 1 ? 200.7 : 101.6;
             const maxH = ratio >= 1 ? 101.6 : 200.7;
 
-            const baseW = MIN_WIDTH;
-            let baseH = parseFloat((baseW / ratio).toFixed(1));
-            let finalW = baseW;
-            let finalH = baseH;
+            const startW = getMidWidth(MIN_WIDTH, maxW, maxH, ratio);
 
-            if (baseH > maxH) {
-                finalH = maxH;
-                finalW = parseFloat((finalH * ratio).toFixed(1));
+            let startH = parseFloat((startW / ratio).toFixed(1));
+
+            if (startH > maxH) {
+                startH = maxH;
             }
 
             const cfg = {
-                width: finalW,
-                height: finalH,
+                width: startW,
+                height: startH,
                 aspectRatio: ratio,
                 maxWidth: maxW,
                 maxHeight: maxH,
@@ -89,6 +96,8 @@ const Main_CustomFrames = () => {
             setMaxHeight(cfg.maxHeight);
             setImageSrc(null);
             setSelectedItemId(null);
+
+            setWidthInput(String(Math.floor(cfg.width)));
         };
         // 이미지 src를 설정하여 로딩 시작
         img.src = ex;
@@ -127,7 +136,7 @@ const Main_CustomFrames = () => {
     useEffect(() => {
         if (!selectedItemId || !aspectRatio) return;
 
-        const newArea = Math.floor(width * height);
+        const newArea = width * height;
         const newPrice = calculateCumulativePrice(newArea);
 
         setCustomItems(prev => 
@@ -202,14 +211,16 @@ const Main_CustomFrames = () => {
                     const ratio = img.width / img.height;
                     const maxWidth = ratio >= 1 ? 200.7 : 101.6;
                     const maxHeight = ratio >= 1 ? 101.6 : 200.7;
-                    let width = 35.6;
+
+                    let width = getMidWidth(MIN_WIDTH, maxWidth,maxHeight, ratio);
                     let height = parseFloat((width / ratio).toFixed(1));
+
                     if (height > maxHeight) {
                         height = maxHeight;
                         width = parseFloat((height * ratio).toFixed(1));
                     }
 
-                    const area = Math.floor(width * height);
+                    const area = width * height;
                     const price = calculateCumulativePrice(area);
 
                     const newItem = {
@@ -222,7 +233,8 @@ const Main_CustomFrames = () => {
                         maxWidth,
                         maxHeight,
                         price,
-                        retouch: { types: [], note: '' },
+                        finishType: 'glossy',
+                        retouch: { enabled: false, types: [], note: '' },
                     };
                     setCustomItems(prev => [...prev, newItem]);
                     setSelectedItemId(newItem.id);
@@ -247,16 +259,21 @@ const Main_CustomFrames = () => {
 
     const handleWidthChange = (e) => {
         let value = parseFloat(e.target.value);
+
+        if (isNaN(value)) return;
+
         if (value < MIN_WIDTH) {
             showToastOnce(`최소 넓이는 ${Math.floor(MIN_WIDTH)}cm입니다.`);
             value = MIN_WIDTH;
-        } else if (value > maxWidth) {
-            showToastOnce(`최대 넓이는 ${Math.floor(maxWidth)}cm입니다.`);
-            value = maxWidth;
+        } else if (value > actualMaxWidth) {
+            showToastOnce(`최대 넓이는 ${Math.floor(actualMaxWidth)}cm입니다.`);
+            value = actualMaxWidth;
         }
 
+        value = parseFloat(value.toFixed(1));
+
         if (aspectRatio) {
-            let newHeight = Math.floor(value / aspectRatio);
+            let newHeight = parseFloat((value / aspectRatio).toFixed(1));
 
             if (newHeight > maxHeight) {
                 showToastOnce(`이미지 비율로 계산된 높이가 최대 높이 ${maxHeight}cm를 초과하여 자동 조정됩니다.`);
@@ -271,8 +288,14 @@ const Main_CustomFrames = () => {
         }
     }
 
+    const toInchSize = (wCm, hCm) => {
+        const wInch = (wCm / 2.54).toFixed(1);
+        const hInch = (hCm / 2.54).toFixed(1);
+        return `${wInch} X ${hInch}`;
+    }
+
     // cm to px 변환 비율
-    const CM_TO_PX = 2.2;
+    const CM_TO_PX = 2.74;
     const previewWidth = width * CM_TO_PX;
     const previewHeight = height * CM_TO_PX;
 
@@ -299,6 +322,34 @@ const Main_CustomFrames = () => {
     // 오버레이 비율 계산 (기준 대비)
     const overlayWidthPct = (previewWidth / BASE_BG_W) * 100;
     const overlayHeightPct = (previewHeight / BASE_BG_H) * 100;
+
+    // A4 ~ A1 오버레이
+    const PAPER_SIZES_CM = {
+        A4: { w: 21.0, h: 29.7 },
+        A3: { w: 29.7, h: 42.0 },
+        A2: { w: 42.0, h: 59.4 },
+        A1: { w: 59.4, h: 84.1 },
+    }
+
+    const [paperKey, setPaperKey] = useState(null);
+    const [paperRotate, setPaperRotate] = useState(false);
+
+    const paper = paperKey ? PAPER_SIZES_CM[paperKey] : null;
+
+    const paperWcm = paper
+        ? (paperRotate ? paper.h : paper.w)
+        : 0;
+
+    const paperHcm = paper
+        ? (paperRotate ? paper.w : paper.h)
+        : 0;
+
+    const paperWpx = paperWcm * CM_TO_PX;
+    const paperHpx = paperHcm * CM_TO_PX;
+
+    const paperWidthPct = (paperWpx / BASE_BG_W) * 100;
+    const paperHeightPct = (paperHpx / BASE_BG_H) * 100;
+    // A4 ~ A1 오버레이 //
 
     // 계산
     const calculateCumulativePrice = (area) => {
@@ -353,7 +404,7 @@ const Main_CustomFrames = () => {
     
     // 가격 계산 로직 추가
     const totalPriceWithoutShipping = customItems.reduce((acc, item) => {
-        const area =Math.floor(item.width * item.height);
+        const area = item.width * item.height;
         return acc + calculateCumulativePrice(area);
     }, 0);
 
@@ -375,7 +426,9 @@ const Main_CustomFrames = () => {
         }
 
         const orderItems = customItems.map(item => {
-            const enabledVal = item.retouch?.enabled ? 1 : 0;
+            const enabledVal = 
+                item.retouch?.enabled === true || (item.retouch?.types?.length ?? 0) > 0  ? 1 : 0;
+
             const typesStr = item.retouch?.types?.join(', ') ?? '';
             const noteStr = item.retouch?.note ?? '';
             
@@ -385,9 +438,10 @@ const Main_CustomFrames = () => {
             title: '맞춤 액자',
             price: item.price, // 배송비 제외
             thumbnail: item.imageSrc,
-            size: `${item.width}` + ' X ' + `${item.height}`,
+            size: toInchSize(item.width, item.height),
             category:'customFrames',
             quantity:'1',
+            finishType: item.finishType ?? 'glossy',
 
             retouchEnabled: enabledVal,
             retouchTypes: enabledVal ? typesStr : null,
@@ -416,6 +470,7 @@ const Main_CustomFrames = () => {
     const [retouchModalOpen, setRetouchModalOpen] = useState(false);
     const [retouchTargetId, setRetouchTargetId] = useState(null);
     const [retouchDraft, setRetouchDraft] = useState({
+        enabled: false,
         types: [],
         note: '',
     })
@@ -425,7 +480,9 @@ const Main_CustomFrames = () => {
     const openRetouchModal = (item) => {
         setRetouchTargetId(item.id);
         const r = item.retouch || {};
+
         setRetouchDraft({
+            enabled: !!r.enabled,
             types: Array.isArray(r.types) ? r.types : [],
             note: r.note ?? '',
         });
@@ -440,7 +497,7 @@ const Main_CustomFrames = () => {
     const saveRetouch = () => {
         if (!retouchTargetId) return;
 
-        if (retouchDraft.enabled && retouchDraft.types.length === 0) {
+        if (retouchDraft.types.length === 0) {
             toast.warn("보정 항목을 하나 이상 선택해주세요.");
             return;
         }
@@ -448,14 +505,77 @@ const Main_CustomFrames = () => {
         setCustomItems(prev =>
             prev.map(it =>
                 it.id === retouchTargetId 
-                    ? { ...it, retouch: {...retouchDraft } } 
-                    : it
+                    ? { 
+                        ...it, 
+                        retouch: {
+                            enabled: true,
+                            types: retouchDraft.types,
+                            note: retouchDraft.note ?? '',
+                        },
+                    } 
+                : it
             )
         );
 
         setRetouchModalOpen(false);
         setRetouchTargetId(null);
         toast.success("요청사항이 접수되었습니다. 보정 완료 시 문자로 안내해 드리겠습니다.");
+    }
+
+    const PAPER = {
+        A4: { w: 21.0, h: 29.7 },
+        A3: { w: 29.7, h: 42.0 },
+        A2: { w: 42.0, h: 59.4 },
+        A1: { w: 59.4, h: 84.1 },
+        };
+
+        const applyPaperPreset = (key) => {
+        if (!aspectRatio) {
+            toast.warn("이미지를 먼저 등록해주세요.");
+            return;
+        }
+
+        const p = PAPER[key];
+
+        // 사진 방향에 따라 '가로 길이'를 자동 선택
+        const targetWidth = aspectRatio >= 1 ? p.h : p.w; 
+        // 가로형이면 긴 변을 가로로(29.7), 세로형이면 짧은 변을 가로로(21)
+
+        handleWidthChange({ target: { value: targetWidth } });
+        setWidthInput(String(Math.floor(targetWidth)));
+    };
+
+    const WIDTH_PRESETS = [
+        { label: "40cm", value: 40 },
+        { label: "60cm", value: 60 },
+        { label: "80cm", value: 80 },
+        { label: "100cm", value: 100 },
+        { label: "120cm", value: 120 },
+        { label: "150cm", value: 150 },
+        { label: "180cm", value: 180 },
+        { label: "200cm", value: 200 },
+        ];
+
+        const applyWidthPreset = (w) => {
+        if (!aspectRatio) {
+            toast.warn("이미지를 먼저 등록해주세요.");
+            return;
+        }
+        handleWidthChange({ target: { value: w } });
+        setWidthInput(String(Math.floor(w)));
+    };
+
+    const toggleFinishType = (itemId) => {
+        setCustomItems(prev => 
+            prev.map(item => 
+                item.id === itemId
+                    ? {
+                        ...item,
+                        finishType: item.finishType === 'matte' ? 'glossy' : 'matte'
+                    }
+                    : item
+            )
+        )
     }
 
     return (
@@ -561,6 +681,29 @@ const Main_CustomFrames = () => {
                             w-full h-auto aspect-[958/766]'
                         alt="배경"
                     />
+
+                    {/* A4~A1 종이 오버레이 */}
+                    {paperKey && (
+                        <div
+                            className="absolute z-10 flex items-center justify-center text-gray-400"
+                            style={{ 
+                                width: `${paperWidthPct}%`,
+                                height: `${paperHeightPct}%`,
+                                top: '30%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                background: 'rgba(255,255,255)',
+                                border: '1px solid rgba(0,0,0,0.15)',
+                                boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
+                                pointerEvents: 'none',
+                            }}
+                        >
+                            <div className="font-bold text-[14px] opacity-80">
+                                {paperKey}
+                            </div>
+                        </div>
+                    )}
+
                     {/* 입력 사이즈에 따라 겹쳐서 표시 */}
                     <img 
                         src={imageSrc || ex}
@@ -569,7 +712,7 @@ const Main_CustomFrames = () => {
                         style={{
                             width: `${overlayWidthPct}%`,
                             height: `${overlayHeightPct}%`,
-                            top: '36%',
+                            top: '30%',
                             left: '50%',
                             transform: `translate(-50%, -50%)`,
                             // boxShadow: '-5px 5px 5px rgba(0, 0, 0, 0.4)',
@@ -588,11 +731,11 @@ const Main_CustomFrames = () => {
                         <span className="flex text-2xl text-[#6d6d6d] font-bold">맞춤액자</span>
                     </div>
 
-                    <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
+                    {/* <hr className='mt-3 border-[1px] border-gray-200 opacity-80' /> */}
 
                     {/* 이미지 업로드 */}
-                    <div className="md:mt-5">
-                        <label className="text-sm font-semibold">이미지 등록</label>
+                    <div className="mt-3">
+                        <label className="text-base font-semibold">이미지 등록</label>
                         <div className='mt-2'>
                             {/* 숨겨진 파일 업로드 input */}
                             <input 
@@ -687,7 +830,7 @@ const Main_CustomFrames = () => {
 
                     {/* 사이즈 입력 */}
                     <div className="flex flex-col">
-                        <label className="text-sm font-semibold mt-2">사이즈 조정</label>
+                        <label className="text-base font-semibold mt-2">사이즈 조정</label>
                         <div className="flex gap-3 items-end mt-1">
                             <div className="flex flex-col w-full">
                                 <span className="text-sm text-gray-500 mb-1">가로 (cm)</span>
@@ -718,7 +861,7 @@ const Main_CustomFrames = () => {
                                         handleWidthChange({ target: { value: v } });
                                     }}
                                     onWheel={(e) => e.preventDefault()}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#D0AC88]"
+                                    className="w-full border border-gray-500 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                 />
                             </div>
                             
@@ -730,7 +873,7 @@ const Main_CustomFrames = () => {
                                     type="number" 
                                     value={Math.floor(height)}
                                     readOnly
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-base bg-gray-100 cursor-not-allowed"
+                                    className="w-full border border-gray-500 rounded px-3 py-2 text-base bg-gray-100 cursor-not-allowed"
                                 />
                             </div>
                         </div>
@@ -752,11 +895,40 @@ const Main_CustomFrames = () => {
                                     (약 { Math.floor(width / 2.54) } x { Math.floor(height / 2.54) } inch)
                             </span>
                         </div>
-                        <span className="mt-1 text-[14.5px] text-gray-500">바를 움직여 사이즈를 조절하거나, 원하는 사이즈를 직접 입력해 주세요.</span>
+                        <span className="mt-1 text-[13.5px] text-gray-500">바를 움직이거나 직접 입력해 사이즈를 조정하세요</span>
+
+                        <div className="w-full flex justify-between mt-2 gap-2">
+                            {['A4', 'A3', 'A2', 'A1'].map(k => (
+                                <button
+                                    key={k}
+                                    type="button"
+                                    onClick={() => setPaperKey(prev => (prev === k ? null : k))}
+                                    className={`
+                                        flex-1 h-[34px] rounded-md border text-sm font-semibold
+                                        ${paperKey === k ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300'}    
+                                    `}
+                                >
+                                    {k}
+                                </button>
+                            ))}
+                            <button 
+                                className="flex-1 h-[34px] rounded-md border text-sm font-semibold bg-white text-gray-500 opacity-90 border-gray-300"
+                                onClick={() => {
+                                    if (!paperKey) {
+                                        toast.warn("A1~A4 중 하나를 먼저 선택해주세요.");
+                                    }
+                                    setPaperRotate(v => !v);
+                                }}
+                            >
+                                {paperRotate === true ?  "가로" : "세로"}
+                            </button>
+                        </div>
+
+                        <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
                         
                         {/* 결제 목록 */}
                         {selectedItem && (
-                            <div className='max-h-[300px] overflow-y-scroll my-3 space-y-2'>
+                            <div className='max-h-[300px] overflow-y-scroll mt-3 space-y-2'>
                                 {customItems.map((item, idx) => (
                                     <div 
                                         key={item.id} 
@@ -784,7 +956,7 @@ const Main_CustomFrames = () => {
 
                                                 {/* 삭제 버튼 */}
                                                 <button
-                                                    className='w-7 h-7 shrink-0 text-red-500 hover:text-white hover:bg-red-500 border border-red-300 rounded-full flex items-center justify-center transition'
+                                                    className='w-6 h-6 shrink-0 text-red-500 hover:text-white hover:bg-red-500 border border-red-300 rounded-full flex items-center justify-center transition'
                                                     onClick={(e) => {
                                                         e.stopPropagation();
 
@@ -833,7 +1005,24 @@ const Main_CustomFrames = () => {
                                             </div>
 
                                             {/* 보정상태와 버튼 */}
-                                            <div className="mt-2 flex items-center justify-between gap-2">
+                                            <div className="mt-2 flex items-center justify-end gap-1">
+                                                <button 
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFinishType(item.id);
+                                                    }}
+                                                    className={`
+                                                        text-[11px] px-2 py-[2px] rounded-full border transition 
+                                                        ${item.finishType === 'matte'
+                                                            ? 'bg-gray-700 text-white border-gray-700'
+                                                            : 'bg-[#fff3e6] text-[#a67a3e] border-[#D0AC88]'
+                                                        }
+                                                    `}
+                                                >
+                                                    {item.finishType === 'matte' ? '무광' : '유광'}
+                                                </button>
+
                                                 {/* 보정 상태 뱃지 */}
                                                 <span 
                                                     className={`text-[11px] px-2 py-[2px] rounded-full border whitespace-nowrap
@@ -843,7 +1032,7 @@ const Main_CustomFrames = () => {
                                                         }
                                                     `}
                                                 >
-                                                    {item.retouch?.enabled ? '보정 요청 있음' : '보정 없음'}
+                                                    {item.retouch?.enabled ? '보정 O' : '보정 X'}
                                                 </span>
 
                                                 {/* 보정 요청 버튼 */}
@@ -863,7 +1052,6 @@ const Main_CustomFrames = () => {
                             </div>
                         )}
 
-                        <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
                         <div className="flex flex-col items-end mt-3">
                             <span className="text-[13px] font-semibold text-gray-600">
                                 무료배송
@@ -1024,9 +1212,9 @@ const Main_CustomFrames = () => {
                         space-y-3 pl-4 list-disc
                 '>
                     {/* <li>예시 외 <span className='font-semibold text-gray-900'>난이도가 높은 보정 또는 작업 시간이 많이 소요되는 경우</span> 시간당 <span className='text-[#D0AC88] font-semibold'>5만원</span>입니다.</li> */}
-                    <li><span>원고 상태가 너무 흐릿하면 해상도를 높이는데 한계가 있으니 양해 부탁드립니다</span></li>
-                    <li><span>난이도가 높은 보정작업은 시간이 소요되며 시간당 5만원의 비용이 발생합니다</span></li>
-                    <li><span>보정에 관한 궁금한 사항 있으시면 전화상담 바랍니다 (02-389-5879)</span></li>                    
+                    <li><span>원고 이미지가 지나치게 흐리거나 해상도가 낮은 경우, 화질 개선에 한계가 있을 수 있는 점 양해 부탁드립니다.</span></li>
+                    <li><span>작업 난이도가 높은 보정 작업은 추가 시간이 소요되며, 별도의 추가 비용이 발생할 수 있습니다.</span></li>
+                    <li><span>보정에 관한 궁금한 사항이 있으시면 문의 바랍니다.</span></li>                    
                 </ul>
             </div>
 
@@ -1062,9 +1250,10 @@ const Main_CustomFrames = () => {
                             title: '맞춤 액자',
                             price: item.price, // 배송비 제외
                             thumbnail: item.imageSrc,
-                            size: `${item.width}` + ' X ' + `${item.height}`,
+                            size: toInchSize(item.width, item.height),
                             category:'customFrames',
                             quantity:'1',
+                            finishType: item.finishType ?? 'glossy',
 
                             retouchEnabled: enabledVal,
                             retouchTypes: enabledVal ? typesStr : null,

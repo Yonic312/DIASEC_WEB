@@ -36,6 +36,7 @@ const Member_Sidebar = () => {
                     
                     <span className="md:text-lg text-[clamp(11px,2.3455vw,18px)] font-bold">주문 관리</span>
                     <button className={`md:text-sm text-[clamp(9px,1.8252vw,14px)] opacity-65 ${isActive('/orderList') ? 'text-black font-semibold opacity-100' : 'opacity-65'}`} onClick={() => navigate('/orderList')}>주문내역조회</button>
+                    <button className={`md:text-sm text-[clamp(9px,1.8252vw,14px)] opacity-65 ${isActive('/mypage/retouch') ? 'text-black font-semibold opacity-100' : 'opacity-65'}`} onClick={() => navigate('/mypage/retouch')}>보정내역조회</button>
                     <button className={`md:text-sm text-[clamp(9px,1.8252vw,14px)] opacity-65 ${isActive('/wishList') ? 'text-black font-semibold opacity-100' : 'opacity-65'}`} onClick={() => navigate('/wishList')}>관심상품조회</button>
                     <button className={`md:text-sm text-[clamp(9px,1.8252vw,14px)] opacity-65 ${isActive('/creditHistory') ? 'text-black font-semibold opacity-100' : 'opacity-65'}`} onClick={() => navigate('/creditHistory')}>적립금내역</button>
                     

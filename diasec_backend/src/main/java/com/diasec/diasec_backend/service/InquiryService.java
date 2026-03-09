@@ -1,11 +1,14 @@
 package com.diasec.diasec_backend.service;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.diasec.diasec_backend.dao.InquiryMapper;
 import com.diasec.diasec_backend.util.ImageUtil;
@@ -95,5 +98,80 @@ public class InquiryService {
     // 미답변 개수 가져오기
     public Long selectUnanswered() {
         return inquiryMapper.selectUnanswered();
+    }
+
+    // 마이페이지 고객 문의 삭제
+    @Transactional
+    public void deleteMyInquiry(Long iid, String loginId) {
+        
+        InquiryVo target = inquiryMapper.selectInquiryOwnerAndStatus(iid);
+        if (target == null) throw new RuntimeException("문의가 없습니다.");
+
+        if (!loginId.equals(target.getId())) throw new RuntimeException("권한이 없습니다.");
+
+        // 정책: 답변완료면 삭제 불가
+        // if ("답변완료".equals(target.getStatus())) {
+        //     throw new RuntimeException("답변완료된 문의는 삭제할 수 없습니다.");
+        // }
+
+        List<String> imageUrls = inquiryMapper.selectInquiryImageUrls(iid);
+
+        inquiryMapper.deleteInquiryImages(iid);
+        inquiryMapper.deleteReplyByIid(iid);
+        inquiryMapper.deleteInquiry(iid);
+
+        for (String url : imageUrls) imageUtil.deleteImage(url);
+    }
+
+    // 마이페이지 상담내용 수정
+    public void updateMyInquiryWithImages(
+        Long iid, 
+        String loginId, 
+        String title, 
+        String content, 
+        String category, 
+        String isPrivate,
+        List<String> keepUrls,
+        List<MultipartFile> newImages
+    ) {
+
+        InquiryVo target = inquiryMapper.selectInquiryOwnerAndStatus(iid);
+        if (target == null) throw new RuntimeException("문의가 없습니다.");
+        
+        // 작성자 체크
+        if (!loginId.equals(target.getId())) throw new RuntimeException("권한이 없습니다.");
+
+        // 상태 체크
+        if ("답변완료".equals(target.getStatus())) {
+            throw new RuntimeException("답변완료된 문의는 수정할 수 없습니다.");
+        }
+
+        if (keepUrls == null) keepUrls = Collections.emptyList();
+
+        // 1) 기존 이미지 URL 전부
+        List<String> oldUrls = inquiryMapper.selectInquiryImageUrls(iid);
+
+        // 2) keepUrls에 없는 것 삭제 (DB + 파일)
+        for (String url : oldUrls) {
+            if (!keepUrls.contains(url)) {
+                inquiryMapper.deleteInquiryImageByUrl(iid, url);
+                imageUtil.deleteImage(url);
+            }
+        }
+
+        // 3) 새 이미지 추가
+        if (newImages != null) {
+            for (MultipartFile img : newImages) {
+                try {
+                    String url = imageUtil.saveImage(img, "Inquiry");
+                    inquiryMapper.insertInquiryImageByParams(iid, url);
+                } catch (IOException e) {
+                    throw new RuntimeException("이미지 저장 실패", e);
+                }
+            }
+        }
+
+        // 4) 글 업데이트
+        inquiryMapper.updateInquiryByCustomer(iid, title, content, category, isPrivate);
     }
 }

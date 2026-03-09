@@ -1,15 +1,22 @@
 package com.diasec.diasec_backend.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.diasec.diasec_backend.dao.OrderMapper;
 import com.diasec.diasec_backend.service.AdminOrderService;
 import com.diasec.diasec_backend.service.CreditService;
 import com.diasec.diasec_backend.service.OrderService;
@@ -27,6 +34,7 @@ public class AdminOrderController {
     private final AdminOrderService adminOrderService;
     private final CreditService creditService;
     private final OrderService orderService;
+    private final OrderMapper orderMapper;
 
     // 주문 상태 목록 가져오기
     @PostMapping("/orders")
@@ -66,26 +74,6 @@ public class AdminOrderController {
         Long oid = request.get("oid") == null ? null : Long.valueOf(String.valueOf(request.get("oid")));
 
         return adminOrderService.updateStatusWithSideEffects(itemId, newStatus, id, usedCredit, oid);
-
-        // boolean success = adminOrderService.updateOrderItmeStatus(itemId, orderStatus);
-
-        // // 교환 완료거나 환불 완료일때 적립금 반환
-        // if (success && ("환불완료".equals(orderStatus))) {
-        //     System.out.println("교환, 환불 적립금 되돌리기!");
-
-        //     // 사용 적립금이 0원 이상이라면
-        //     if ((Integer)request.get("usedCredit") > 0) {
-        //         CreditVo creditVo = new CreditVo();
-        //         creditVo.setId(String.valueOf(request.get("id")));
-        //         creditVo.setAmount((Integer)request.get("usedCredit"));
-        //         creditVo.setType("적립");
-        //         creditVo.setDescription(String.valueOf(orderStatus));
-        //         creditVo.setOid(Long.valueOf(String.valueOf(request.get("oid"))));
-                
-        //         creditService.insertCreditHistory(creditVo);
-        //     }
-        // }
-        // return Map.of("success", success);
     }
 
     // 상세 정보에서 배송 정보 업데이트
@@ -148,6 +136,75 @@ public class AdminOrderController {
             e.printStackTrace();
             return ResponseEntity.internalServerError()
                 .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // 보정 프리뷰 업로드
+    // @PostMapping("/order-items/{itemId}/retouch/preview")
+    // public Map<String, Object> uploadRetouchPreview(
+    //     @PathVariable Long itemId,
+    //     @RequestParam("file") MultipartFile file
+    // ) throws Exception {
+
+    //     if (file == null || file.isEmpty()) {
+    //         throw new IllegalArgumentException("파일이 없습니다.");
+    //     }
+
+    //     // (선택) 이미지 확장자/타입 제한
+    //     String ct = file.getContentType();
+    //     if (ct == null || !(ct.startsWith("image/"))) {
+    //         throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
+    //     }
+
+    //     String url = orderService.uploadRetouchPreview(itemId, file);
+
+    //     return Map.of(
+    //         "ok", true,
+    //         "itemId", itemId,
+    //         "fileUrl", url
+    //     );
+    // }
+
+    @PostMapping("/retouch/list")    
+    public ResponseEntity<?> adminRetouchList(@RequestBody Map<String, String> body) {
+        String startDate = body.get("startDate");
+        String endDate = body.get("endDate");
+        String keyword = body.get("keyword");
+        String status = body.get("status");
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "list", orderMapper.selectAdminRetouchList(startDate, endDate, keyword, status)
+        ));
+    }
+
+    @PostMapping(value = "/order/retouch/preview-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> uploadRetouchPreview(
+        @RequestParam("itemId") Long itemId,
+        @RequestPart("file") MultipartFile file
+    ) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String url = orderService.uploadRetouchPreview(itemId, file);
+            result.put("success", true);
+            result.put("fileUrl", url);
+            result.put("previewStatus", "WAITING_CUSTOMER");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @PostMapping("/order/retouch/preview-delete")
+    public ResponseEntity<?> deleteRetouchPreview(@RequestBody Map<String, Object> body) {
+        try {
+            Long itemId = Long.valueOf(String.valueOf(body.get("itemId")));
+            orderService.deleteRetouchPreview(itemId);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 }

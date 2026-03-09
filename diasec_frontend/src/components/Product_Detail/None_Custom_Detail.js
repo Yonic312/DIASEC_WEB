@@ -45,14 +45,77 @@ const None_Custom_Detail = () => {
     const [maxWidth, setMaxWidth] = useState(200.7); // 초기값: 가로 최대
     const [maxHeight, setMaxHeight] = useState(101.6); // 초기값: 세로 최대
 
+    const disableDelete = customItems.length <= 1;
+
     // 사이즈
-    const [width, setWidth] = useState('35.6');
+    const [width, setWidth] = useState(35.6);
     const [height, setHeight] = useState(27.9);
 
     const MIN_WIDTH = 35.6;
 
     const [aspectRatio, setAspectRatio] = useState(null);
     const [toastCooldown, setToastCooldown] = useState(false);
+
+    // 중간 가져오기
+    const getMidWidth = (minW, maxW, maxH, ratio) => {
+        const actualMaxW = Math.min(maxW, maxH * ratio);
+
+        const midW = (minW + actualMaxW) / 2;
+
+        return parseFloat(midW.toFixed(1));
+    };
+
+    const nextIdRef = useRef(1);
+
+    const findSelected = () => customItems.find(it => it.id === selectedItemId);
+
+    const syncInputFromSelected = (item) => {
+        if (!item) return;
+
+        setAspectRatio(item.aspectRatio);
+        setMaxWidth(item.maxWidth);
+        setMaxHeight(item.maxHeight);
+
+        setWidth(item.width);
+        setHeight(item.height);
+        setWidthInput(String(Math.floor(item.width)));
+    };
+
+    // 추가 버튼 클릭
+    const handleAddOption = () => {
+        if (!mainImage || !aspectRatio) {
+            toast.error("이미지 로딩 후 이용해주세요.");
+            return;
+        }
+
+        // 현재 입력값 기준으로 새 옵션 생성
+        const newArea = Math.floor(width * height);
+        const newPrice = calculateCumulativePrice(newArea);
+
+        const newId = `opt-${nextIdRef.current++}`;
+
+        const newItem = {
+            id: newId,
+            imageSrc: mainImage,
+            aspectRatio,
+            width,
+            height,
+            maxWidth,
+            maxHeight,
+            price: newPrice,
+        };
+
+        setCustomItems(prev => [...prev, newItem]);
+        setSelectedItemId(newId);
+    }
+
+    // 선택된 항목 바뀌면 입력값/프리뷰도 그 항목 기준으로 바꾸기
+    useEffect(() => {
+        if (!selectedItemId) return;
+        const item = findSelected();
+        if (!item) return;
+        syncInputFromSelected(item);
+    }, [selectedItemId, customItems.length]);
 
     const showToastOnce = (message) => {
         if (!toastCooldown) {
@@ -70,9 +133,9 @@ const None_Custom_Detail = () => {
     }, [width]);
 
     const handleWidthChange = (e) => {
-        // if (!selectedItem) return;
-
         let value = parseFloat(e.target.value);
+
+        if (isNaN(value)) return;
 
         if (value < MIN_WIDTH) {
             showToastOnce(`최소 넓이는 ${Math.floor(MIN_WIDTH)}cm입니다.`);
@@ -82,8 +145,10 @@ const None_Custom_Detail = () => {
             value = maxWidth;
         }
 
+        value = parseFloat(value.toFixed(1));
+
         if (aspectRatio) {
-            let newHeight = Math.floor(value / aspectRatio);
+            let newHeight = parseFloat((value / aspectRatio).toFixed(1));
 
             if (newHeight > maxHeight) {
                 showToastOnce(`이미지 비율로 계산된 높이가 최대 높이 ${Math.floor(maxHeight)}cm를 초과하여 자동 조정됩니다.`);
@@ -96,6 +161,12 @@ const None_Custom_Detail = () => {
         } else {
             setWidth(Math.floor(value));
         }
+    }
+
+    const toInchSize = (wCm, hCm) => {
+        const wInch = (wCm / 2.54).toFixed(1);
+        const hInch = (hCm / 2.54).toFixed(1);
+        return `${wInch} X ${hInch}`;
     }
 
     // cm to px 변환 비율
@@ -126,6 +197,34 @@ const None_Custom_Detail = () => {
     // 오버레이 비율 계산 (기준 대비)
     const overlayWidthPct = (previewWidth / BASE_BG_W) * 100;
     const overlayHeightPct = (previewHeight / BASE_BG_H) * 100;
+
+    // A4 ~ A1 오버레이
+    const PAPER_SIZES_CM = {
+        A4: { w: 21.0, h: 29.7 },
+        A3: { w: 29.7, h: 42.0 },
+        A2: { w: 42.0, h: 59.4 },
+        A1: { w: 59.4, h: 84.1 },
+    }
+
+    const [paperKey, setPaperKey] = useState(null);
+    const [paperRotate, setPaperRotate] = useState(false);
+
+    const paper = paperKey ? PAPER_SIZES_CM[paperKey] : null;
+
+    const paperWcm = paper
+        ? (paperRotate ? paper.h : paper.w)
+        : 0;
+
+    const paperHcm = paper
+        ? (paperRotate ? paper.w : paper.h)
+        : 0;
+
+    const paperWpx = paperWcm * CM_TO_PX;
+    const paperHpx = paperHcm * CM_TO_PX;
+
+    const paperWidthPct = (paperWpx / BASE_BG_W) * 100;
+    const paperHeightPct = (paperHpx / BASE_BG_H) * 100;
+    // A4 ~ A1 오버레이 //
 
     // 계산
     const calculateCumulativePrice = (area) => {
@@ -165,7 +264,7 @@ const None_Custom_Detail = () => {
     
     // 가격 계산 로직 추가
     const totalPriceWithoutShipping = customItems.reduce((acc, item) => {
-        const area =Math.floor(item.width * item.height);
+        const area = item.width * item.height;
         return acc + calculateCumulativePrice(area);
     }, 0);
 
@@ -182,53 +281,78 @@ const None_Custom_Detail = () => {
             axios.get(`${API}/product/top-images?pid=${pid}`)
                 .then(res => {
                     setTopImages(res.data);
-                    if (res.data.length > 0) {
-                        setMainImage(res.data[0]);
+
+                    if (res.data.length === 0) return;
+
+                    const url = res.data[0];
+                    setMainImage(url);
                         
-                        const img = new Image();
-                        img.src = res.data[0];
+                    const img = new Image();
+                        img.src = url;
+
                         img.onload = () => {
                             const ratio = img.width / img.height;
                             setAspectRatio(ratio);
 
-                            const calcHeight = Math.floor(width / ratio);
-                            setHeight(calcHeight);
+                            const maxW = ratio >= 1 ? 200.7 : 101.6;
+                            const maxH = ratio >= 1 ? 101.6 : 200.7;
 
-                            // 불러온 명화를 customItems에 추가 (업로드 대신 초기화)
-                            if (ratio >= 1) {
-                                setMaxWidth(200.7);
-                                setMaxHeight(101.6);
-                            } else {
-                                setMaxWidth(101.6);
-                                setMaxHeight(200.7);
+                            setMaxWidth(maxW);
+                            setMaxHeight(maxH);
+
+                            let startW = getMidWidth(MIN_WIDTH, maxW, maxH, ratio);
+                            let startH = parseFloat((startW / ratio).toFixed(1));
+
+                            if (startH > maxH) {
+                                startH = maxH;
+                                startW = parseFloat((startH * ratio).toFixed(1));
                             }
 
-                            const area = Math.floor(width * calcHeight);
+                            setWidth(startW);
+                            setHeight(startH);
+                            setWidthInput(String(Math.floor(startW)));
+
+                            const area = startW * startH;
                             const price = calculateCumulativePrice(area);
 
                             setCustomItems([{
                             id: "main-painting",
-                            imageSrc: res.data[0],
+                            imageSrc: url,
                             aspectRatio: ratio,
-                            width,
-                            height,
-                            maxWidth,
-                            maxHeight,
+                            width: startW,
+                            height: startH,
+                            maxWidth: maxW,
+                            maxHeight: maxH,
                             price
                         }]);
+
                         setSelectedItemId("main-painting");
-                        } 
-                    }
+
+                        setTimeout(() => syncInputFromSelected({
+                            id: "main-painting",
+                            imageSrc: url,
+                            aspectRatio: ratio,
+                            width: startW,
+                            height: startH,
+                            maxWidth: maxW,
+                            maxHeight: maxH,
+                            price
+                        }), 0);
+                    };
                 })
                 .catch(err => console.error("이미지 목록 조회 실패", err));
+                
         }
     }, [pid]);
 
     // 실시간으로 항목들의 사이즈 변경
     useEffect(() => {
-        if (!selectedItemId || !aspectRatio) return;
+        if (!selectedItemId) return;
 
-        const newArea = Math.floor(width * height);
+        const current = customItems.find(it => it.id === selectedItemId);
+        if (!current) return;
+
+        const newArea = width * height;
         const newPrice = calculateCumulativePrice(newArea);
 
         setCustomItems(prev => 
@@ -238,7 +362,7 @@ const None_Custom_Detail = () => {
                 : item
             )
         );
-    }, [width, height]);
+    }, [width, height, selectedItemId]);
 
     if (!product) return <div className="p-10">상품 정보를 불러오는 중입니다...</div>;
 
@@ -367,11 +491,14 @@ const None_Custom_Detail = () => {
             pid: parseInt(pid),
             title: product.title,
             price: item.price,
-            category: category + '_' + frameType,
+            category: `${category}`,
             thumbnail: item.imageSrc,
-            size: `${width} x ${height} (${Math.floor(item.width)}cm x ${Math.floor(item.height)} cm)`,
+            size: toInchSize(item.width, item.height),
+            finishType: item.finishType ?? 'glossy',
             quantity: 1,
         }));
+
+        console.log(category);
 
         try {
             await axios.post(`${API}/cart/insert`, payload);
@@ -397,11 +524,25 @@ const None_Custom_Detail = () => {
             title: product.title,
             price: item.price,
             thumbnail: item.imageSrc,
-            size: `${width} x ${height} (${Math.floor(item.width)}cm x ${Math.floor(item.height)} cm)`,
-            category: category + '_' + frameType,
+            size: toInchSize(item.width, item.height),
+            category: `${category}`,
+            finishType: item.finishType ?? 'glossy',
             quantity: 1
         }));
         navigate('/orderForm', { state: { orderItems: orderData } });
+    }
+
+    const toggleFinishType = (itemId) => {
+        setCustomItems(prev => 
+            prev.map(item => 
+                item.id === itemId
+                    ? {
+                        ...item,
+                        finishType: item.finishType === 'matte' ? 'glossy' : 'matte'
+                    }
+                    : item
+            )
+        )
     }
 
     return (
@@ -477,6 +618,29 @@ const None_Custom_Detail = () => {
                             w-full h-auto aspect-[958/766]'
                         alt="배경"
                     />
+
+                    {/* A4~A1 종이 오버레이 */}
+                    {paperKey && (
+                        <div
+                            className="absolute z-10 flex items-center justify-center text-gray-400"
+                            style={{ 
+                                width: `${paperWidthPct}%`,
+                                height: `${paperHeightPct}%`,
+                                top: '30%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                background: 'rgba(255,255,255)',
+                                border: '1px solid rgba(0,0,0,0.15)',
+                                boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
+                                pointerEvents: 'none',
+                            }}
+                        >
+                            <div className="font-bold text-[14px] opacity-80">
+                                {paperKey}
+                            </div>
+                        </div>
+                    )}
+
                     {/* 입력 사이즈에 따라 겹쳐서 표시 */}
                     <img 
                         src={mainImage}
@@ -540,7 +704,8 @@ const None_Custom_Detail = () => {
                     <div className="flex flex-col">
                         <label className="text-base font-semibold mt-2">사이즈 조정</label>
                         {/* <p className="text-sm text-gray-500 mt-2">원하는 사이즈(cm)를 입력해 주세요</p> */}
-                        <div className="flex gap-3 items-end mt-[2px]">
+
+                        <div className="flex gap-3 items-end mt-1">
                             <div className="flex flex-col w-full">
                                 <span className="text-sm text-gray-500 mb-1">가로 (cm)</span>
                                 <input 
@@ -606,11 +771,50 @@ const None_Custom_Detail = () => {
                                     (약 { Math.floor(width / 2.54) } x { Math.floor(height / 2.54) } inch)
                             </span>
                         </div>
-                        <span className="mt-1 text-[14.5px] text-gray-500">바를 움직여 사이즈를 조절하거나, 원하는 사이즈를 직접 입력해 주세요.</span>
+                        <span className="mt-1 text-[13.5px] text-gray-500">바를 움직이거나 직접 입력해 사이즈를 조정하세요</span>
+
+                        <div className="w-full flex justify-between mt-2 gap-2">
+                            {['A4', 'A3', 'A2', 'A1'].map(k => (
+                                <button
+                                    key={k}
+                                    type="button"
+                                    onClick={() => setPaperKey(prev => (prev === k ? null : k))}
+                                    className={`
+                                        flex-1 h-[34px] rounded-md border text-sm font-semibold
+                                        ${paperKey === k ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300'}    
+                                    `}
+                                >
+                                    {k}
+                                </button>
+                            ))}
+                            <button 
+                                className="flex-1 h-[34px] rounded-md border text-sm font-semibold bg-white text-gray-500 opacity-90 border-gray-300"
+                                onClick={() => {
+                                    if (!paperKey) {
+                                        toast.warn("A1~A4 중 하나를 먼저 선택해주세요.");
+                                    }
+                                    setPaperRotate(v => !v);
+                                }}
+                            >
+                                {paperRotate === true ?  "가로" : "세로"}
+                            </button>
+                        </div>
+
+                        {/* {paperKey && (
+                            <button
+                                type="button"
+                                onClick={() => setPaperRotate(v => !v)}
+                                className="mt-2 text-xs text-gray-600 underline"
+                            >
+                                종이 방향 바꾸기 (가로/세로)
+                            </button>
+                        )} */}
+
+                        <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
                         
                         {/* 결제 목록 */}
-                        {selectedItem && (
-                            <div className='max-h-[300px] overflow-y-scroll my-3 space-y-2'>
+                        {customItems.length > 0 && (
+                            <div className='max-h-[300px] overflow-y-scroll mt-3 space-y-2'>
                                 {customItems.map((item, idx) => (
                                     <div key={item.id} 
                                         onClick={() => setSelectedItemId(item.id)} 
@@ -621,43 +825,85 @@ const None_Custom_Detail = () => {
                                             alt={`미리보기 ${idx + 1}`}
                                             className='w-16 h-16 object-cover object-center rounded-md border'
                                         />
-                                        <div className='flex-1 text-base text-end'>
-                                            <p className='text-sm font-semibold text-gray-800'>{Math.floor(item.width)}cm x {Math.floor(item.height)}cm</p>
-                                            <p>{item.price.toLocaleString()}원</p>
-                                        </div>
-                                        {/* 삭제 버튼 */}
-                                        <button
-                                            className='w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 border border-red-300 rounded-full flex items-center justify-center transition'
-                                            onClick={(e) => {
-                                                e.stopPropagation();
 
-                                                const deleteId = item.id;
+                                        {/* 우측 영역 */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-2">
+                                            <div className='flex-1 text-base text-start'>
+                                                <p className='text-sm font-semibold text-gray-800'>{Math.floor(item.width)}cm x {Math.floor(item.height)}cm</p>
+                                                <p>{item.price.toLocaleString()}원</p>
+                                            </div>
+                                            {/* 삭제 버튼 */}
+                                            <button
+                                                type="button"
+                                                className={`
+                                                    w-6 h-6 border rounded-full flex items-center justify-center transition font-bold
+                                                    ${disableDelete
+                                                        ? 'text-[#d0ac88] border-[#d0ac88] bg-white hover:text-white hover:bg-[#ecd2af]'
+                                                        : 'text-red-500 hover:text-white hover:bg-red-500  border-red-300'
+                                                    }
+                                                `}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
 
-                                                setCustomItems(prev => {
-                                                    const newItems = prev.filter ((it) => it.id !== deleteId);
-
-                                                    if (selectedItemId === deleteId) {
-                                                        if (newItems.length > 0) {
-                                                            setSelectedItemId(newItems[0].id);
-                                                            setImageSrc(newItems[0].imageSrc);
-                                                        } else {
-                                                            setSelectedItemId(null);
-                                                            setImageSrc(null);
-                                                        }
+                                                    // 1개일 때: O 버튼 = 추가
+                                                    if (disableDelete) {
+                                                        handleAddOption();
+                                                        return;
                                                     }
 
-                                                    return newItems;
-                                                })
-                                            }}
-                                        >
-                                            ×
-                                        </button>
+                                                    // 2개 이상일 때: X 버튼 = 삭제
+                                                    const deleteId = item.id;
+
+                                                    setCustomItems(prev => {
+                                                        const newItems = prev.filter ((it) => it.id !== deleteId);
+
+                                                        if (selectedItemId === deleteId) {
+                                                            const next = newItems[0];
+                                                            if (next) setSelectedItemId(next.id);
+                                                        }
+                                                        return newItems;
+                                                    });
+                                                }}
+                                            >
+                                                {disableDelete ? '+' : '×'}
+                                            </button>
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <button 
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFinishType(item.id);
+                                                    }}
+                                                    className={`
+                                                        text-[11px] px-2 py-[2px] rounded-full border transition 
+                                                        ${item.finishType === 'matte'
+                                                            ? 'bg-gray-700 text-white border-gray-700'
+                                                            : 'bg-[#fff3e6] text-[#a67a3e] border-[#D0AC88]'
+                                                        }
+                                                    `}
+                                                >
+                                                    {item.finishType === 'matte' ? '무광' : '유광'}
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
+                        {/* <div className="flex gap-2 mt-2">
+                            <button
+                                type="button"
+                                className="w-full h-[36px] rounded-md border border-[#D0AC88] font-semibold hover:bg-[#fff5ea]"
+                                onClick={handleAddOption}
+                            >
+                                +
+                            </button>
+                        </div> */}
+
+                        {/* <hr className='mt-3 border-[1px] border-gray-200 opacity-80' /> */}
                         <div className="flex flex-col items-end mt-3">
                             <span className="text-[13px] font-semibold text-gray-600">
                                 무료배송
@@ -753,7 +999,7 @@ const None_Custom_Detail = () => {
                         title: product.title,
                         price: it.price,
                         thumbnail: it.imageSrc,
-                        size: `${Math.floor(it.width)}cm x ${Math.floor(it.height)}cm`,
+                        size: toInchSize(it.width, it.height),
                         category: `${category}_${frameType}`,
                         quantity: 1,
                         cid: null,

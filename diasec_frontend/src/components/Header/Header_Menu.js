@@ -676,7 +676,7 @@ const SearchModal = ({
                                         <span className="text-gray-900 font-semibold">{total}</span>건
                                     </>
                                 ) : (
-                                    "검색어를 입력하세요"
+                                    ""
                                 )}
                             </div>
 

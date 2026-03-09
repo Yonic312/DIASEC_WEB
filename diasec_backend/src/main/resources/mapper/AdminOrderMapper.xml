@@ -41,7 +41,7 @@
                 AND oi.category = #{category}
             </if>
             <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">     
-                AND created_at BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                AND o.created_at BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
             </if>
             
             <if test="keyword != null and keyword != ''">

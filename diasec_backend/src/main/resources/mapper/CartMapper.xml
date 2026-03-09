@@ -5,15 +5,15 @@
 <mapper namespace="com.diasec.diasec_backend.dao.CartMapper">
 
     <insert id="insertCartItems">
-        INSERT INTO cart (id, pid, title, category, price, thumbnail, size, quantity)
+        INSERT INTO cart (id, pid, title, category, price, thumbnail, size, quantity, finish_type)
         VALUES
         <foreach collection="list" item="c" separator=",">
-            (#{c.id}, #{c.pid}, #{c.title}, #{c.category}, #{c.price}, #{c.thumbnail}, #{c.size}, #{c.quantity})
+            (#{c.id}, #{c.pid}, #{c.title}, #{c.category}, #{c.price}, #{c.thumbnail}, #{c.size}, #{c.quantity}, #{c.finishType})
         </foreach>
     </insert>
 
     <select id="getCartByUserId" resultType="com.diasec.diasec_backend.vo.CartVo">
-        SELECT * FROM cart WHERE id = #{id} ORDER BY created_at DESC
+        SELECT cid, id, pid, title, price, category, thumbnail, size, quantity, finish_type as finishType, created_at as createdAt FROM cart WHERE id = #{id} ORDER BY created_at DESC
     </select>
 
     <update id="updateQuantity">

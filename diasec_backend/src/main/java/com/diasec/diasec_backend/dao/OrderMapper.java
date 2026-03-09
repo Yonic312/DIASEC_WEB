@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.diasec.diasec_backend.vo.OrderItemClaimFileVo;
+import com.diasec.diasec_backend.vo.OrderItemFileVo;
 import com.diasec.diasec_backend.vo.OrderItemsVo;
 import com.diasec.diasec_backend.vo.OrderVo;
 
@@ -69,4 +70,40 @@ public interface OrderMapper {
     int insertOrderItemClaimFile(OrderItemClaimFileVo vo);
     List<OrderItemClaimFileVo> selectOrderItemClaimFiles(long itemId);
     int deleteOrderItemClaimFiles(long itemId);
+
+    // 고객 보정 이미지 관련
+    int insertOrderItemFile(OrderItemFileVo vo);
+    
+    Integer selectMaxVersion(@Param("itemId") Long itemId, @Param("role") String role);
+
+    OrderItemFileVo selectLatestFile(@Param("itemId") Long itemId, @Param("role") String role)    ;
+    
+    int updateFileStatusLatest(@Param("itemId") Long itemId,
+                        @Param("role") String role,
+                        @Param("status") String status,
+                        @Param("customerFeedback") String customerFeedback);
+
+    List<OrderItemFileVo> selectFilesByItem(@Param("itemId") Long itemId);
+
+    int updateRetouchStatus(@Param("itemId") Long itemId,
+                            @Param("retouchStatus") String retouchStatus,
+                            @Param("retouchVersion") Integer retouchVersion);
+
+    int upsertOrderItemFile(OrderItemFileVo vo);
+
+    List<Map<String, Object>> selectMyRetouchList(@Param("id") String id);
+
+    List<Map<String, Object>> selectAdminRetouchList(
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        @Param("keyword") String keyword,
+        @Param("status") String status
+    );
+
+    void softDeleteLatestFile(Long itemId, String role);
+
+    int scheduleRetouchPreviewDelete(@Param("itemId") long itemId);
+
+    List<OrderItemFileVo> selectRetouchPreviewToDelete();
+    int markRetouchPreviewDeleted(@Param("fileId") Long fileId);
 }

@@ -17,6 +17,7 @@ const OrderForm = () => {
     const [orderItems, setOrderItems] = useState(() => 
         initialItems.map(it => ({
             ...it,
+            finishType: it.finishType ?? 'glossy',
             // 보정 기본값 보정 (없으면 0)
             retouchEnabled: it.retouchEnabled ?? 0,
             retouchTypes: it.retouchTypes ?? "",
@@ -86,7 +87,7 @@ const OrderForm = () => {
             setEmailLocal(local);
 
             // 도메인이 셀렉트박스에 없는 값이면 '직접입력'으로 간주
-            const domainOptions=["naver.com", "daum.net", "gmail.com", "hanmail.net"];
+            const domainOptions=["naver.com", "daum.net", "gmail.com", "nate.com", "hanmail.net"];
             if (domainOptions.includes(domain)) {
                 setEmailDomain(domain);
             } else {
@@ -157,6 +158,7 @@ const OrderForm = () => {
     const [items, setItems] = useState(() => 
         (orderItems || []).map((it) => ({
             ...it,
+            finishType: it.finishType ?? 'glossy',
             // customFrames에서 넘어온 값 정규화
             retouchEnabled: it.retouchEnabled ?? 0,
             retouchTypes: it.retouchTypes ?? null,
@@ -286,7 +288,8 @@ const OrderForm = () => {
                 ordererName,
                 phone: `${phone1}-${phone2}-${phone3}`,
                 email: finalEmail,
-                amount: finalPrice,
+                // amount: finalPrice,
+                amount: 1,
                 onSuccess: async () => {
                     await submitOrder();
                 },
@@ -370,6 +373,7 @@ const OrderForm = () => {
                 thumbnail: item.thumbnail,
                 orderStatus,
                 deposit: item.deposit,
+                finishType: item.finishType ?? 'glossy',
 
                 // 보정
                 retouchEnabled: item.retouchEnabled ?? 0,
@@ -397,7 +401,17 @@ const OrderForm = () => {
                         paymentMethod,
                         finalPrice,
                         address: `${address} ${detailAddress}`,
-                        guestPassword: isGuest ? guestPassword : null
+                        guestPassword: isGuest ? guestPassword : null,
+
+                        // 무통장일 때 보여줄 정보
+                        bankTransferInfo: paymentMethod === "무통장입금" ? {
+                            bankAccount,
+                            depositor,
+                            dueText: "주문 후 24시간 이내 입금해 주세요.",
+                            receiptType,
+                            receiptMethod,
+                            receiptInfo,
+                        } : null
                     }
                 });
             } else {
@@ -423,7 +437,7 @@ const OrderForm = () => {
         if (category === "masterPiece") {
             return "명화";
         } else if (category === "fengShui") {
-            return "풍수";
+            return "풍수그림";
         } else if (category === "authorCollection") {
             return "작가";
         } else if (category === "photoIllustration") {
@@ -631,8 +645,7 @@ const OrderForm = () => {
                                 )}
 
                                 <span className="text-gray-500">
-                                    {convertCategoryName(item.category)} 
-                                    사이즈 : {convertInchToCm(item.size)}
+                                    {convertCategoryName(item.category)} / {item.finishType === 'matte' ? '무광' : '유광'} / 사이즈 : {convertInchToCm(item.size)}
                                 </span>
                             </div>
                         </div>
@@ -721,6 +734,7 @@ const OrderForm = () => {
                                     <option value="naver.com">naver.com</option>
                                     <option value="daum.net">daum.net</option>
                                     <option value="gmail.com">gmail.com</option>
+                                    <option value="nate.com">nate.com</option>
                                     <option value="hanmail.net">hanmail.net</option>
                                     <option value="직접입력">직접입력</option>
                                 </select>    

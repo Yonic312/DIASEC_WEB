@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.diasec.diasec_backend.dao.OrderMapper;
 import com.diasec.diasec_backend.service.CartService;
 import com.diasec.diasec_backend.service.CreditService;
 import com.diasec.diasec_backend.service.OrderService;
 import com.diasec.diasec_backend.service.ProductService;
 import com.diasec.diasec_backend.util.ImageUtil;
 import com.diasec.diasec_backend.vo.CreditVo;
+import com.diasec.diasec_backend.vo.OrderItemFileVo;
 import com.diasec.diasec_backend.vo.OrderItemsVo;
 import com.diasec.diasec_backend.vo.OrderVo;
 
@@ -52,6 +54,7 @@ public class OrderController {
     private final ProductService productService;
     private final ImageUtil imageUtil;
     private final PasswordEncoder passwordEncoder;
+    private final OrderMapper orderMapper;
 
     // OrderForm 주문 저장    
     @PostMapping("/insert")
@@ -352,5 +355,41 @@ public class OrderController {
             return ResponseEntity.internalServerError()
                 .body(Map.of("success", false, "message", e.getMessage()));
         }
+    }
+
+    // 고객: 승인
+    @PostMapping("/retouch/{itemId}/approve")
+    public ResponseEntity<?> approveRetouch(@PathVariable Long itemId) {
+        orderService.approveRetouch(itemId);
+        return ResponseEntity.ok(Map.of("success", true, "itemId", itemId));
+    }
+
+    // 고객: 반려
+    @PostMapping("/retouch/{itemId}/reject")
+    public ResponseEntity rejectRetouch(
+        @PathVariable Long itemId,
+        @RequestBody Map<String, String> body
+    ) {
+        String feedback = body.getOrDefault("feedback", "");
+        orderService.rejectRetouch(itemId, feedback);
+        return ResponseEntity.ok(Map.of("success", true, "itemId", itemId));
+    }
+
+    // 프리뷰 보여주기
+    @GetMapping("/order-items/{itemId}/retouch/preview")
+    public Map<String, Object> getLatestPreview(@PathVariable Long itemId) {
+        OrderItemFileVo latest = orderService.getLatestRetouchPreview(itemId);
+        return Map.of(
+            "ok", true,
+            "itemId", itemId,
+            "data", latest
+        );
+    }
+
+    // 보정 리터치 리스트 (고객)
+    @PostMapping("/retouch/list")
+    public ResponseEntity<?> myRetouchList(@RequestBody Map<String, String> body) {
+        String id = body.get("id");
+        return ResponseEntity.ok(Map.of("success", true, "list", orderMapper.selectMyRetouchList(id)));
     }
 }

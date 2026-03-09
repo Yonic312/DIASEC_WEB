@@ -42,10 +42,15 @@ const SupportHeader = () => {
                         onClick={() => {
                             navigate(routes[tab]);
                         }}
-                        className={`relative pb-2 ${
-                            activeTab === tab
-                                ? 'text-black after:absolute after:left-0 md:after:-bottom-1 after:bottom-[6px] after:w-full after:h-0.5 after:bg-[#555555]'
-                                : 'text-black'
+                        className={`relative 
+                            after:absolute after:left-0 md:after:-bottom-1 after:bottom-[6px]
+                            after:w-0 after:h-0.5 after:bg-[#555555]
+                            after:transition-all after:duration-300
+                            hover:after:w-full hover:text-black
+                            ${
+                                activeTab === tab
+                                    ? 'text-black after:w-full'
+                                    : 'text-gray-500'
                         }`}
                     >
                         {tab}

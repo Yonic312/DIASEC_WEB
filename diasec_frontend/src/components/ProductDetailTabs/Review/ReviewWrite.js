@@ -54,6 +54,10 @@ const ReviewWrite = () => {
             return;
         }
 
+        if (images.length === 0) {
+            toast.error('리뷰 이미지를 최소 1장 이상 업로드해주세요.');
+        }
+
         const formData = new FormData();
         [
             ['id', member.id],
@@ -224,7 +228,7 @@ const ReviewWrite = () => {
                     >
                     <label className="cursor-pointer block md:text-sm text-[clamp(11px,1.824vw,14px)]">
                         여기에 이미지를 드래그하거나 클릭하여 선택하세요 <br />
-                        <span className="md:text-xs text-[clamp(10px,1.564vw,12px)] text-gray-400">(최대 5장, 각 10MB 이하의 이미지만 업로드 가능합니다)</span>
+                        <span className="md:text-xs text-[clamp(10px,1.564vw,12px)] text-gray-400">(최소 1장, 최대 5장, 각 10MB 이하)</span>
                         <input
                         type="file"
                         accept="image/png, image/jpeg"

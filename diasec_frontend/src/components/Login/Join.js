@@ -11,7 +11,10 @@ const Join = () => {
     const [id, setId] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [emailLocal, setEmailLocal] = useState('');
+    const [emailDomain, setEmailDomain] = useState('naver.com');
+    const [customDomain, setCustomDomain] = useState('');
+    const finalEmail = `${emailLocal}@${emailDomain === '직접입력' ? customDomain : emailDomain}`
     const [smsAgree, setSmsAgree] = useState(true);
     const [emailAgree, setEmailAgree] = useState(true);
 
@@ -245,14 +248,20 @@ const Join = () => {
     };
 
     const checkEmailDuplicateSilent = async () => {
-        const trimmedEmail = email.trim();
+        const trimmedEmail = finalEmail.trim();
     
-        if (!trimmedEmail) {
+        if (!emailLocal.trim()) {
             toast.error('이메일을 입력해주세요.');
             emailRef.current?.focus();
             return false;
         }
     
+        if (emailDomain === '직접입력' && !customDomain.trim()) {
+            toast.error('이메일 도메인을 입력해주세요.');
+            emailRef.current?.focus();
+            return false;
+        }
+
         if (!isValidEmail(trimmedEmail)) {
             toast.error('올바른 이메일 형식을 입력해주세요.');
             emailRef.current?.focus();
@@ -420,9 +429,13 @@ const Join = () => {
         }
 
         const registrationData = {
-            id: trimmedId, password, name,
+            id: trimmedId, 
+            password, 
+            name,
             phone: phoneNumber,
-            email, smsAgree, emailAgree
+            email: finalEmail, 
+            smsAgree, 
+            emailAgree
         }
 
         try {
@@ -640,24 +653,62 @@ const Join = () => {
                     <hr/>
 
                     <div className="w-full flex flex-row items-center mt-3 px-3 mb-3">
-                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px">
+                        <div className="shrink-0 flex sm:w-[150px] w-[90px] sm:text-sm text-[12px]">
                             이메일 <span className="font-bold text-red-500">*</span>
                         </div>
-                        <input type="text" id="email" className="px-2 border-[1px] h-7 sm:text-base text-[14px]" 
-                            value={email}
-                            ref={emailRef}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+
+                        <div className="flex flex-col w-full">
+                            <div className="flex items-center gap-1 w-full">
+                                <input
+                                    type="text"
+                                    ref={emailRef}
+                                    value={emailLocal}
+                                    onChange={(e) => setEmailLocal(e.target.value)}
+                                    className="px-2 border-[1px] h-7 sm:text-base text-[14px] w-[35%]"
+                                />
+
+                                <span>@</span>
+
+                                {emailDomain === '직접입력' ? (
+                                    <input
+                                        type="text"
+                                        value={customDomain}
+                                        onChange={(e) => setCustomDomain(e.target.value)}
+                                        className="px-2 border-[1px] h-7 sm:text-base text-[14px] w-[35%]"
+                                    />
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={emailDomain}
+                                        readOnly
+                                        className="px-2 border-[1px] h-7 sm:text-base text-[14px] w-[35%] bg-gray-100"
+                                    />
+                                )}
+
+                                <select
+                                    value={emailDomain}
+                                    onChange={(e) => setEmailDomain(e.target.value)}
+                                    className="px-2 border-[1px] h-7 sm:text-base text-[14px] w-[30%]"
+                                >
+                                    <option value="naver.com">naver.com</option>
+                                    <option value="daum.net">daum.net</option>
+                                    <option value="gmail.com">gmail.com</option>
+                                    <option value="nate.com">nate.com</option>
+                                    <option value="hanmail.net">hanmail.net</option>
+                                    <option value="직접입력">직접입력</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <hr/>
-
                 </div>
 
                 <div className="flex flex-col">
                     <span className="ml-3 mb-2 sm:text-base text-[14px]">전체동의</span>
                     <hr/>
                     <div className="flex mt-3 ml-3 mb-3 items-center">
-                        <input 
+                        <input
+                            id="agree-terms1"
                             type="checkbox" 
                             checked={agree.all} 
                             onChange={toggleAgreeAll} 
@@ -665,7 +716,7 @@ const Join = () => {
                                 sm:w-4 w-[12px]
                                 sm:h-4 h-[12px]
                                 mr-1"/>
-                        <span className="ml-1 sm:text-base text-[11px]">이용약관 및 개인정보수집 및 이용, 쇼핑정보 수신(선택)에 모두 동의합니다.</span>
+                        <label htmlFor="agree-terms1" className="ml-1 sm:text-base text-[11px] cursor-pointer">이용약관 및 개인정보수집 및 이용, 쇼핑정보 수신(선택)에 모두 동의합니다.</label>
                     </div>
                     <hr/>
 
@@ -892,8 +943,13 @@ const Join = () => {
 
                         부 칙(시행일) 이 약관은 년 월 일부터 시행합니다.`}
                     </div>
-                    <div className="flex items-center ml-3 mb-5 "><span className="mr-2 sm:text-xs text-[11px]">이용약관에 동의하십니까?</span> 
-                    <input type="checkbox" checked={agree.terms} onChange={(e) => handleIndividual('terms', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/><span className="sm:text-xs text-[11px]">동의함</span></div>
+                    <div className="flex items-center ml-3 mb-5 ">
+                        <span className="mr-2 sm:text-xs text-[11px]">이용약관에 동의하십니까?</span> 
+                        
+                        <input id="agree-terms2" type="checkbox" checked={agree.terms} onChange={(e) => handleIndividual('terms', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/>
+                        
+                        <label htmlFor="agree-terms2" className="sm:text-xs text-[11px] cursor-pointer">동의함</label>
+                    </div>
 
                     <hr/>
                     <span className="mt-3 ml-3 mb-3 sm:text-xs text-[11px]">[필수] 개인정보 수집 및 이용 동의</span>
@@ -917,7 +973,9 @@ const Join = () => {
                         회사는 개인정보 수집 및 이용목적이 달성된 후에는 예외 없이 해당 정보를 지체 없이 파기합니다.`}
                     </div>
                     <div className="flex items-center ml-3 mb-5 "><span className="mr-2 sm:text-xs text-[11px]">개인정보 수집 및 이용에 동의하십니까?</span> 
-                    <input type="checkbox" checked={agree.privacy} onChange={(e) => handleIndividual('privacy', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/><span className="sm:text-xs text-[11px]">동의함</span></div>
+                        <input id="agree-terms3" type="checkbox" checked={agree.privacy} onChange={(e) => handleIndividual('privacy', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/>
+                        <label htmlFor="agree-terms3" className="sm:text-xs text-[11px] cursor-pointer">동의함</label>
+                    </div>
 
                     <hr/>
                     <span className="mt-3 ml-3 mb-3 sm:text-xs text-[11px]">[선택] 쇼핑정보 수신 동의</span>
@@ -928,8 +986,10 @@ const Join = () => {
 
                         선택 약관에 동의하지 않으셔도 회원가입은 가능하며, 회원가입 후 회원정보수정 페이지에서 언제든지 수신여부를 변경하실 수 있습니다.`}
                     </div>
-                    <div className="flex items-center ml-3 mb-5 "><span className="mr-2 sm:text-xs text-[11px]">수신을 동의하십니까?</span> 
-                    <input type="checkbox" checked={agree.marketing} onChange={(e) => handleIndividual('marketing', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/><span className="sm:text-xs text-[11px]">동의함</span></div>
+                    <div className="flex items-center ml-3 mb-5 "><span className="mr-2 sm:text-xs text-[11px] cursor-pointer">수신을 동의하십니까?</span> 
+                        <input id="agree-terms4" type="checkbox" checked={agree.marketing} onChange={(e) => handleIndividual('marketing', e.target.checked)} className="sm:w-4 w-[12px] sm:h-4 h-[12px] mr-1"/>
+                        <label htmlFor="agree-terms4" className="sm:text-xs text-[11px] cursor-pointer">동의함</label>
+                    </div>
                 </div>
                 <hr/>
                 <button

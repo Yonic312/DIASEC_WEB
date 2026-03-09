@@ -32,14 +32,20 @@ const OrderTracking = () => {
 
     // 인치 -> cm 변환
     const convertInchToCm = (size) => {
-        if (!size || typeof size !== 'string') return size;
+        if (!size || typeof size !== "string") return size;
 
-        const [w, h] = size.split(/[xX]/).map(s => parseFloat(s.trim()));
-        if (isNaN(w) || isNaN(h)) return size;
+        const match = size.match(/([\d.]+)\s*[xX]\s*([\d.]+)/);
+        if (!match) return size;
 
-        const cmW = (w * 2.54).toFixed(1);
-        const cmH = (h * 2.54).toFixed(1);
-        return `${w} x ${h} (${cmW}cm x ${cmH}cm)`;
+        const wInch = parseFloat(match[1]);
+        const hInch = parseFloat(match[2]);
+
+        if (isNaN(wInch) || isNaN(hInch)) return size;
+
+        const wCm = Math.round(wInch * 2.54);
+        const hCm = Math.round(hInch * 2.54);
+
+        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
     }
 
     const convertCategoryName = (category) => {
@@ -104,7 +110,7 @@ const OrderTracking = () => {
                                     className="
                                         md:text-sm md:text-[clamp(11px,1.368vw,14px)] text-[clamp(9px,1.433vw,11px)]
                                         text-gray-500 mb-1">
-                                    카테고리: {convertCategoryName(item.items[0].category)} <br />
+                                    카테고리: {convertCategoryName(item.items[0].category)} ({item.items[0].finishType === 'matte' ? '무광' : '유광'}) <br />
                                     사이즈: {convertInchToCm(item.items[0].size)} ({item.items[0].quantity}개)
                                 </div>
                             </div>

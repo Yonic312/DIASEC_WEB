@@ -62,8 +62,21 @@
   }
 }
 
+/* 회원가입 적립금 */
+@keyframes bounceX {
+  0%,100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
 
+.animate-bounceX {
+  animation: bounceX 2s infinite ease-in-out;
+}
 
+/* 회원가입 적립금 **/
 
 
 @font-face {

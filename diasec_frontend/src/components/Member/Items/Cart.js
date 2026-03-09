@@ -12,6 +12,15 @@ const Cart = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const categoryMap = {
+        masterPiece: '명화',
+        koreanPainting: '동양화',
+        photoIllustration: '사진/일러스트',
+        fengShui: '풍수',
+        authorCollection: '작가',
+        customFrames: '맞춤액자'
+    };
+
     // 체크박스(선택주문용으로만 사용: 백엔드 선택삭제 API 없음)
     const [checked, setChecked] = useState(new Set());
 
@@ -137,6 +146,23 @@ const Cart = () => {
         }
     };
 
+    const convertInchToCm = (size) => {
+        if (!size || typeof size !== "string") return size;
+
+        const match = size.match(/([\d.]+)\s*[xX]\s*([\d.]+)/);
+        if (!match) return size;
+
+        const wInch = parseFloat(match[1]);
+        const hInch = parseFloat(match[2]);
+
+        if (isNaN(wInch) || isNaN(hInch)) return size;
+
+        const wCm = Math.round(wInch * 2.54);
+        const hCm = Math.round(hInch * 2.54);
+
+        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
+    };
+
     // ✅ 선택 주문: OrderForm으로 state 넘김 (너 프로젝트 방식)
     const orderSelected = () => {
         if (!member?.id) {
@@ -160,6 +186,7 @@ const Cart = () => {
             quantity: it.quantity ?? 1,
             category: it.category,
             cid: it.cid, // 필요하면 같이 넘겨
+            finishType: it.finishType,
         }));
 
         navigate("/orderForm", { state: { orderItems: orderData } });
@@ -294,9 +321,11 @@ const Cart = () => {
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-gray-800 truncate">{it.title}</p>
-                                                <p className="text-sm text-gray-500 mt-1">{it.size ? `사이즈: ${it.size}` : ""}</p>
-                                                <p className="text-sm text-gray-800 font-bold mt-1">
-                                                {Number(it.price || 0).toLocaleString()}원
+                                                <p className="text-sm text-gray-500 mt-1">
+                                                    {categoryMap[it.category]} ({it.finishType === 'matte' ? '무광' : '유광'})
+                                                </p>
+                                                <p className="text-sm text-gray-500 mt-1">
+                                                    {it.size ? `사이즈: ${convertInchToCm(it.size)}` : ""}
                                                 </p>
                                             </div>
 

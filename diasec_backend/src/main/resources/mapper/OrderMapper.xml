@@ -52,11 +52,11 @@
     <insert id="insertOrderItem" parameterType="map">
         INSERT INTO order_items (
             oid, cid, pid, category, title, quantity, price, period, size, thumbnail, 
-            order_status, deposit, 
+            order_status, deposit, finish_type, 
             retouch_enabled, retouch_types, retouch_note
         ) VALUES (
             #{oid}, #{item.cid}, #{item.pid}, #{item.category}, #{item.title}, #{item.quantity}, #{item.price}, 
-            #{item.period}, #{item.size}, #{item.thumbnail}, #{item.orderStatus}, #{item.deposit}, 
+            #{item.period}, #{item.size}, #{item.thumbnail}, #{item.orderStatus}, #{item.deposit}, #{item.finishType},
             COALESCE(#{item.retouchEnabled}, 0), #{item.retouchTypes}, #{item.retouchNote}
         )
     </insert>
@@ -79,7 +79,7 @@
     <select id="selectOrderItems" resultType="OrderItemsVo">
         SELECT 
             oi.item_id as itemId, oi.oid, oi.cid, oi.pid, oi.category, oi.title, oi.quantity, oi.price, 
-            oi.period, oi.size, oi.thumbnail, oi.order_status as orderStatus, o.final_price AS finalPrice,
+            oi.period, oi.size, oi.thumbnail, oi.order_status as orderStatus, o.final_price AS finalPrice, finish_type as finishType,
             oi.lease_start as leaseStart, oi.lease_end as leaseEnd, tracking_number as trackingNumber, tracking_company as trackingCompany,
             oi.retouch_enabled as retouchEnabled,
             oi.retouch_types as retouchTypes,
@@ -117,7 +117,7 @@
     <!-- 3. 상세페이지로 들어갈 itemId 개별 주문 상품 조회 -->
     <select id="selectOrderItemById" resultType="OrderItemsVo">
         SELECT 
-            item_id as itemId, oid, cid, pid, category, title, quantity, price, deposit, 
+            item_id as itemId, oid, cid, pid, category, title, quantity, price, deposit, finish_type as finishType,
             period, size, thumbnail, order_status as orderStatus, 
             lease_start as leaseStart, lease_end as leaseEnd,
             tracking_number as trackingNumber, tracking_company as trackingCompany,
@@ -224,4 +224,252 @@
         DELETE FROM order_item_claim_file WHERE item_id =#{itemId}
     </delete>
     <!-- 클레임 이미지 !-->
+
+
+    <!-- 보정 컨펌 관련 -->
+    <insert id="insertOrderItemFile" parameterType="com.diasec.diasec_backend.vo.OrderItemFileVo">
+        INSERT INTO order_item_file (
+            item_id, role, version, status,
+            file_url, original_name, file_size, mime_type,
+            uploaded_by, customer_feedback,
+            delete_scheduled_at, deleted_at
+        ) VALUES (
+            #{itemId}, #{role}, #{version}, #{status},
+            #{fileUrl}, #{originalName}, #{fileSize}, #{mimeType},
+            #{uploadedBy}, #{customerFeedback},
+            #{deleteScheduledAt}, #{deletedAt}
+        )
+    </insert>
+
+    <select id="selectMaxVersion" resultType="int">
+        SELECT COALESCE(MAX(version), 0)
+        FROM order_item_file
+        WHERE item_id = #{itemId} AND role = #{role}
+    </select>
+
+    <select id="selectLatestFile" resultType="com.diasec.diasec_backend.vo.OrderItemFileVo">
+        SELECT
+            file_id AS fileId,
+            item_id AS itemId,
+            role,
+            version,
+            status,
+            file_url AS fileUrl,
+            original_name AS originalName,
+            file_size AS fileSize,
+            mime_type AS mimeType,
+            uploaded_by AS uploadedBy,
+            customer_feedback AS customerFeedback,
+            created_at AS createdAt,
+            delete_scheduled_at AS deleteScheduledAt,
+            deleted_at AS deletedAt
+        FROM order_item_file
+        WHERE item_id = #{itemId} AND role = #{role} AND deleted_at IS NULL
+        ORDER BY version DESC, file_id DESC
+        LIMIT 1
+    </select>
+
+    <update id="updateFileStatusLatest">
+        UPDATE order_item_file
+        SET
+            status = #{status},
+            customer_feedback = #{customerFeedback}
+        WHERE item_id = #{itemId}
+            AND role = #{role}
+            AND deleted_at IS NULL
+    </update>
+
+    <select id="selectFilesByItem" resultType="com.diasec.diasec_backend.vo.OrderItemFileVo">
+        SELECT  
+            file_id AS fileId,
+            item_id AS itemId,
+            role,
+            version,
+            status,
+            file_url AS fileUrl,
+            original_name AS originalName,
+            file_size AS fileSize,
+            mime_type AS mimeType,
+            uploaded_by AS uploadedBy,
+            customer_feedback AS customerFeedback,
+            created_at AS createdAt,
+            delete_scheduled_at AS deleteScheduledAt,
+            deleted_at AS deletedAt
+        FROM order_item_file
+        WHERE item_id = #{itemId}
+        ORDER BY role ASC, version DESC, file_id DESC
+    </select>
+
+    <!-- order_items 상태 수정 -->
+    <update id="updateRetouchStatus">
+        UPDATE order_items
+        SET
+            retouch_status = #{retouchStatus},
+            retouch_version = #{retouchVersion}
+        WHERE item_id = #{itemId}
+    </update>
+
+    <insert id="upsertOrderItemFile" parameterType="com.diasec.diasec_backend.vo.OrderItemFileVo">
+        INSERT INTO order_item_file (
+            item_id, role, version, status,
+            file_url, original_name, file_size, mime_type,
+            uploaded_by, customer_feedback,
+            delete_scheduled_at, deleted_at
+        ) VALUES (
+            #{itemId}, #{role}, 1, #{status},
+            #{fileUrl}, #{originalName}, #{fileSize}, #{mimeType},
+            #{uploadedBy}, #{customerFeedback},
+            #{deleteScheduledAt}, #{deletedAt}
+        )
+        ON DUPLICATE KEY UPDATE
+            version = 1,
+            status = VALUES(status),
+            file_url = VALUES(file_url),
+            original_name = VALUES(original_name),
+            file_size = VALUES(file_size),
+            mime_type = VALUES(mime_type),
+            uploaded_by = VALUES(uploaded_by),
+            customer_feedback = VALUES(customer_feedback),
+            delete_scheduled_at = VALUES(delete_scheduled_at),
+            deleted_at = VALUES(deleted_at),
+            created_at = NOW()
+    </insert>
+
+    <!-- 고객용 -->
+    <select id="selectMyRetouchList" resultType="map">
+        SELECT
+            oi.item_id AS itemId,
+            oi.oid AS oid,
+            oi.title AS title,
+            oi.order_status AS orderStatus,
+            oi.retouch_types AS retouchTypes,
+            oi.retouch_note AS retouchNote,
+            o.created_at AS itemCreatedAt,
+            f.status AS previewStatus,
+            f.file_url AS previewUrl,
+            f.customer_feedback AS customerFeedback,
+            f.created_at AS previewCreatedAt,
+            f.delete_scheduled_at as deleteScheduledAt,
+            f.deleted_at AS deletedAt
+        FROM order_items oi
+        JOIN orders o ON o.oid = oi.oid
+        LEFT JOIN order_item_file f
+            ON f.item_id = oi.item_id
+            AND f.role = 'RETOUCH_PREVIEW'
+            AND f.deleted_at IS NULL
+        WHERE o.id = #{id}
+            AND oi.retouch_enabled = 1
+        ORDER BY oi.item_id DESC
+    </select>
+
+    <!-- 관리자용 -->
+    <select id="selectAdminRetouchList" resultType="map">
+        SELECT
+            oi.item_id AS itemId,
+            oi.oid AS oid,
+            o.id AS memberId,
+            oi.title AS title,
+            oi.retouch_enabled AS retouchEnabled,
+            oi.order_status AS orderStatus,
+            oi.retouch_types AS retouchTypes,
+            oi.retouch_note AS retouchNote,
+            oi.created_at AS createdAt,
+
+            f.status AS previewStatus,
+            f.file_url AS previewUrl,
+            f.customer_feedback AS customerFeedback,
+            f.created_at AS previewCreatedAt,
+            f.delete_scheduled_at AS deleteScheduledAt
+
+        FROM order_items oi
+        JOIN orders o ON o.oid = oi.oid
+
+        LEFT JOIN order_item_file f
+            ON f.item_id = oi.item_id
+        AND f.role = 'RETOUCH_PREVIEW'
+        AND f.deleted_at IS NULL
+
+        WHERE oi.retouch_enabled = 1
+            AND o.created_at BETWEEN CONCAT(#{startDate}, ' 00:00:00')
+                                AND CONCAT(#{endDate}, ' 23:59:59')
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+            oi.title LIKE CONCAT('%', #{keyword}, '%')
+            OR o.id LIKE CONCAT('%', #{keyword}, '%')
+            OR CAST(oi.oid AS CHAR) = #{keyword}
+            OR CAST(oi.item_id AS CHAR) = #{keyword}
+            )
+        </if>
+
+        <if test="status != null and status != ''">
+            <choose>
+            <when test="status == 'NO_PREVIEW'">
+                AND f.file_id IS NULL
+            </when>
+            <otherwise>
+                AND (
+                (#{status} = 'DELETED' AND f.deleted_at IS NOT NULL)
+                OR
+                (#{status} != 'DELETED' AND f.deleted_at IS NULL AND f.status = #{status})
+                )
+            </otherwise>
+            </choose>
+        </if>
+
+        ORDER BY oi.item_id DESC
+    </select>
+
+    <update id="softDeleteLatestFile">
+        UPDATE order_item_file
+        SET deleted_at = NOW()
+        WHERE item_id = #{itemId}
+            AND role = #{role}
+            AND deleted_at IS NULL
+    </update>
+
+    <update id="scheduleRetouchPreviewDelete">
+        UPDATE order_item_file
+        SET
+            status='APPROVED',
+            delete_scheduled_at = DATE_ADD(NOW(), INTERVAL 30 DAY)
+        WHERE item_id = #{itemId}
+            AND role = 'RETOUCH_PREVIEW'
+    </update>
+
+    <!-- 30일 지난 파일 검색용 -->
+    <select id="selectRetouchPreviewToDelete" resultType="com.diasec.diasec_backend.vo.OrderItemFileVo">
+        <![CDATA[
+            SELECT
+                file_id AS fileId,
+                item_id AS itemId,
+                role,
+                version,
+                status,
+                file_url as fileUrl,
+                original_name as originalName,
+                file_size as fileSize,
+                mime_type AS mimeType,
+                uploaded_by AS uploadedBy,
+                customer_feedback AS customerFeedback,
+                created_at AS createdAt,
+                delete_scheduled_at AS deleteScheduledAt,
+                deleted_at AS deletedAt
+            FROM order_item_file
+            WHERE role = 'RETOUCH_PREVIEW'
+                AND status = 'APPROVED'
+                AND file_url IS NOT NULL
+                AND deleted_at IS NULL
+                AND delete_scheduled_at IS NOT NULL
+                AND delete_scheduled_at <= NOW()
+            ORDER BY delete_scheduled_at ASC, file_id ASC
+        ]]>
+    </select>
+
+    <update id="markRetouchPreviewDeleted">
+        UPDATE order_item_file
+        SET deleted_at = NOW()
+        WHERE file_id = #{fileId}
+            AND deleted_at IS NULL
+    </update>
 </mapper>

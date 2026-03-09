@@ -53,4 +53,15 @@ public interface InquiryMapper {
 
     Long selectUnanswered ();
 
+    InquiryVo selectInquiryOwnerAndStatus(Long iid);
+
+    void updateInquiryByCustomer(@Param("iid") Long iid,
+                                 @Param("title") String title,
+                                 @Param("content") String content,
+                                 @Param("category") String category,
+                                 @Param("isPrivate") String isPrivate
+    );
+
+    void deleteInquiryImageByUrl(@Param("iid") Long iid, @Param("url") String url);
+    void insertInquiryImageByParams(@Param("iid") Long iid, @Param("url") String url);
 }

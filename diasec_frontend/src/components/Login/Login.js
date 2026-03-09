@@ -212,10 +212,30 @@ const Login = () => {
 
                     <hr/>
 
-                    <div className="flex flex-row justify-center mt-3">
+                    <div className="flex flex-row justify-center mt-3 relative">
+                        {/* 말풍선 */}
+                        <div className="
+                            absolute -top-6 right-2
+                            bg-[#E6C39A] text-white
+                            text-[11px] px-2 py-1
+                            rounded-full
+                            font-semibold
+                            shadow-md
+                            animate-bounceX
+                            whitespace-nowrap
+                        ">
+                            적립금 5,000원
+
+                            <div className="
+                                absolute -bottom-1 right-4
+                                w-2 h-2 bg-[#E6C39A]
+                                rotate-45
+                            "></div>
+                        </div>
+                                                    
                         <button className=
                             "border-[1px] w-full h-[48px] sm:text-sm text-[12px]" onClick={() => navigate('/join')} type="button">
-                            회원가입 
+                            회원가입
                         </button>
                     </div>
                     <div className="flex flex-row justify-center mt-3">

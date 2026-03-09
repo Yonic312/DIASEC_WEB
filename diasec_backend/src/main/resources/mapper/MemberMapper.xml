@@ -114,11 +114,11 @@
 
     <insert id="insertSocialMember" parameterType="com.diasec.diasec_backend.vo.MemberVo">
         INSERT INTO member (
-            id, password, name, phone, email, nickname, provider, role,
+            id, password, name, phone, email, nickname, provider, role, smsAgree, emailAgree,
             kakao_uid, naver_uid
         ) 
         VALUES (
-            #{id}, #{password}, #{name}, #{phone}, #{email}, #{nickname}, #{provider}, #{role}, #{kakao_uid}, #{naver_uid}
+            #{id}, #{password}, #{name}, #{phone}, #{email}, #{nickname}, #{provider}, #{role}, #{smsAgree}, #{emailAgree}, #{kakao_uid}, #{naver_uid}
         )
     </insert>
 

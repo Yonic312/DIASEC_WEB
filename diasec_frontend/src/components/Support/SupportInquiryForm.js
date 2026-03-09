@@ -1,21 +1,59 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MemberContext } from '../../context/MemberContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-
+import { FolderDot } from 'lucide-react';
 
 const SupportInquiryForm = () => {
     const API = process.env.REACT_APP_API_BASE;
     const navigate = useNavigate();
+    const location = useLocation();
     const {member, setMember} = useContext(MemberContext); 
+
+    const mode = location.state?.mode;
+    const inquiry = location.state?.inquiry;
+    const returnTo = location.state?.returnTo || -1;
+
+    const [images, setImages] = useState([]);
+
     const [form, setForm] = useState({
         type: '',
         title: '',
         content: '',
         files: []
     });
+
+    const reverseCategoryMap = useMemo(() => ({
+        member: '회원 문의',
+        order: '주문 / 결제문의',
+        cancel: '취소 / 환불문의',
+        design: '시안 / 수정문의',
+        shipping: '배송 / 제작문의',
+        etc: '기타 문의',
+        product: '기타 문의',
+    }), []);
+
+    // 수정으로 들어오면 기본값 채우기
+    useEffect(() => {
+        if (mode !== "edit") return;
+        if (!inquiry) return;
+
+        setForm(prev => ({
+            ...prev,
+            type: reverseCategoryMap[inquiry.category] || '기타 문의',
+            title: inquiry.title || '',
+            content: inquiry.content || '',
+        }));
+
+        const oldImgs = (inquiry.imageUrls || []).map(url => ({
+            kind: "old",
+            url: url.trim(),
+        }));
+
+        setImages(oldImgs);
+    }, [mode, inquiry, reverseCategoryMap]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -26,38 +64,45 @@ const SupportInquiryForm = () => {
     // 이미지 상태 관리 함수
     const handleFiles = (e) => {
         const newFiles = Array.from(e.target.files);
-        const combined = [...form.files, ...newFiles];
+
+        const newItems = newFiles.map(file => ({
+            kind: "new",
+            file,
+            preview: URL.createObjectURL(file),
+        }));
+
+        const combined = [...images, ...newItems];
 
         if (combined.length > 3) {
             toast.error('이미지는 최대 3개까지만 등록할 수 있습니다.');
+            newItems.forEach(it => URL.revokeObjectURL(it.preview));
             return;
         }
 
-        setForm(prev => ({
-            ...prev,
-            files: combined
-        }));
+        setImages(combined);
+
+        e.target.value = "";
     };
 
     const handleDeleteImage = (index) => {
-        setForm(prev => {
-            const updated = [...prev.files];
-            updated.splice(index, 1);
-            return { ...prev, files: updated };
+        setImages(prev => {
+            const copy = [...prev];
+            const removed = copy.splice(index, 1)[0];
+            if (removed?.kind === "new") URL.revokeObjectURL(removed.preview);
+            return copy;
         });
     };
 
     const handleReorder = (result) => {
         if (!result.destination) return;
-        const reordered = Array.from(form.files);
-        const [moved] = reordered.splice(result.source.index, 1);
-        reordered.splice(result.destination.index, 0, moved);
-        setForm(prev => ({ ...prev, files: reordered}));
-    }
 
-    // 마이페이지, 고객센터 이동
-    const location = useLocation();
-    const returnTo = location.state?.returnTo;
+        setImages(prev => {
+            const arr = Array.from(prev);
+            const [moved] = arr.splice(result.source.index, 1);
+            arr.splice(result.destination.index, 0, moved);
+            return arr;
+        });
+    };
 
     const handleSubmit = async () => {
         if (!form.type.trim() || !form.title.trim() || !form.content.trim()) {
@@ -65,30 +110,54 @@ const SupportInquiryForm = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('pid', 0);
-        formData.append('id', member?.id);
-        formData.append('title', form.title);
-        formData.append('content', form.content);
-        formData.append('category', categoryMap[form.type] || 'etc');
-        formData.append('isPrivate', 0);
-
-        form.files.forEach((file) => {
-            formData.append('images', file);
-        });
-
         try {
+            if (mode === "edit") {
+                const fd = new FormData();
+                fd.append("title", form.title);
+                fd.append("content", form.content);
+                fd.append("category", categoryMap[form.type] || "etc");
+                fd.append("isPrivate", "0");
+
+                images
+                    .filter(it => it.kind === "old")
+                    .forEach(it => fd.append("keepUrls", it.url));
+
+                images
+                    .filter(it => it.kind === "new")
+                    .forEach(it => fd.append("images", it.file));
+
+                await axios.patch(`${API}/inquiry/my/${inquiry.iid}/with-images`, fd, {
+                    withCredentials: true,
+                    headers: { "Content-Type": "multipart/form-data" },
+                });    
+
+                toast.success("문의가 수정되었습니다!");
+                navigate(returnTo);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pid', 0);
+            formData.append('id', member?.id);
+            formData.append('title', form.title);
+            formData.append('content', form.content);
+            formData.append('category', categoryMap[form.type] || 'etc');
+            formData.append('isPrivate', 0);
+
+            images
+                .filter(it => it.kind === "new")
+                .forEach(it => formData.append("images", it.file));
+
             await axios.post(`${API}/inquiry/insert`, formData, {
-                headers: {
-                    'Content-Type' : 'multipart/form-data',
-                },
-                withCredentials: true
+                headers: { 'Content-Type': 'multipart/form-data', },
+                withCredentials: true,
             });
+
             toast.success('문의가 등록되었습니다!');
             navigate(returnTo);
         } catch (err) {
             console.error(err);
-            toast.error('문의 등록에 실패했습니다.');
+            toast.error('처리에 실패했습니다.');
         }
     };
 
@@ -101,7 +170,6 @@ const SupportInquiryForm = () => {
         '기타 문의' : 'etc'
     }
 
-    
     return(
         <div
             className="w-[60%] mx-auto px-2"
@@ -204,17 +272,21 @@ const SupportInquiryForm = () => {
                                 text-gray-400 mt-1">2MB 이하 이미지(png, jpg) 최대 3개</p>
 
                         {/* 미리보기 + 정렬 */}
-                        {form.files.length > 0 && (
+                        {images.length > 0 && (
                             <DragDropContext onDragEnd={handleReorder}>
                                 <Droppable droppableId="inquiryImages" direction="horizontal">
                                     {(provided) => (
                                         <div
                                             ref={provided.innerRef}
                                             {...provided.droppableProps}
-                                            className="flex gap-3 mt-3"
+                                            className="flex gap-3 mt-3 flex-wrap"
                                         >
-                                            {form.files.map((file, index) => (
-                                                <Draggable key={file.name + index} draggableId={file.name + index} index={index}>
+                                            {images.map((it, index) => (
+                                                <Draggable 
+                                                    key={(it.kind === "old" ? it.url : it.preview) + index} 
+                                                    draggableId={(it.kind === "old" ? it.url : it.preview) + index}  
+                                                    index={index}
+                                                >
                                                     {(provided) => (
                                                         <div
                                                             ref={provided.innerRef}
@@ -223,12 +295,9 @@ const SupportInquiryForm = () => {
                                                             className="relative"
                                                         >
                                                             <img
-                                                                src={URL.createObjectURL(file)}
+                                                                src={it.kind === "old" ? encodeURI(it.url) : it.preview}
                                                                 alt={`img-${index}`}
-                                                                className="
-                                                                    md:w-20 w-[clamp(40px,10.43vw,80px)]
-                                                                    md:h-20 h-[clamp(40px,10.43vw,80px)]
-                                                                    object-cover border"
+                                                                className="md:w-20 w-[clamp(40px,10.43vw,80px)] md:h-20 h-[clamp(40px,10.43vw,80px)] object-cover border"
                                                             />
                                                             <button
                                                                 type="button"

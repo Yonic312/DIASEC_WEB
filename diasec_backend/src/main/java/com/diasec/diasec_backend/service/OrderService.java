@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,7 @@ import com.diasec.diasec_backend.dao.OrderMapper;
 import com.diasec.diasec_backend.util.ImageUtil;
 import com.diasec.diasec_backend.vo.CreditVo;
 import com.diasec.diasec_backend.vo.OrderItemClaimFileVo;
+import com.diasec.diasec_backend.vo.OrderItemFileVo;
 import com.diasec.diasec_backend.vo.OrderItemsVo;
 import com.diasec.diasec_backend.vo.OrderVo;
 
@@ -186,5 +188,97 @@ public class OrderService {
 
         // 3) DB 레코드 삭제
         return orderMapper.deleteOrderItemClaimFiles(itemId);
+    }
+
+    // 보정서비스 관련
+    // 관리자 사진 업로드
+    @Transactional
+    public String uploadRetouchPreview(Long itemId, MultipartFile file) throws Exception {
+
+        // 1) 기존 파일 url 조회 (없을 수도 있음)
+        OrderItemFileVo prev = orderMapper.selectLatestFile(itemId, "RETOUCH_PREVIEW");
+        String prevUrl = (prev == null) ? null : prev.getFileUrl();
+
+        // 2) 새 파일 저장
+        String fileUrl = imageUtil.saveImage(file, "customFrames/retouchPreview");
+
+        // 3) DB는 1개만 유지 (업서트)
+        OrderItemFileVo vo = new OrderItemFileVo();
+        vo.setItemId(itemId);
+        vo.setRole("RETOUCH_PREVIEW");
+        vo.setStatus("WAITING_CUSTOMER");
+        vo.setFileUrl(fileUrl);
+        vo.setOriginalName(file.getOriginalFilename());
+        vo.setFileSize(file.getSize());
+        vo.setMimeType(file.getContentType());
+        vo.setUploadedBy("ADMIN");
+        vo.setCustomerFeedback(null);
+        orderMapper.upsertOrderItemFile(vo);
+
+        // 4) 이전 파일 실제 삭제 (새 저장 성공 + DB 업데이트 성공 후)
+        if (prevUrl != null && !prevUrl.isBlank()) {
+            imageUtil.deleteImage(prevUrl);
+        }
+
+        return fileUrl;
+    }
+
+    // 고객 승인
+    @Transactional
+    public void approveRetouch(Long itemId) {
+        OrderItemFileVo latest = orderMapper.selectLatestFile(itemId, "RETOUCH_PREVIEW");
+        if (latest == null) throw new RuntimeException("보정 프리뷰가 없습니다.");
+
+        orderMapper.updateFileStatusLatest(itemId, "RETOUCH_PREVIEW", "APPROVED", null);
+
+        // 30일 뒤에 자동 삭제
+        orderMapper.scheduleRetouchPreviewDelete(itemId);
+    }
+
+    // 고객 반려
+    @Transactional
+    public void rejectRetouch(Long itemId, String feedback) {
+        OrderItemFileVo latest = orderMapper.selectLatestFile(itemId, "RETOUCH_PREVIEW");
+        if (latest == null) throw new RuntimeException("보정 프리뷰가 없습니다.");
+
+        orderMapper.updateFileStatusLatest(itemId, "RETOUCH_PREVIEW", "REJECTED", feedback);
+    }
+
+
+    public OrderItemFileVo getLatestRetouchPreview(Long itemId) {
+        return orderMapper.selectLatestFile(itemId, "RETOUCH_PREVIEW");
+    }
+
+    @Transactional
+    public void deleteRetouchPreview(Long itemId) {
+        OrderItemFileVo latest = orderMapper.selectLatestFile(itemId, "RETOUCH_PREVIEW");
+        if (latest == null) throw new RuntimeException("삭제할 프리뷰가 없습니다.");
+
+        // 1) 실제 파일 삭제
+        if (latest.getFileUrl() != null && !latest.getFileUrl().isBlank()) {
+            imageUtil.deleteImage(latest.getFileUrl());
+        }
+
+        // 2) DB 삭제 처리 (deleted_at 세탕)
+        orderMapper.softDeleteLatestFile(itemId, "RETOUCH_PREVIEW");
+    }
+
+    // 30일 지나면 보정 이미지 자동 삭제
+    @Scheduled(fixedDelay = 60_000)
+    // @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시
+    public void cleanupApprovedRetouchPreviews() {
+        List<OrderItemFileVo> targets = orderMapper.selectRetouchPreviewToDelete();
+
+        for (OrderItemFileVo f : targets) {
+            try {
+                // 1) 실제 파일 삭제
+                imageUtil.deleteImage(f.getFileUrl());
+
+                // 2) DB에서 삭제 완료 처리(소프트 삭제)
+                orderMapper.markRetouchPreviewDeleted(f.getFileId());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

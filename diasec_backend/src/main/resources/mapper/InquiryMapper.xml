@@ -133,4 +133,29 @@
     <select id ="selectUnanswered">
         select count(*) as unanswered from inquiries where status='답변대기'
     </select>
+
+    <select id="selectInquiryOwnerAndStatus" resultType="com.diasec.diasec_backend.vo.InquiryVo">
+        SELECT iid, id, status
+        FROM inquiries
+        WHERE iid = #{iid}
+    </select>
+
+    <delete id="deleteInquiryImageByUrl">
+        DELETE FROM inquiry_images
+        WHERE iid = #{iid} AND image_url = #{url}
+    </delete>
+
+    <insert id="insertInquiryImageByParams">
+        INSERT INTO inquiry_images (iid, image_url)
+        VALUES (#{iid}, #{url})
+    </insert>
+
+    <update id="updateInquiryByCustomer">
+        UPDATE inquiries
+        SET title = #{title},
+            content = #{content},
+            category = #{category},
+            is_private = #{isPrivate}
+        WHERE iid = #{iid}
+    </update>
 </mapper>

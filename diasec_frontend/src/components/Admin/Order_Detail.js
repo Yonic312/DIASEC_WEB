@@ -296,14 +296,20 @@ const Order_Detail = () => {
 
     // 인치 -> cm 변환
     const convertInchToCm = (size) => {
-        if (!size || typeof size !== 'string') return size;
+        if (!size || typeof size !== "string") return size;
 
-        const [w, h] = size.split(/[xX]/).map(s => parseFloat(s.trim()));
-        if (isNaN(w) || isNaN(h)) return size;
+        const match = size.match(/([\d.]+)\s*[xX]\s*([\d.]+)/);
+        if (!match) return size;
 
-        const cmW = (w * 2.54).toFixed(1);
-        const cmH = (h * 2.54).toFixed(1);
-        return `${w} x ${h} (${cmW}cm x ${cmH}cm)`;
+        const wInch = parseFloat(match[1]);
+        const hInch = parseFloat(match[2]);
+
+        if (isNaN(wInch) || isNaN(hInch)) return size;
+
+        const wCm = Math.round(wInch * 2.54);
+        const hCm = Math.round(hInch * 2.54);
+
+        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
     }
 
     const convertCategoryName = (category) => {
@@ -624,12 +630,23 @@ const Order_Detail = () => {
             {showReturnForm && order.items[0].orderStatus !== '반품신청' && (
                 <div className="space-y-2 mt-4 text-sm text-gray-700 border rounded p-4 bg-gray-50">
                     <div className="flex items-center gap-4">
-                        <label>
-                            <input type="radio" checked={claimType === '교환'} onChange={() => setClaimType('교환')} /> 
+                        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                            type="radio"
+                            name="claimType"
+                            checked={claimType === '교환'}
+                            onChange={() => setClaimType('교환')}
+                            />
                             교환
                         </label>
-                        <label>
-                            <input type="radio" checked={claimType === '반품'} onChange={() => setClaimType('반품')} /> 
+
+                        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                            type="radio"
+                            name="claimType"
+                            checked={claimType === '반품'}
+                            onChange={() => setClaimType('반품')}
+                            />
                             반품
                         </label>
                     </div>

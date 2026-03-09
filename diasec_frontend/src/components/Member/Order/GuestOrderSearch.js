@@ -54,12 +54,20 @@ const GuestOrderSearch = () => {
 
     // 사이즈 변환 (inch → cm)
     const convertInchToCm = (size) => {
-        if (!size || typeof size !== 'string') return size;
-        const [w, h] = size.split(/[xX]/).map(s => parseFloat(s.trim()));
-        if (isNaN(w) || isNaN(h)) return size;
-        const cmW = (w * 2.54).toFixed(1);
-        const cmH = (h * 2.54).toFixed(1);
-        return `${w} x ${h} (${cmW}cm x ${cmH}cm)`;
+        if (!size || typeof size !== "string") return size;
+
+        const match = size.match(/([\d.]+)\s*[xX]\s*([\d.]+)/);
+        if (!match) return size;
+
+        const wInch = parseFloat(match[1]);
+        const hInch = parseFloat(match[2]);
+
+        if (isNaN(wInch) || isNaN(hInch)) return size;
+
+        const wCm = Math.round(wInch * 2.54);
+        const hCm = Math.round(hInch * 2.54);
+
+        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
     };
 
     return (

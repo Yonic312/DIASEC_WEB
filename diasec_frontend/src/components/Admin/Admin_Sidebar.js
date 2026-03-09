@@ -130,7 +130,14 @@ const Admin_Sidebar = () => {
                         ))}
                     </div>
                 )}
+
+                
             </div>
+            <button className="text-sm opacity-65"
+                onClick={() => navigate(`/admin_AdminRetouchList`)}
+            >
+                보정 요청사항
+            </button>
 
             <span className="text-lg font-bold mt-10">정보 관리</span>
             <button className="text-sm opacity-65" onClick={() => navigate('/admin_MemberManager')}>회원 정보 관리</button>

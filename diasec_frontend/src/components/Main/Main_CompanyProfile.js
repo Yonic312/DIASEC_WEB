@@ -7,7 +7,7 @@ import p3 from '../../assets/company/3.jpg'
 import p5 from '../../assets/company/5.jpg'
 import p6 from '../../assets/company/6.jpg'
 import p7 from '../../assets/company/7.png'
-import i1 from '../../assets/company/i1.png'
+import i1 from '../../assets/company/i1.jpg'
 import i2 from '../../assets/company/i2.png'
 import i3 from '../../assets/company/i3.png'
 import i4 from '../../assets/company/i4.png'
@@ -244,15 +244,15 @@ const Main_CompanyProfile = () => {
     const strengths = [
         {
             icon: <img src={i1} className="w-32 h-32 text-[#a67a3e]" />,
-            title:"초간단 3D 주문시스템",
+            title:"초간편 멀티 주문시스템",
             desc: 
-                `상세페이지에서 이미지등록을 하고나면 인테리어 배경에서 걸려있는 고객님의 액자사이즈를 자유로이 볼수 있으며 동시에 원하는 사이즈와 가격이 실시간으로 함께 표시되어 주문이 간편합니다`
+                `상세페이지에서 이미지 등록을 하고 나면 인테리어 배경에서 걸려있는 고객님의 액자 사이즈를 자유로이 볼 수 있으며 동시에 원하는 사이즈와 가격이 실시간으로 함께 표시되어 주문이 간편합니다`
         },
         {
             icon: <img src={i2} className="w-32 h-32 text-[#a67a3e]" />,
             title:"세계명화의 고해상 원본 보유",
             desc:
-                `대형액자로 하여도 원본에서 느껴지는 붓터치의 섬세함까지도 살아있는 선명한 화질을 재현합니다`
+                `대형 액자로 제작하여도 원본에서 느껴지는 붓 터치의 섬세함까지도 살아있는 선명한 화질을 재현합니다`
         },
         {
             icon: <img src={i3} className="w-32 h-32 text-[#a67a3e]" />,
@@ -416,7 +416,7 @@ const Main_CompanyProfile = () => {
                         운영 시간
                     </div>
                     <div className="flex flex-col py-4 text-gray-700">
-                        <span className="font-semibold text-blue-700">평일 09:00 ~ 18:00 (13:00 ~ 14:00 점심시간) <br/> ※ 토·일요일, 공휴일 휴무</span>
+                        <span className="font-semibold text-black">평일 09:00 ~ 18:00 (13:00 ~ 14:00 점심시간) <br/> 토·일요일, 공휴일 휴무</span>
                     </div>
                 </div>
 

@@ -166,31 +166,26 @@ const WishList = () => {
         }
 
         try {
-            const payload = {
+            const cartList = selectedItems.map((it) => ({
                 id: member.id,
-                items: selectedItems.map((it) => ({
                 pid: it.pid,
-                quantity: 1,
+                title: it.title,
                 category: it.category,
-                })),
-            };
+                price: Number(it.price || 0),
+                thumbnail: it.thumbnail,
+                size: it.size || "",
+                quantity: 1,
+                }));
 
-            // 후보1) /cart/insertSelected
-            // 후보2) /cart/insert
-            // 후보3) /cart/add
-            const res = await axios.post(`${API}/cart/insertSelected`, payload, {
-                withCredentials: true,
+                await axios.post(`${API}/cart/insert`, cartList, {
+                    withCredentials: true,
+                    hearders: { "Content-Type": "application/json" },
             });
 
-            if (res.data?.success === false) {
-                toast.error(res.data?.message || "장바구니 담기 실패");
-                return;
-            }
-
             toast.success("선택한 상품을 장바구니에 담았습니다.");
-            navigate("/cart");
+            navigate("/cart", { replace: true});
         } catch (e) {
-            console.error(e);
+            console.error("insert cart error:",e?.response?.status, e?.resposne?.data, e);
             toast.error("장바구니 담기 실패");
         }
     };
@@ -264,16 +259,18 @@ const WishList = () => {
                             {checkedCount === items.length && items.length > 0 ? "전체해제" : "전체선택"}
                         </button>
 
-                        <button
-                            className="
-                                sm:text-sm text-[10px]
-                                sm:px-3 px-2
-                                sm:py-2 py-1 
-                                bg-black text-white rounded-xl hover:opacity-90"
-                            onClick={addSelectedToCart}
-                        >
-                            선택 장바구니
-                        </button>
+                        {/* 
+                            <button
+                                className="
+                                    sm:text-sm text-[10px]
+                                    sm:px-3 px-2
+                                    sm:py-2 py-1 
+                                    bg-black text-white rounded-xl hover:opacity-90"
+                                onClick={addSelectedToCart}
+                            >
+                                선택 장바구니
+                            </button> 
+                        */}
 
                         <button
                             className="
