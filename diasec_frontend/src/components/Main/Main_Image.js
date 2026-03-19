@@ -14,19 +14,21 @@ import p9 from '../../assets/p9.jpg'
 import p9_1 from '../../assets/p9_1.png'
 import p10 from '../../assets/p10.jpg'
 import p10_1 from '../../assets/p10_1.png'
+import p10_2 from '../../assets/p10_2.png'
 
 const images = [
-    { src: p7, text: p7_1, title: "보존의 철학에서 태어난 디아섹", desc: `50여 년 전, 스위스의 한 부부는\n 가족의 행복한 순간을 오래도록 간직하고자 노력했습니다 \n 그 마음은 지금도 디아섹에 고스란히 담겨 있습니다` },
     { src: p8, text: p8_1, img:p8_2, title: "디아섹은 테두리에 프레임이 없습니다", desc: `프레임이 없으면, 작품은 더 선명해집니다.` },
-    { src: p9, text: p9_1, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
-    { src: p10, text: p10_1, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." }
+    { src: p7, text: p7_1, title: "보존의 철학에서 태어난 디아섹", desc: `50여 년 전, 스위스의 한 부부는\n 가족의 행복한 순간을 오래도록 간직하고자 노력했습니다 \n 그 마음은 지금도 디아섹에 고스란히 담겨 있습니다` },
+    // { src: p9, text: p9_1, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
+    { src: p9, text: '', title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
+    { src: p10, text: p10_2, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." },
 ];
 
 const Main_Image = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const intervalRef = useRef(null);
 
-    const DARKEN_DURATION_MS = 2500; // 몇 초 동안 어두워질지
+    const DARKEN_DURATION_MS = 3000; // 몇 초 동안 어두워질지
     const TRANSITION_MS = 1000; // 슬라이드 옆으로 이동하는 시간
     const DARKEN_MAX = 0.4;
     const [darkOpacity, setDarkOpacity] = useState(0);
@@ -152,16 +154,6 @@ const Main_Image = () => {
         goTo(next);
     }
 
-    // const handlePrev = () => {
-    //     setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-    //     startSlider();
-    // }
-
-    // const handleNext = () => {
-    //     setCurrentIndex(prev => (prev + 1) % images.length);
-    //     startSlider();
-    // }
-
     return (
         <div className="relative w-full aspect-[1300/600] xl:aspect-auto h-auto xl:h-[600px] overflow-hidden flex justify-center">
             {/* 슬라이더 wrapper */}
@@ -177,7 +169,7 @@ const Main_Image = () => {
                             const isActive = idx === currentIndex;
                             const isPrev = idx === prevIndex;
 
-                            const isNoDarkSlide = idx === 1;
+                            const isNoDarkSlide = idx === 0;
 
                             const overlayOpacity = isNoDarkSlide
                                 ? 0

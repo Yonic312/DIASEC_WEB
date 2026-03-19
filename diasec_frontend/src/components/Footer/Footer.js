@@ -23,8 +23,8 @@ const Footer = () => {
                 ">
                     <span> 메일 : d2one@naver.com</span>
                     <span> 고객센터 : 02-389-5879</span>
-                    <span> 사업자등록번호 : 232-01-07761</span>
-                    <span> 통신판매업신고번호 : 000-0000</span>
+                    <span> 사업자등록번호 : 357-78-00448</span>
+                    <span> 통신판매업신고번호 : 2026-고양덕양구-0505</span>
                 </div>
 
                 <div className="flex my-[1%]">

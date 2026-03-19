@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MemberContext } from '../../context/MemberContext';
 import { toast } from 'react-toastify';
@@ -7,36 +7,46 @@ import { v4 as uuidv4 } from 'uuid';
 import bg from '../../assets/CustomFrames/p.png'; // 전에 내가 만든 배경
 import bg2 from '../../assets/CustomFrames/p2.png'; // 현재 배경
 import ex from '../../assets/CustomFrames/ex.jpg';
-import icon_kakao from '../../assets/button/icon_kakao.png'
-import icon_naver from '../../assets/button/icon_naver.png'
+import icon_kakao from '../../assets/button/icon_kakao.png';
+import icon_naver from '../../assets/button/icon_naver.png';
+import mainPage from '../../assets/CustomFrames/상세페이지.jpg';
+
+// 드롭메뉴 사진
+import c1 from '../../assets/dropDownMenu/customFrame/c1.jpg';
+import c2 from '../../assets/dropDownMenu/customFrame/c2.jpg';
+import c3 from '../../assets/dropDownMenu/customFrame/c3.jpg';
+import c4 from '../../assets/dropDownMenu/customFrame/c4.jpg';
+import c5 from '../../assets/dropDownMenu/customFrame/c5.jpg';
+import c6 from '../../assets/dropDownMenu/customFrame/c6.jpg';
+import c7 from '../../assets/dropDownMenu/customFrame/c7.jpg';
+import c8 from '../../assets/dropDownMenu/customFrame/c8.jpg';
+import c9 from '../../assets/dropDownMenu/customFrame/c9.jpg';
+
 
 // 보정
-import faceDot_1 from '../../assets/custom_Frames/faceDot_1.jpg';
-import faceDot_2 from '../../assets/custom_Frames/faceDot_2.jpg';
-import faceENM_1 from '../../assets/custom_Frames/faceENM_1.jpg';
-import faceENM_2 from '../../assets/custom_Frames/faceENM_2.jpg';
-import portrait_1 from '../../assets/custom_Frames/portrait_1.jpg';
-import portrait_2 from '../../assets/custom_Frames/portrait_2.jpg';
-import backlight_1 from '../../assets/custom_Frames/backlight_1.jpg';
-import backlight_2 from '../../assets/custom_Frames/backlight_2.jpg';
-import bg_1 from '../../assets/custom_Frames/bg_1.jpg';
-import bg_2 from '../../assets/custom_Frames/bg_2.jpg';
-import blur_1 from '../../assets/custom_Frames/blur_1.jpg';
-import blur_2 from '../../assets/custom_Frames/blur_2.jpg';
-import custom1 from '../../assets/dropDownMenu/customFrame/c1.jpg';
-import custom2 from '../../assets/dropDownMenu/customFrame/c2.jpg';
-import custom3 from '../../assets/dropDownMenu/customFrame/c3.jpg';
-import custom4 from '../../assets/dropDownMenu/customFrame/c4.jpg';
-import custom5 from '../../assets/dropDownMenu/customFrame/c5.jpg';
-import custom6 from '../../assets/dropDownMenu/customFrame/c6.jpg';
+import custom1 from '../../assets/custom_Frames/1.Skin RetouchB.jpg';
+import custom2 from '../../assets/custom_Frames/1.Skin RetouchF.jpg';
+import custom3 from '../../assets/custom_Frames/2.Teeth WhiteningB.jpg';
+import custom4 from '../../assets/custom_Frames/2.Teeth WhiteningF.jpg';
+import custom5 from '../../assets/custom_Frames/3.Object RemovalB.jpg';
+import custom6 from '../../assets/custom_Frames/3.Object RemovalF.jpg';
+import custom7 from '../../assets/custom_Frames/4.Color CorrectionB.jpg';
+import custom8 from '../../assets/custom_Frames/4.Color CorrectionF.jpg';
+import custom9 from '../../assets/custom_Frames/5.Background RemovalB.jpg';
+import custom10 from '../../assets/custom_Frames/5.Background RemovalF.jpg';
+import custom11 from '../../assets/custom_Frames/6.BlurB.jpg';
+import custom12 from '../../assets/custom_Frames/6.BlurF.jpg';
 
 const presetImageMap = {
-    wedding: custom1,
-    family: custom2,
-    pet: custom3,
-    baby: custom4,
-    profile: custom5,
-    store: custom6,
+    wedding: c1,
+    family: c2,
+    pet: c3,
+    baby: c4,
+    profile: c5,
+    store: c6,
+    game: c7,
+    anime: c8,
+    sight: c9,
 }
 
 const Main_CustomFrames = () => {
@@ -59,7 +69,35 @@ const Main_CustomFrames = () => {
         setWidthInput(String(Math.floor(width)));
     }, [width]);
 
+    // 모바일 구매버튼 바텀에 스티키
+    const buyButtonSectionRef = useRef(null);
+    const [showBottomBuy, setShowBottomBuy] = useState(false);
 
+    // 헤더 높이만큼 빼고 판단
+    const HEADER_OFFSET_PX = 45;
+
+    useEffect(() => {
+        const el = buyButtonSectionRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // 헤더 아래(45px) 기준 뷰포트에 안 보이기 시작하면 true
+                const coveredByHeader = entry.boundingClientRect.top <= HEADER_OFFSET_PX;
+                setShowBottomBuy(!entry.isIntersecting && coveredByHeader);
+            },
+            {
+                threshold: 0,
+                rootMargin: `-${HEADER_OFFSET_PX}px 0px 0px 0px`,
+            }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    // 모바일 구매버튼 바텀에 스티키//
+    
     const [showGuestChoice, setShowGuestChoice] = useState(false);
 
     // 사이즈 조절하기 아래 이미지 사진 상품 리스트
@@ -305,6 +343,8 @@ const Main_CustomFrames = () => {
         } else {
             setWidth(Math.floor(value));
         }
+
+        setWidthInput(String(Math.floor(value)));
     }
 
     const toInchSize = (wCm, hCm) => {
@@ -478,15 +518,16 @@ const Main_CustomFrames = () => {
         navigate('/orderForm', { state: { orderItems } });
     }
 
-    // [보정] 사진 befor / after
+    // 1024 x 1536 사이즈
     const beforeAfterData = [
-        { title: '피부 보정', before: faceDot_1, after: faceDot_2},
-        { title: '얼굴 디테일 보정', before: faceENM_1, after: faceENM_2},
-        { title: '얼굴 라인·피부 결 리터칭', before: portrait_1, after: portrait_2},
-        { title: '이미지 역광 및 색감보정', before: backlight_1, after: backlight_2},
-        { title: '불필요한 배경 삭제 및 변경', before: bg_1, after: bg_2},
-        { title: '업스케일링 (흐릿한 사진 선명보정)', before: blur_1, after: blur_2},
+        { title: '피부 보정', before: custom1, after: custom2},
+        { title: '치아 보정', before: custom3, after: custom4},
+        { title: '라인 보정', before: custom5, after: custom6},
+        { title: '색감 보정', before: custom7, after: custom8},
+        { title: '배경 정리', before: custom9, after: custom10},
+        { title: '고해상도 업스케일', before: custom11, after: custom12},
     ];
+
     const retouchOptions = beforeAfterData.map(v => v.title);
 
     const [activeIndex, setActiveIndex] = useState(0);
@@ -518,6 +559,16 @@ const Main_CustomFrames = () => {
     const closeRetouchModal = () => {
         setRetouchModalOpen(false);
         setRetouchTargetId(null);
+    };
+
+    const clearRetouch = (itemId) => {
+        setCustomItems(prev =>
+            prev.map(it => 
+            it.id === itemId
+                ? { ...it, retouch: { enabled: false, types: [], note: ''}}
+                : it
+            )
+        );
     };
 
     const saveRetouch = () => {
@@ -606,7 +657,7 @@ const Main_CustomFrames = () => {
 
     return (
         <div className="flex flex-col w-full h-full">
-            <div>
+            <div className="hidden md:block">
                 <div className='flex justify-center mt-12 items-start'>
                     <div className="flex flex-col items-center w-[80px]">
                         <div className='
@@ -698,7 +749,7 @@ const Main_CustomFrames = () => {
                 </div>
             </div>
             
-            <div className="flex md:flex-row flex-col w-full md:h-full h-auto md:overflow-hidden overflow-visible mt-4 gap-5">
+            <div className="flex md:flex-row flex-col   w-full md:h-full h-auto md:overflow-hidden overflow-visible md:mt-4 gap-2 md:gap-5">
                 {/* 이미지창 */}
                 <div className="relative h-full ">
                     <img 
@@ -711,7 +762,7 @@ const Main_CustomFrames = () => {
                     {/* A4~A1 종이 오버레이 */}
                     {paperKey && (
                         <div
-                            className="absolute z-10 flex items-center justify-center text-gray-400"
+                            className="absolute z-10 flex items-center justify-center text-gray-400 opacity-80"
                             style={{ 
                                 width: `${paperWidthPct}%`,
                                 height: `${paperHeightPct}%`,
@@ -724,7 +775,7 @@ const Main_CustomFrames = () => {
                                 pointerEvents: 'none',
                             }}
                         >
-                            <div className="font-bold text-[14px] opacity-80">
+                            <div className="font-bold text-[14px]">
                                 {paperKey}
                             </div>
                         </div>
@@ -750,19 +801,20 @@ const Main_CustomFrames = () => {
 
                 {/* 결제창 */}
                 <div className="
-                    h-fit flex flex-col flex-1 min-w-[296px] rounded-xl px-3 
-                    md:py-[15px] py-[10px]
-                    border-[1px] border-[#D0AC88]">
-                    <div className="flex justify-center ">
-                        <span className="flex text-2xl text-[#6d6d6d] font-bold">맞춤액자</span>
+                    h-fit flex flex-col flex-1 min-w-[296px] md:rounded-xl px-3 
+                    py-[2px] md:py-[15px]
+                    border-x-0 md:border-x-[1px] md:border-y-[1px] md:border-[#D0AC88]"
+                >
+                    <div className="hidden md:flex justify-center ">
+                        <span className="flex text-xl md:text-2xl text-[#6d6d6d] font-bold">맞춤액자</span>
                     </div>
 
                     {/* <hr className='mt-3 border-[1px] border-gray-200 opacity-80' /> */}
 
                     {/* 이미지 업로드 */}
-                    <div className="mt-3">
+                    <div className="md:mt-3">
                         <label className="text-base font-semibold">이미지 등록</label>
-                        <div className='mt-2'>
+                        <div className='md:mt-2'>
                             {/* 숨겨진 파일 업로드 input */}
                             <input 
                                 type="file"
@@ -778,8 +830,8 @@ const Main_CustomFrames = () => {
                                 htmlFor="fileInput"
                                 className={` 
                                     w-full
-                                    md:h-[140px] h-[120px]
-                                    text-base mt-2 py-2 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center text-gray-500 mb-4 cursor-pointer
+                                    md:h-[140px] h-[110px]
+                                    text-base md:mt-2 md:py-2 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center text-gray-500 mb-2 md:mb-4 cursor-pointer
                                         transition-colors duration-200 
                                         ${ isDragging ? 'border-[#ccc26c] bg-[#fdebd4]' : 'border-dashed border-gray-400'}
                                         hover:border-[#ccc26c] hover:bg-[#fdebd4]
@@ -840,7 +892,7 @@ const Main_CustomFrames = () => {
                                         e.stopPropagation();
                                     }}
                                 >
-                                    <svg className="w-10 h-10 text-[#D0AC88] mb-2" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                    <svg className="w-8 md:w-10 h-8 md:h-10 text-[#D0AC88] md:mb-2" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 15.75V15a4.5 4.5 0 014.5-4.5h9A4.5 4.5 0 0121 15v.75m-9-4.5V21m0-9l-3 3m3-3l3 3" />
                                     </svg>
                                     <span className="text-sm text-center">
@@ -856,26 +908,34 @@ const Main_CustomFrames = () => {
 
                     {/* 사이즈 입력 */}
                     <div className="flex flex-col">
-                        <label className="text-base font-semibold mt-2">사이즈 조정</label>
+                        <label className="text-base font-semibold md:mt-2">사이즈 조정</label>
                         <div className="flex gap-3 items-end mt-1">
                             <div className="flex flex-col w-full">
                                 <span className="text-sm text-gray-500 mb-1">가로 (cm)</span>
                                 <input
-                                    type="number"
+                                    type="text"
                                     value={widthInput}
-                                    onChange={(e) => setWidthInput(e.target.value)}
+                                    onChange={(e) => {
+                                        const onlyNumber = e.target.value.replace(/\D/g, '');
+                                        setWidthInput(onlyNumber);
+                                    }}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter") {
-                                        e.preventDefault();
+                                            e.preventDefault();
 
-                                        const v = parseFloat(widthInput);
-                                        if (isNaN(v)) {
-                                            setWidthInput(String(Math.floor(width)));
-                                            return;
+                                            // const v = parseFloat(widthInput);
+                                            // if (isNaN(v)) {
+                                            //     setWidthInput(String(Math.floor(width)));
+                                            //     return;
+                                            // }
+
+                                            // handleWidthChange({ target: { value: v } });
+                                            e.currentTarget.blur();
                                         }
 
-                                        handleWidthChange({ target: { value: v } });
-                                        e.currentTarget.blur();
+                                        // type="number"에서 허용되는 'e', '+', '-'도 막기
+                                        if (["e", "E", "+", "-"].includes(e.key)) {
+                                            e.preventDefault();
                                         }
                                     }}
                                     onBlur={() => {
@@ -887,6 +947,7 @@ const Main_CustomFrames = () => {
                                         handleWidthChange({ target: { value: v } });
                                     }}
                                     onWheel={(e) => e.preventDefault()}
+                                    inputMode="numeric"
                                     className="w-full border border-gray-500 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                 />
                             </div>
@@ -931,14 +992,14 @@ const Main_CustomFrames = () => {
                                     onClick={() => setPaperKey(prev => (prev === k ? null : k))}
                                     className={`
                                         flex-1 h-[34px] rounded-md border text-sm font-semibold
-                                        ${paperKey === k ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300'}    
+                                        ${paperKey === k ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-[#ecd2af] hover:text-white hover:border-[#ecd2af]'}    
                                     `}
                                 >
                                     {k}
                                 </button>
                             ))}
                             <button 
-                                className="flex-1 h-[34px] rounded-md border text-sm font-semibold bg-white text-gray-500 opacity-90 border-gray-300"
+                                className="flex-1 h-[34px] rounded-md border text-sm font-semibold bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-[#ecd2af] hover:text-white hover:border-[#ecd2af]"
                                 onClick={() => {
                                     if (!paperKey) {
                                         toast.warn("A1~A4 중 하나를 먼저 선택해주세요.");
@@ -959,25 +1020,23 @@ const Main_CustomFrames = () => {
                                     <div 
                                         key={item.id} 
                                         onClick={() => setSelectedItemId(item.id)} 
-                                        className={`relative flex items-center gap-3 border rounded-2xl p-3 shadow-sm cursor-pointer bg-white transition
+                                        className={`relative flex items-center gap-2 border rounded-2xl p-[8px] shadow-sm cursor-pointer bg-white transition
                                             ${selectedItemId === item.id ? 'border-[#D0AC88] bg-[#fffaf3]' : 'hover:bg-[#fdf4ea]'}`}>
                                         {/* 썸네일 */}
                                         <img 
                                             src={item.imageSrc}
                                             alt={`미리보기 ${idx + 1}`}
-                                            className='w-16 h-16 object-cover object-center rounded-xl border bg-white'
+                                            className='w-[70px] h-[70px] object-cover object-center rounded-md border'
                                         />
 
                                         {/* 우측 영역 */}
                                         <div className='flex-1 min-w-0'>
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
-                                                    <p className='text-sm font-semibold text-gray-800 truncate'>
-                                                        {Math.floor(item.width)}cm x {Math.floor(item.height)}cm
+                                                    <p className='text-[12.5px] font-semibold text-gray-800'>
+                                                        {Math.floor(item.width)} x {Math.floor(item.height)}cm
                                                     </p>
-                                                    <p>
-                                                        {item.price.toLocaleString()}원
-                                                    </p>
+                                                    <p className="mt-[-4px] mb-[4px] text-[14px]">{item.price.toLocaleString()}원</p>
                                                 </div>
 
                                                 {/* 삭제 버튼 */}
@@ -1031,46 +1090,72 @@ const Main_CustomFrames = () => {
                                             </div>
 
                                             {/* 보정상태와 버튼 */}
-                                            <div className="mt-2 flex items-center justify-end gap-1">
-                                                <button 
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleFinishType(item.id);
-                                                    }}
-                                                    className={`
-                                                        text-[11px] px-2 py-[2px] rounded-full border transition 
-                                                        ${item.finishType === 'matte'
-                                                            ? 'bg-gray-700 text-white border-gray-700'
-                                                            : 'bg-[#fff3e6] text-[#a67a3e] border-[#D0AC88]'
-                                                        }
-                                                    `}
-                                                >
-                                                    {item.finishType === 'matte' ? '무광' : '유광'}
-                                                </button>
-
+                                            <div className="flex flex-col items-center justify-end gap-1">
+                                                <div className="w-full flex flex-row">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.finishType !== 'matte') return;
+                                                            toggleFinishType(item.id);
+                                                        }}
+                                                        className={`
+                                                            flex-1 w-full h-[26px] rounded-md border text-[13px] font-semibold rounded-r-none
+                                                            ${ item.finishType !== 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
+                                                        `}
+                                                    >
+                                                        유광
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.finishType === 'matte') return;
+                                                            toggleFinishType(item.id);
+                                                        }}
+                                                        className={`
+                                                            flex-1 w-full h-[26px] rounded-md border border-l-0 text-[13px] font-semibold rounded-l-none
+                                                            ${ item.finishType === 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
+                                                        `}
+                                                    >
+                                                        무광
+                                                    </button>
+                                                </div>
+                                                
                                                 {/* 보정 상태 뱃지 */}
-                                                <span 
-                                                    className={`text-[11px] px-2 py-[2px] rounded-full border whitespace-nowrap
-                                                        ${item.retouch?.enabled
-                                                            ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e]'
-                                                            : 'bg-gray-100 border-gray-200 text-gray-500'
-                                                        }
-                                                    `}
-                                                >
-                                                    {item.retouch?.enabled ? '보정 O' : '보정 X'}
-                                                </span>
-
-                                                {/* 보정 요청 버튼 */}
-                                                <button
-                                                    className="px-2 py-[2px] text-[11px] rounded-xl border border-[#D0AC88] text-[#a67a3e] hover:bg-[#fff3e6] transition whitespace-nowrap"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        openRetouchModal(item);
-                                                    }}
-                                                >
-                                                    보정 수정
-                                                </button>
+                                                <div className="w-full flex flex-row text-center">
+                                                    {/* 보정 요청 버튼 */}
+                                                    <button
+                                                        type="button"
+                                                        className={`flex-1 w-full h-[26px] px-2 py-[2px] text-[13px] rounded-l-xl border border-[#D0AC88] text-[#a67a3e] hover:bg-[#fff3e6] transition whitespace-nowrap
+                                                            ${!(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0)
+                                                                ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e] font-semibold'
+                                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
+                                                            }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            clearRetouch(item.id);
+                                                        }}
+                                                    >
+                                                        보정 없음
+                                                    </button>
+                                                    
+                                                    <button
+                                                        type="button"
+                                                        className={`flex-1 w-full h-[26px] text-[13px] px-2 py-[2px] rounded-r-xl border whitespace-nowrap transition
+                                                            ${(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0)
+                                                                ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e] font-semibold hover:bg-[#c49b6e]'
+                                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
+                                                            }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openRetouchModal(item);
+                                                        }}
+                                                    >
+                                                        {/* {item.retouch?.enabled ? '보정 있음' : '보정 없음'} */}
+                                                        {(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0) ? '보정 수정' : '보정 요청'}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1082,10 +1167,13 @@ const Main_CustomFrames = () => {
                             <span className="text-[13px] font-semibold text-gray-600">
                                 무료배송
                             </span>
-                            
                             {/* <span className="text-sm text-gray-600">
                                 상품가: {totalPriceWithoutShipping.toLocaleString()}원
                             </span> */}
+                            <div className="text-[13px] font-semibold text-[#a57647]">
+                                {/* 제작 1~3일 배송 1~2일 (주문후 2~5일 수령) */}
+                                주문 후 평균 2~5일 내 수령
+                            </div>
                             <span className="text-base font-semibold text-gray-700">
                                 총 결제금액 : <span className=" text-[#a57647]">{totalPriceWithoutShipping.toLocaleString()}원</span>
                             </span>
@@ -1094,41 +1182,37 @@ const Main_CustomFrames = () => {
                             {/* {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
                                 <span className='text-[11.5px] text-green-600 mt-1'>(5만원 이상 구매 시 무료배송 적용)</span>
                             )} */}
-                            <div className="text-[13px] font-semibold text-[#a57647]">
-                                제작 1~3일 배송 1~2일 (주문후 2~5일 수령)
-                            </div>
                             <div className="text-[11px] text-gray-500">
                                 {/* ※ 이미지를 기준으로 비율이 자동 조정됩니다<br /> */}
                                 <span>※ 제작 과정에서 ±1cm 오차가 발생할 수 있습니다</span>
                             </div>
                         </div>
-                    </div>
+                        {/* 버튼 */}
+                        <div className='flex flex-col w-full gap-2 md:mt-2'>
+                            <div ref={buyButtonSectionRef}>
+                                <button 
+                                    className='flex items-center justify-center w-full h-[50px] bg-[#D0AC88] text-white'
+                                    onClick={(e) => handleBuyNow()}>
+                                    바로구매
+                                </button>
+                            </div>
+                            {/* 
+                            <div className="flex gap-2">
+                                <button 
+                                    className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
+                                    onClick="">장바구니</button>
+                                <button 
+                                    className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
+                                    onClick="">관심상품</button>
+                            </div> 
+                            */}
 
-                    {/* 버튼 */}
-                    <div className='flex flex-col w-full gap-2 mt-2'>
-                        <div>
-                            <button 
-                                className='flex items-center justify-center w-full h-[50px] bg-[#D0AC88] text-white'
-                                onClick={(e) => handleBuyNow()}>
-                                바로구매
-                            </button>
+                            {/* 네이버 / 카카오 결제 */}
+                            {/* <div className='flex flex-col gap-2 font-semibold'>
+                                <div className="flex items-center justify-center h-[50px] border-[1px] border-[#1ecd52] gap-2"><img src={icon_naver} className="h-[24px]" /><button>결제하기</button></div>
+                                <div className="flex items-center justify-center h-[50px] border-[1px] border-[#ffde02] gap-2"><img src={icon_kakao} className="h-[24px]" /><button>결제하기</button></div>
+                            </div> */}
                         </div>
-                        {/* 
-                        <div className="flex gap-2">
-                            <button 
-                                className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
-                                onClick="">장바구니</button>
-                            <button 
-                                className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
-                                onClick="">관심상품</button>
-                        </div> 
-                        */}
-
-                        {/* 네이버 / 카카오 결제 */}
-                        {/* <div className='flex flex-col gap-2 font-semibold'>
-                            <div className="flex items-center justify-center h-[50px] border-[1px] border-[#1ecd52] gap-2"><img src={icon_naver} className="h-[24px]" /><button>결제하기</button></div>
-                            <div className="flex items-center justify-center h-[50px] border-[1px] border-[#ffde02] gap-2"><img src={icon_kakao} className="h-[24px]" /><button>결제하기</button></div>
-                        </div> */}
                     </div>
                 </div>
             </div>
@@ -1143,19 +1227,19 @@ const Main_CustomFrames = () => {
                 <div>
                     {/* 보정 비교 */}
                     <div className='
-                        xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
-                        aspect-[450/670] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
-                        xl:p-6 lg:p-5 md:p-4 p-2
+                        xl:w-[440px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
+                        aspect-[1024/1536] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
+                        xl:p-4 lg:p-5 md:p-4 p-2
                         shadow-xl'>
                         <h3 className='
                             lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
-                            font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
+                            font-semibold text-center mb-1 text-[a67a3e]'>{current.title}</h3>
                         
                         <div className='relative w-full flex justify-center items-center'>
-                            <img src={
-                                showAfter ? current.after : current.before}
+                            <img src={showAfter ? current.after : current.before}
                                 alt="보정 비교" 
-                                className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
+                                // className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
+                                className='rounded-xl transition duration-500 shadow-lg w-full h-auto object-contain'
                             />
                             <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
                                 <button
@@ -1183,7 +1267,7 @@ const Main_CustomFrames = () => {
                         </div>
 
                         {/* 페이지 네이션 */}
-                        <div className="mt-6 flex justify-center gap-2">
+                        <div className="mt-4 flex justify-center gap-2">
                             {beforeAfterData.map((_, idx) => (
                                 <button
                                     key={idx}
@@ -1203,14 +1287,14 @@ const Main_CustomFrames = () => {
                         <span
                         className="
                             flex flex-col justify-center items-center
-                            mt-4
+                            mt-2
                             md:text-sm text-[clamp(11px,1.8252vw,14px)]
                             font-medium tracking-wide
                             text-gray-600
                             px-4
                         "
                         >
-                        원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
+                        <div>원본사진과 보정사진을 <span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
                     </span>
                     </div>
                 </div>
@@ -1243,7 +1327,13 @@ const Main_CustomFrames = () => {
                     <li><span>보정에 관한 궁금한 사항이 있으시면 문의 바랍니다.</span></li>                    
                 </ul>
             </div>
-
+                            
+            {/* 상세페이지 */}
+            <div className="flex justify-center mt-10 w-full h-full">
+                <img src={mainPage} alt="상세페이지" className="w-[1000px] h-full" />
+            </div>
+            
+            {/* 여기부터 모달창 */}
             {showGuestChoice && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="
@@ -1315,85 +1405,9 @@ const Main_CustomFrames = () => {
                     onClick={closeRetouchModal}
                 >
                     <div
-                        className="w-full h-[800px] overflow-y-scroll max-w-lg bg-white shadow-xl p-5 pt-0"
+                        className="w-full h-[800px] overflow-y-scroll max-w-lg bg-white shadow-xl p-5"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div>
-                            {/* 보정 비교 */}
-                            {/* xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)]  */}
-                            <div className='
-                                w-[380px]
-                                aspect-[450/670] mx-auto bg-opacity-60 rounded-lg 
-                                xl:p-6 lg:p-5 md:p-4 p-2
-                            '>
-                                <h3 className='
-                                    lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
-                                    font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
-                                
-                                <div className='relative w-full flex justify-center items-center'>
-                                    <img src={
-                                        showAfter ? current.after : current.before}
-                                        alt="보정 비교" 
-                                        className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
-                                    />
-                                    <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
-                                        <button
-                                            className={`
-                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                                px-4 py-1 rounded-full font-semibold transition ${
-                                                !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
-                                            onClick = {() => setShowAfter(false)}
-                                            onMouseEnter={() => setShowAfter(false)}
-                                        >
-                                            원본사진
-                                        </button>
-                                        <button
-                                            className={`
-                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                                px-4 py-1 rounded-full font-semibold transition ${
-                                                showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
-                                            }`}
-                                            onClick = {() => setShowAfter(true)}
-                                            onMouseEnter={() => setShowAfter(true)}
-                                        >
-                                            보정사진
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* 페이지 네이션 */}
-                                <div className="mt-6 flex justify-center gap-2">
-                                    {beforeAfterData.map((_, idx) => (
-                                        <button
-                                            key={idx}
-                                            className={`
-                                                xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
-                                                xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
-                                                rounded-full transition ${
-                                                activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
-                                            }`}
-                                            onClick={() => {
-                                                setActiveIndex(idx);
-                                                setShowAfter(false);
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                                <span
-                                className="
-                                    flex flex-col justify-center items-center
-                                    mt-4
-                                    md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                    font-medium tracking-wide
-                                    text-gray-600
-                                    px-4
-                                "
-                                >
-                                원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
-                            </span>
-                            {/* 보정 비교 */}
-                        </div>
-                    </div>
                         <div className="relative flex items-start justify-between border-b-[1px]">
                             <div className="absolute left-1/2 -translate-x-1/2">
                                 <h3 className="text-lg font-bold text-gray-800">보정 요청</h3>
@@ -1445,10 +1459,10 @@ const Main_CustomFrames = () => {
                                         className="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                     />
                                     <p className="text-xs text-gray-500 mt-2">
-                                        ※ 보정요청을 하시면 배송일이 늦어짐을 참고하시기 바랍니다
+                                        ※ 보정 요청이 있을 경우 추가 작업이 진행되어 배송 일정이 다소 지연될 수 있으니 참고 부탁드립니다.
                                     </p>
                                     <p className="text-xs text-gray-500 mt-2">
-                                        ※ 고난도 보정은 전화 상담을 통해 추가 비용 안내를 드립니다
+                                        ※ 고난도 보정은 작업 난이도에 따라 추가 비용이 발생할 수 있으며, 자세한 사항은 전화 상담을 통해 안내드립니다.
                                     </p>
                                 </div>
                             </div>
@@ -1468,6 +1482,97 @@ const Main_CustomFrames = () => {
                                 저장
                             </button>
                         </div>
+
+                        <div>
+                            {/* 보정 비교 */}
+                            {/* xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)]  */}
+                            <div className='
+                                w-[380px]
+                                aspect-[1024/1536] mx-auto bg-opacity-60 rounded-lg 
+                                xl:p-6 lg:p-5 md:p-4 p-2
+                            '>
+                                <h3 className='
+                                    lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
+                                    font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
+                                
+                                <div className='relative w-full flex justify-center items-center'>
+                                    <img src={
+                                        showAfter ? current.after : current.before}
+                                        alt="보정 비교" 
+                                        className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[1024/1536] object-contain'
+                                    />
+                                    <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
+                                        <button
+                                            className={`
+                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
+                                                px-4 py-1 rounded-full font-semibold transition ${
+                                                !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                            onClick = {() => setShowAfter(false)}
+                                            onMouseEnter={() => setShowAfter(false)}
+                                        >
+                                            원본사진
+                                        </button>
+                                        <button
+                                            className={`
+                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
+                                                px-4 py-1 rounded-full font-semibold transition ${
+                                                showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
+                                            }`}
+                                            onClick = {() => setShowAfter(true)}
+                                            onMouseEnter={() => setShowAfter(true)}
+                                        >
+                                            보정사진
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* 페이지 네이션 */}
+                                <div className="mt-6 flex justify-center gap-2">
+                                    {beforeAfterData.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            className={`
+                                                xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
+                                                xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
+                                                rounded-full transition ${
+                                                activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
+                                            }`}
+                                            onClick={() => {
+                                                setActiveIndex(idx);
+                                                setShowAfter(false);
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <span
+                                    className="
+                                        flex flex-col justify-center items-center
+                                        mt-4
+                                        md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                        font-medium tracking-wide
+                                        text-gray-600
+                                        px-4
+                                    "
+                                >
+                                    원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
+                                </span>
+                                {/* 보정 비교 */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 하단 고정바 */}
+            {showBottomBuy && (
+                <div className="fixed md:hidden bottom-0 left-0 right-0 z-100">
+                    <div className="w-full">
+                        <button
+                            type="button"
+                            className="w-full h-[50px] bg-[#D0AC88] text-white font-semibold"
+                        >
+                            바로구매
+                        </button>
                     </div>
                 </div>
             )}

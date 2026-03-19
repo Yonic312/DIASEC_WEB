@@ -31,7 +31,8 @@ const DeliveryReturn = () => {
                 <ul className="list-disc pl-5 space-y-1 mt-2">
                     <li><strong>배송방법:</strong> 택배 또는 방문수령</li>
                     <li><strong>배송지역:</strong> 전국 (제주/도서산간 지역은 추가 요금 발생 가능)</li>
-                    <li><strong>배송비용:</strong> 조건별 상이 (주문 시 안내)</li>
+                    {/* <li><strong>배송비용:</strong> 조건별 상이 (주문 시 안내)</li> */}
+                    <li><strong>배송비용:</strong> <span className="text-green-600">무료배송</span></li>
                     <li><strong>배송기간:</strong> 약 2일 ~ 7일 소요</li>
                     <li>상품 종류 및 제작 상황에 따라 배송 일정이 다소 지연될 수 있습니다.</li>
                 </ul>

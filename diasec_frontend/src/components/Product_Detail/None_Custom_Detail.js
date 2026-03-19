@@ -22,6 +22,38 @@ const None_Custom_Detail = () => {
 
     const [product, setProduct] = useState(null);
 
+    // 모바일 구매버튼 바텀에 스티키
+    const buyButtonSectionRef = useRef(null);
+    const [showBottomBuy, setShowBottomBuy] = useState(false);
+
+    // 헤더 높이만큼 빼고 판단
+    const HEADER_OFFSET_PX = 45;
+
+    useEffect(() => {
+        const el = buyButtonSectionRef.current;
+
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // 헤더 아래(45px) 기준 뷰포트에 안 보이기 시작하면 true
+                const coveredByHeader = entry.boundingClientRect.top <= HEADER_OFFSET_PX;
+                setShowBottomBuy(!entry.isIntersecting && coveredByHeader);
+            },
+            {
+                threshold: 0,
+                rootMargin: `-${HEADER_OFFSET_PX}px 0px 0px 0px`,
+            }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [product]);
+
+    useEffect(() => {
+    }, [showBottomBuy]);
+    // 모바일 구매버튼 바텀에 스티키//
+
     const categoryMap = {
         masterPiece : "명화",
         koreanPainting : "동양화",
@@ -103,6 +135,7 @@ const None_Custom_Detail = () => {
             maxWidth,
             maxHeight,
             price: newPrice,
+            finishType: (findSelected()?.finishType) ?? 'glossy',
         };
 
         setCustomItems(prev => [...prev, newItem]);
@@ -323,7 +356,8 @@ const None_Custom_Detail = () => {
                             height: startH,
                             maxWidth: maxW,
                             maxHeight: maxH,
-                            price
+                            price,
+                            finishType: 'glossy'
                         }]);
 
                         setSelectedItemId("main-painting");
@@ -490,6 +524,7 @@ const None_Custom_Detail = () => {
             id: member.id,
             pid: parseInt(pid),
             title: product.title,
+            author: product.author,
             price: item.price,
             category: `${category}`,
             thumbnail: item.imageSrc,
@@ -522,6 +557,7 @@ const None_Custom_Detail = () => {
             id: member.id,
             pid: parseInt(pid),
             title: product.title,
+            author: product.author,
             price: item.price,
             thumbnail: item.imageSrc,
             size: toInchSize(item.width, item.height),
@@ -546,9 +582,9 @@ const None_Custom_Detail = () => {
     }
 
     return (
-        <div className="flex-col md:mt-10 mt-5">
+        <div className="flex-col md:mt-10">
             {/* 가이드 */}
-            <div>
+            <div className="hidden md:block">
                 <div className='flex justify-center mt-12 items-start'>
                     <div className="flex flex-col items-center w-[80px]">
                         <div className='
@@ -609,7 +645,7 @@ const None_Custom_Detail = () => {
                 </div>
             </div>
 
-             <div className="flex md:flex-row flex-col w-full md:h-full h-auto md:overflow-hidden overflow-visible mt-4 gap-5">
+             <div className="flex md:flex-row flex-col w-full md:h-full h-auto md:overflow-hidden overflow-visible md:mt-4 gap-2 md:gap-5">
                 {/* 이미지창 */}
                 <div className="relative h-full ">
                     <img 
@@ -622,7 +658,7 @@ const None_Custom_Detail = () => {
                     {/* A4~A1 종이 오버레이 */}
                     {paperKey && (
                         <div
-                            className="absolute z-10 flex items-center justify-center text-gray-400"
+                            className="absolute z-10 flex items-center justify-center text-gray-400 opacity-80"
                             style={{ 
                                 width: `${paperWidthPct}%`,
                                 height: `${paperHeightPct}%`,
@@ -635,7 +671,7 @@ const None_Custom_Detail = () => {
                                 pointerEvents: 'none',
                             }}
                         >
-                            <div className="font-bold text-[14px] opacity-80">
+                            <div className="font-bold text-[14px]">
                                 {paperKey}
                             </div>
                         </div>
@@ -661,9 +697,10 @@ const None_Custom_Detail = () => {
 
                 {/* 결제창 */}
                 <div className="
-                    h-fit flex flex-col flex-1 min-w-[296px] rounded-xl px-3
-                    md:py-[15px] py-[10px]
-                    border-[1px] border-[#D0AC88]">
+                    h-fit flex flex-col flex-1 min-w-[296px] md:rounded-xl px-3
+                    py-[2px] md:py-[15px]
+                    md:border-[1px] md:border-[#D0AC88]"
+                >
                     <div className="flex flex-col mb-2">
 
                         {/* 내 의견 */}
@@ -696,47 +733,54 @@ const None_Custom_Detail = () => {
                                 </button>
                             )}
                         </div>
-                        <span className="mt-3 text-base font-bold">{product.title}</span>
-                        <div className=" text-sm text-gray-500 mt-1"> {product.author}</div>
+                        <span className="md:mt-3 text-base font-bold">{product.title}</span>
+                        <div className="md:mt-1 text-sm text-gray-500"> {product.author}</div>
                     </div>
 
                     {/* 사이즈 입력 */}
                     <div className="flex flex-col">
-                        <label className="text-base font-semibold mt-2">사이즈 조정</label>
+                        <label className="md:mt-2 text-base font-semibold">사이즈 조정</label>
                         {/* <p className="text-sm text-gray-500 mt-2">원하는 사이즈(cm)를 입력해 주세요</p> */}
 
                         <div className="flex gap-3 items-end mt-1">
                             <div className="flex flex-col w-full">
                                 <span className="text-sm text-gray-500 mb-1">가로 (cm)</span>
-                                <input 
-                                    type="number"
+                                <input
+                                    type="text"
                                     value={widthInput}
-                                    onChange={(e) => setWidthInput(e.target.value)}
-
+                                    onChange={(e) => {
+                                        const onlyNumber = e.target.value.replace(/\D/g, '');
+                                        setWidthInput(onlyNumber);
+                                    }}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
+                                        if (e.key === "Enter") {
                                             e.preventDefault();
 
-                                            const v = parseFloat(widthInput);
-                                            if (isNaN(v)) {
-                                                setWidthInput(String(Math.floor(width)));
-                                                return;
-                                            }
+                                            // const v = parseFloat(widthInput);
+                                            // if (isNaN(v)) {
+                                            //     setWidthInput(String(Math.floor(width)));
+                                            //     return;
+                                            // }
 
-                                            handleWidthChange({ target: {value: v } });
+                                            // handleWidthChange({ target: { value: v } });
                                             e.currentTarget.blur();
                                         }
-                                    }}
 
+                                        // type="number"에서 허용되는 'e', '+', '-'도 막기
+                                        if (["e", "E", "+", "-"].includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                     onBlur={() => {
                                         const v = parseFloat(widthInput);
                                         if (isNaN(v)) {
-                                            setWidthInput(String(Math.floor(width)));
-                                            return;
+                                        setWidthInput(String(Math.floor(width)));
+                                        return;
                                         }
                                         handleWidthChange({ target: { value: v } });
                                     }}
                                     onWheel={(e) => e.preventDefault()}
+                                    inputMode="numeric"
                                     className="w-full border border-gray-500 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                 />
                             </div>
@@ -781,14 +825,14 @@ const None_Custom_Detail = () => {
                                     onClick={() => setPaperKey(prev => (prev === k ? null : k))}
                                     className={`
                                         flex-1 h-[34px] rounded-md border text-sm font-semibold
-                                        ${paperKey === k ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300'}    
+                                        ${paperKey === k ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-[#ecd2af] hover:text-white hover:border-[#ecd2af]'}    
                                     `}
                                 >
                                     {k}
                                 </button>
                             ))}
                             <button 
-                                className="flex-1 h-[34px] rounded-md border text-sm font-semibold bg-white text-gray-500 opacity-90 border-gray-300"
+                                className="flex-1 h-[34px] rounded-md border text-sm font-semibold bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-[#ecd2af] hover:text-white hover:border-[#ecd2af]"
                                 onClick={() => {
                                     if (!paperKey) {
                                         toast.warn("A1~A4 중 하나를 먼저 선택해주세요.");
@@ -818,74 +862,91 @@ const None_Custom_Detail = () => {
                                 {customItems.map((item, idx) => (
                                     <div key={item.id} 
                                         onClick={() => setSelectedItemId(item.id)} 
-                                        className={`flex items-center gap-3 border rounded-xl p-[10px] shadow-sm cursor-pointer bg-white transition
+                                        className={`flex items-center gap-2 border rounded-xl p-[8px] shadow-sm cursor-pointer bg-white transition
                                             ${selectedItemId === item.id ? 'border-[#D0AC88] bg-[#fffaf3]' : 'hover:bg-[#fdf4ea]'}`}>
                                         <img 
                                             src={item.imageSrc}
                                             alt={`미리보기 ${idx + 1}`}
-                                            className='w-16 h-16 object-cover object-center rounded-md border'
+                                            className='w-[70px] h-[70px] object-cover object-center rounded-md border'
                                         />
 
                                         {/* 우측 영역 */}
-                                        <div className="flex-1 min-w-0">
+                                        <div className="flex-1 min-w-0 h-full">
                                             <div className="flex items-start justify-between gap-2">
-                                            <div className='flex-1 text-base text-start'>
-                                                <p className='text-sm font-semibold text-gray-800'>{Math.floor(item.width)}cm x {Math.floor(item.height)}cm</p>
-                                                <p>{item.price.toLocaleString()}원</p>
-                                            </div>
-                                            {/* 삭제 버튼 */}
-                                            <button
-                                                type="button"
-                                                className={`
-                                                    w-6 h-6 border rounded-full flex items-center justify-center transition font-bold
-                                                    ${disableDelete
-                                                        ? 'text-[#d0ac88] border-[#d0ac88] bg-white hover:text-white hover:bg-[#ecd2af]'
-                                                        : 'text-red-500 hover:text-white hover:bg-red-500  border-red-300'
-                                                    }
-                                                `}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
+                                                <div className='flex-1 h-fit text-start'>
+                                                    <p className='text-[12.5px] font-semibold text-gray-800'>
+                                                        {Math.floor(item.width)} x {Math.floor(item.height)}cm
+                                                    </p>
+                                                    <p className="mt-[-4px] mb-[4px] text-[14px]">{item.price.toLocaleString()}원</p>
+                                                </div>
 
-                                                    // 1개일 때: O 버튼 = 추가
-                                                    if (disableDelete) {
-                                                        handleAddOption();
-                                                        return;
-                                                    }
-
-                                                    // 2개 이상일 때: X 버튼 = 삭제
-                                                    const deleteId = item.id;
-
-                                                    setCustomItems(prev => {
-                                                        const newItems = prev.filter ((it) => it.id !== deleteId);
-
-                                                        if (selectedItemId === deleteId) {
-                                                            const next = newItems[0];
-                                                            if (next) setSelectedItemId(next.id);
-                                                        }
-                                                        return newItems;
-                                                    });
-                                                }}
-                                            >
-                                                {disableDelete ? '+' : '×'}
-                                            </button>
-                                            </div>
-                                            <div className="flex justify-end">
-                                                <button 
+                                                {/* 삭제 버튼 */}
+                                                <button
                                                     type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleFinishType(item.id);
-                                                    }}
                                                     className={`
-                                                        text-[11px] px-2 py-[2px] rounded-full border transition 
-                                                        ${item.finishType === 'matte'
-                                                            ? 'bg-gray-700 text-white border-gray-700'
-                                                            : 'bg-[#fff3e6] text-[#a67a3e] border-[#D0AC88]'
+                                                        w-6 h-6 border rounded-full flex items-center justify-center transition font-bold
+                                                        ${disableDelete
+                                                            ? 'text-[#d0ac88] border-[#d0ac88] bg-white hover:text-white hover:bg-[#ecd2af]'
+                                                            : 'text-red-500 hover:text-white hover:bg-red-500  border-red-300'
                                                         }
                                                     `}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+
+                                                        // 1개일 때: O 버튼 = 추가
+                                                        if (disableDelete) {
+                                                            handleAddOption();
+                                                            return;
+                                                        }
+
+                                                        // 2개 이상일 때: X 버튼 = 삭제
+                                                        const deleteId = item.id;
+
+                                                        setCustomItems(prev => {
+                                                            const newItems = prev.filter ((it) => it.id !== deleteId);
+
+                                                            if (selectedItemId === deleteId) {
+                                                                const next = newItems[0];
+                                                                if (next) setSelectedItemId(next.id);
+                                                            }
+                                                            return newItems;
+                                                        });
+                                                    }}
                                                 >
-                                                    {item.finishType === 'matte' ? '무광' : '유광'}
+                                                    {disableDelete ? '+' : '×'}
                                                 </button>
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <div className="w-full flex flex-row">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.finishType !== 'matte') return;
+                                                            toggleFinishType(item.id);
+                                                        }}
+                                                        className={`
+                                                            flex-1 w-full h-[26px] rounded-md border text-[13px] font-semibold rounded-r-none
+                                                            ${ item.finishType !== 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
+                                                        `}
+                                                    >
+                                                        유광
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.finishType === 'matte') return;
+                                                            toggleFinishType(item.id);
+                                                        }}
+                                                        className={`
+                                                            flex-1 w-full h-[26px] rounded-md border border-l-0 text-[13px] font-semibold rounded-l-none
+                                                            ${ item.finishType === 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
+                                                        `}
+                                                    >
+                                                        무광
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -911,6 +972,10 @@ const None_Custom_Detail = () => {
                             {/* <span className="text-sm text-gray-600">
                                 상품가: {totalPriceWithoutShipping.toLocaleString()}원
                             </span> */}
+                            <div className="text-[12.5px] font-semibold text-[#a57647]">
+                                {/* 제작 1~3일 배송 1~2일 (주문후 2~5일 수령) */}
+                                주문 후 평균 2~5일 내 수령
+                            </div>
                             <span className="text-base font-semibold text-gray-700">
                                 총 결제금액 : <span className=" text-[#a57647]">{totalPriceWithoutShipping.toLocaleString()}원</span>
                             </span>
@@ -919,50 +984,50 @@ const None_Custom_Detail = () => {
                             {/* {totalPriceWithoutShipping < FREE_SHIPPING_THRESHOLD && (
                                 <span className='text-[11.5px] text-green-600 mt-1'>(5만원 이상 구매 시 무료배송 적용)</span>
                             )} */}
-                            <div className="text-[13px] font-semibold text-[#a57647]">
+                            {/* <div className="text-[13px] font-semibold text-[#a57647]">
                                 제작 1~3일 배송 1~2일 (주문후 2~5일 수령)
-                            </div>
-
+                            </div> */}
+                            
                             <div className="text-[11px] text-gray-500">
                                 {/* ※ 이미지를 기준으로 비율이 자동 조정됩니다<br /> */}
                                 <span>※ 제작 과정에서 ±1cm 오차가 발생할 수 있습니다</span>
                             </div>
                         </div>
-                    </div>
+                        {/* 버튼 */}
+                        <div className='flex flex-col w-full gap-2 mt-2'>
+                            <div ref={buyButtonSectionRef}>
+                                <button 
+                                    className='flex items-center justify-center w-full h-[50px] bg-[#D0AC88] text-white'
+                                    onClick={(e) => handleBuyNow()}>
+                                    바로구매
+                                </button>
+                                <div className="flex flex-row">
+                                    <button 
+                                        className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
+                                        onClick={handleAddToCart}>장바구니</button>
+                                    <button 
+                                        className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
+                                        onClick={handleAddToWishlist}>관심상품
+                                    </button>
+                                </div>
+                            </div>
+                            {/* 
+                            <div className="flex gap-2">
+                                <button 
+                                    className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
+                                    onClick="">장바구니</button>
+                                <button 
+                                    className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
+                                    onClick="">관심상품</button>
+                            </div> 
+                            */}
 
-                    {/* 버튼 */}
-                    <div className='flex flex-col w-full gap-2 mt-2'>
-                        <div>
-                            <button 
-                                className='flex items-center justify-center w-full h-[50px] bg-[#D0AC88] text-white'
-                                onClick={(e) => handleBuyNow()}>
-                                바로구매
-                            </button>
-                            <div className="flex flex-row">
-                            <button 
-                                className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
-                                onClick={handleAddToCart}>장바구니</button>
-                            <button 
-                                className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
-                                onClick={handleAddToWishlist}>관심상품</button>
+                            {/* 네이버 / 카카오 결제 */}
+                            {/* <div className='flex flex-col gap-2 font-semibold'>
+                                <div className="flex items-center justify-center h-[50px] border-[1px] border-[#1ecd52] gap-2"><img src={icon_naver} className="h-[24px]" /><button>결제하기</button></div>
+                                <div className="flex items-center justify-center h-[50px] border-[1px] border-[#ffde02] gap-2"><img src={icon_kakao} className="h-[24px]" /><button>결제하기</button></div>
+                            </div> */}
                         </div>
-                        </div>
-                        {/* 
-                        <div className="flex gap-2">
-                            <button 
-                                className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
-                                onClick="">장바구니</button>
-                            <button 
-                                className='flex items-center justify-center w-[144px] h-[66px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
-                                onClick="">관심상품</button>
-                        </div> 
-                        */}
-
-                        {/* 네이버 / 카카오 결제 */}
-                        {/* <div className='flex flex-col gap-2 font-semibold'>
-                            <div className="flex items-center justify-center h-[50px] border-[1px] border-[#1ecd52] gap-2"><img src={icon_naver} className="h-[24px]" /><button>결제하기</button></div>
-                            <div className="flex items-center justify-center h-[50px] border-[1px] border-[#ffde02] gap-2"><img src={icon_kakao} className="h-[24px]" /><button>결제하기</button></div>
-                        </div> */}
                     </div>
                 </div>
             </div>
@@ -997,12 +1062,14 @@ const None_Custom_Detail = () => {
                     const orderData = customItems.map((it) => ({
                         pid: parseInt(pid),
                         title: product.title,
+                        author: product.author,
                         price: it.price,
                         thumbnail: it.imageSrc,
                         size: toInchSize(it.width, it.height),
                         category: `${category}_${frameType}`,
                         quantity: 1,
                         cid: null,
+                        finishType: it.finishType ?? 'glossy',
                     }));
 
                     navigate('/orderForm', { state : { orderItems: orderData, isGuest: true } });
@@ -1024,6 +1091,28 @@ const None_Custom_Detail = () => {
                 </button>
                 </div>
             </div>
+            )}
+
+            {/* 하단 고정바 */}
+            {showBottomBuy && (
+                <div className="fixed md:hidden bottom-0 left-0 right-0 z-[20]">
+                    <div className="w-full">
+                        <button 
+                            className='flex items-center justify-center w-full h-[50px] bg-[#D0AC88] text-white'
+                            onClick={(e) => handleBuyNow()}>
+                            바로구매
+                        </button>
+                        <div className="flex flex-row">
+                            <button 
+                                className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]' 
+                                onClick={handleAddToCart}>장바구니</button>
+                            <button 
+                                className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
+                                onClick={handleAddToWishlist}>관심상품
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

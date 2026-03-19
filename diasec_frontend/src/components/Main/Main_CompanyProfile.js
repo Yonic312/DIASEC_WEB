@@ -11,6 +11,8 @@ import i1 from '../../assets/company/i1.jpg'
 import i2 from '../../assets/company/i2.png'
 import i3 from '../../assets/company/i3.png'
 import i4 from '../../assets/company/i4.png'
+import logoType from '../../assets/CompanyProfile/logoType.jpg'
+import logo from '../../assets/company/logo.png'
 
 import bus from '../../assets/CompanyProfile/bus.jpg'
 import car from '../../assets/CompanyProfile/car.jpg'
@@ -268,203 +270,318 @@ const Main_CompanyProfile = () => {
         },
     ]
     
-     return (
-    <div className="flex flex-col w-full">
-        
-        {/* Hero 배너 */}
-        <div className="w-full bg-gray-800 flex items-center justify-center relative">
-            <img src={p0} />
-        </div>
-
-        <span className="
-            md:text-[10px] text-[clamp(7px,1.303vw,10px)]
-            text-right opacity-50">*위 사진은 이해를 돕기 위한 이미지입니다.</span>
-
-        <h2 className="
-            text-[clamp(24px,6.258vw,48px)] md:text-5xl
-            text-center text-[#a67a3e] mt-32 font-bold">
-            DIASEC KOREA HISTORY
-        </h2>
-
-        {/* 연혁 타임라인 */}
-        <div className="max-w-6xl mx-auto pt-16 pb-16 px-6 space-y-16">
-            {history.map((item, idx) => (
-                <div
-                    key={idx}
-                    className={`flex flex-col md:flex-row ${
-                    idx % 2 === 1 ? "md:flex-row-reverse" : ""
-                    } items-center justify-center max-w-4xl gap-8`}
-                >
-                {/* 이미지 자리 */}
-                <div className="
-                    sm:w-1/2 w-full
-                    flex items-center justify-center h-64">
-                    
-                    {item.video ? (
-                        <iframe
-                            src={item.video}
-                            title="GS홈쇼핑 방송 영상"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-64 rounded-lg"
-                            ></iframe>
-                    ) : (
-                        <img
-                            src={item.img}
-                            className="w-auto max-h-full rounded-lg object-contain"
-                        />
-                    )}
-                    {/* <img src={item.img} className="w-auto max-h-full rounded-lg object-contain" /> */}
-                </div>
-
-                {/* 텍스트 */}
-                <div className="w-full md:w-1/2">
-                    <span className="
-                        text-[#a67a3e] font-bold 
-                        md:text-lg text-[clamp(13px,2.346vw,18px)]">
-                        {item.year}s
-                    </span>
-                    <h2 className="
-                        text-[clamp(20px,3.128vw,24px)] md:text-2xl 
-                        font-bold">
-                            {item.title}
-                    </h2>
-                    <p className="
-                        md:text-base text-[clamp(15px,2.085vw,16px)]
-                        
-                        mt-[-2px] text-gray-600 break-keep">{item.text}</p>
-                </div>
+    return (
+        <div className="flex flex-col w-full">
+            
+            {/* Hero 배너 */}
+            <div className="w-full bg-gray-800 flex items-center justify-center relative">
+                <img src={p0} />
             </div>
-        ))}
-      </div>
 
-      <div className="bg-gray-50 py-20">
-        <div className="max-w-6xl mx-auto px-6 text-center">
+            <span className="
+                md:text-[10px] text-[clamp(7px,1.303vw,10px)]
+                text-right opacity-50">
+                    *위 사진은 이해를 돕기 위한 이미지입니다.
+            </span>
+
             <h2 className="
-                text-[clamp(22px,4.693vw,36px)] md:text-4xl 
-                font-bold text-gray-800 md:mb-4 mb-1
-                "
+                text-[clamp(24px,6.258vw,48px)] md:text-5xl
+                text-center text-[#b19376] mt-24 font-bold leading-tight px-4"
             >
-                디아섹코리아 쇼핑몰의 강점
+                The Standard of Korea, DIASEC KOREA
             </h2>
-            <hr className="border-[1px] border-[#a67a3e]"/>
 
-            <div className="
-                grid
-                sm:grid-cols-2 grid-cols-1
-                mt-4
-                gap-8">
-                {strengths.map((s, idx) => (
+            <p className="
+                text-center text-gray-500 leading-[1.9] mt-5 break-keep
+                text-[clamp(13px,1.8vw,17px)] px-6
+            ">
+                19년간 오직 디아섹 공법에만 집중해온 전문 제작 브랜드입니다<br/>
+                자체 생산 시스템과 축적된 기술력을 바탕으로 대한민국 디아섹 제작의 기준을 만들어가고 있습니다<br/>
+                쇼핑몰 오픈과 함께 디아섹코리아의 브랜드를 소개합니다
+            </p>
+
+            <div className="w-full flex justify-center">
+                <img className="max-w-6xl" src={logoType} />
+            </div>
+
+            {/* <div className="max-w-6xl mx-auto px-6 mt-8">
+                <div className="rounded-[32px] bg-[#faf8f5] border border-[#efe7de] px-6 py-8 md:px-10 md:py-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-12 items-center">
+
+                        <div className="flex justify-center">
+                            <div className="w-full max-w-[500px]">
+                                <div className="
+                                    relative overflow-hidden
+                                    rounded-[28px]
+                                    bg-white
+                                    border border-[#ede5dc]
+                                    shadow-[0_10px_30px_rgba(0,0,0,0.06)]
+                                    px-8 py-10 md:px-12 md:py-14
+                                ">
+
+                                    <div className="absolute inset-0 bg-gradient-to-br from-[#ffffff] via-[#fcfaf8] to-[#f5efe8]" />
+
+                                    <div className="relative flex items-center justify-center min-h-[260px] md:min-h-[320px]">
+                                        <img 
+                                        src={logo}
+                                            alt="디아섹코리아 로고"
+                                            className="w-full max-w-[310px] md:max-w-[360px] h-auto object-contain" 
+                                        />
+                                    </div>  
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="space-y-4 md:space-y-5">
+                                <div className="
+                                    rounded-2xl border border-[#e8dfd5] bg-white 
+                                    p-5 md:p-6 
+                                    shadow-[0_6px_20px_rgba(0,0,0,0.04)]
+                                    transition duration-300 hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)]    
+                                ">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-[#b19376] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                                            1
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[18px] font-bold text-gray-900">정사각 프레임</h4>
+                                            <p className="text-gray-600 leading-relaxed break-keep mt-2 text-[15px]">
+                                                작품을 하나의 판재로 완성하는 디아섹 제작 방식의 견고함과 구조감을 상징합니다
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="
+                                    rounded-xl border border-[#e8dfd5] bg-white 
+                                    p-5 md:p-6 
+                                    shadow-[0_6px_20px_rgba(0,0,0,0.04)]
+                                    transition duration-300 hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)]
+                                ">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-[#b19376] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                                            2
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[18px] font-bold text-gray-900">아크릴 광택 표현</h4>
+                                            <p className="text-gray-600 leading-relaxed break-keep mt-2 text-[15px]">
+                                                아크릴 표면의 깊이 있는 광택과 디아섹 특유의 선명한 이미지 표현을 시각적으로 담아냈습니다
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="
+                                    rounded-xl border border-[#e8dfd5] bg-white 
+                                    p-5 md:p-6 
+                                    shadow-[0_6px_20px_rgba(0,0,0,0.04)]
+                                    transition duration-300 hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.07)]
+                                ">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-[#b19376] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                                            3
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[18px] font-bold text-gray-900">로고 타이포그래피</h4>
+                                            <p className="text-gray-600 leading-relaxed break-keep mt-2 text-[15px]">
+                                                대한민국 디아섹 제작의 기준이 되고자 하는 의지와 흔들림 없는 기술력을 담았습니다
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> */}
+
+            <h2 className="
+                text-[clamp(24px,6.258vw,48px)] md:text-5xl
+                text-center text-[#b19376] mt-32 font-bold"
+            >
+                DIASEC KOREA HISTORY
+            </h2>
+
+            {/* 연혁 타임라인 */}
+            <div className="max-w-6xl mx-auto pt-16 pb-16 px-6 space-y-16">
+                {history.map((item, idx) => (
                     <div
                         key={idx}
-                        className="bg-white rounded-xl shadow hover:shadow-lg transition p-8 flex flex-col items-center text-center"
+                        className={`flex flex-col md:flex-row ${
+                        idx % 2 === 1 ? "md:flex-row-reverse" : ""
+                        } items-center justify-center max-w-4xl gap-8`}
                     >
-                        <div className="">{s.icon}</div>
-                        <h3 className="
-                            md:text-xl text-[clamp(15px,2.085vw,20px)] 
-                            font-semibold text-gray-800">
-                            {s.title}
-                        </h3>
-                        <p className="
-                            text-[clamp(12px,2.085vw,16.5px)] md:text-[16.5px]
-                            break-keep
-                            text-gray-600 whitespace-pre-line leading-relaxed">{s.desc}</p>
+                    {/* 이미지 자리 */}
+                    <div className="
+                        sm:w-1/2 w-full
+                        flex items-center justify-center h-64">
+                        
+                        {item.video ? (
+                            <iframe
+                                src={item.video}
+                                title="GS홈쇼핑 방송 영상"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="w-full h-64 rounded-lg"
+                                ></iframe>
+                        ) : (
+                            <img
+                                src={item.img}
+                                className="w-auto max-h-full rounded-lg object-contain"
+                            />
+                        )}
+                        {/* <img src={item.img} className="w-auto max-h-full rounded-lg object-contain" /> */}
                     </div>
-                ))}
+
+                    {/* 텍스트 */}
+                    <div className="w-full md:w-1/2">
+                        <span className="
+                            text-[#a67a3e] font-bold 
+                            md:text-lg text-[clamp(13px,2.346vw,18px)]">
+                            {item.year}s
+                        </span>
+                        <h2 className="
+                            text-[clamp(20px,3.128vw,24px)] md:text-2xl 
+                            font-bold">
+                                {item.title}
+                        </h2>
+                        <p className="
+                            md:text-base text-[clamp(15px,2.085vw,16px)]
+                            
+                            mt-[-2px] text-gray-600 break-keep">{item.text}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        <div className="bg-gray-50 py-20">
+            <div className="max-w-6xl mx-auto px-6 text-center">
+                <h2 className="
+                    text-[clamp(22px,4.693vw,36px)] md:text-4xl 
+                    font-bold text-gray-800 md:mb-4 mb-1
+                    "
+                >
+                    디아섹코리아 쇼핑몰의 강점
+                </h2>
+                <hr className="border-[1px] border-[#a67a3e]"/>
+
+                <div className="
+                    grid
+                    sm:grid-cols-2 grid-cols-1
+                    mt-4
+                    gap-8">
+                    {strengths.map((s, idx) => (
+                        <div
+                            key={idx}
+                            className="bg-white rounded-xl shadow hover:shadow-lg transition p-8 flex flex-col items-center text-center"
+                        >
+                            <div className="">{s.icon}</div>
+                            <h3 className="
+                                md:text-xl text-[clamp(15px,2.085vw,20px)] 
+                                font-semibold text-gray-800">
+                                {s.title}
+                            </h3>
+                            <p className="
+                                text-[clamp(12px,2.085vw,16.5px)] md:text-[16.5px]
+                                break-keep
+                                text-gray-600 whitespace-pre-line leading-relaxed">{s.desc}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
-      </div>
 
-      {/* 미래 비전 */}
-      <div className="py-20 text-[#c99561] text-center">
-            <h2 className="
-                text-[clamp(17px,4.693vw,36px)] md:text-4xl
-                font-bold break-keep">
-                오직 디아섹액자만을 위한 최선의 노력으로
-            </h2>
-            <h2 className="
-                text-[clamp(17px,4.693vw,36px)] md:text-4xl 
-                break-keep md:mt-3 mt-[2px] text-3xl font-bold">
-                    고객에 만족을 드리고자 합니다
-            </h2>
-        </div>
-        
-        {/* 지도 */}
-        {/* 회사 위치 / 지도 */}
-        <div className="max-w-6xl mx-auto w-full px-6 pb-24">
-            <h2 className="text-left font-bold text-[#4b4b4b] text-[18px] mb-3">
-                회사위치 / 주소 : 경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)
-            </h2>
+        {/* 미래 비전 */}
+        <div className="py-20 text-[#c99561] text-center">
+                <h2 className="
+                    text-[clamp(17px,4.693vw,36px)] md:text-4xl
+                    font-bold break-keep">
+                    오직 디아섹액자만을 위한 최선의 노력으로
+                </h2>
+                <h2 className="
+                    text-[clamp(17px,4.693vw,36px)] md:text-4xl 
+                    break-keep md:mt-3 mt-[2px] text-3xl font-bold">
+                        고객에 만족을 드리고자 합니다
+                </h2>
+            </div>
             
             {/* 지도 */}
-            <div className="w-full border bg-white overflow-hidden">
-                <div className="w-full aspect-[1300/520]">
-                    <div ref={mapRef} className="w-full h-full" />
+            {/* 회사 위치 / 지도 */}
+            <div className="max-w-6xl mx-auto w-full px-6 pb-24">
+                <h2 className="text-left font-bold text-[#4b4b4b] text-[18px] mb-3">
+                    회사위치 / 주소 : 경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)
+                </h2>
+                
+                {/* 지도 */}
+                <div className="w-full border bg-white overflow-hidden">
+                    <div className="w-full aspect-[1300/520]">
+                        <div ref={mapRef} className="w-full h-full" />
+                    </div>
                 </div>
-            </div>
 
-            {mapError && (
-                <div className="mt-2 text-red-500 text-sm">{mapError}</div>
-            )}
+                {mapError && (
+                    <div className="mt-2 text-red-500 text-sm">{mapError}</div>
+                )}
 
-            {/* 아래 안내 표 */}
-            <div className="mt-8 border-t text-[clamp(11px,1.2vw,14px)]">
-                <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] border-b">
+                {/* 아래 안내 표 */}
+                <div className="mt-8 border-t text-[clamp(11px,1.2vw,14px)]">
+                    <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] border-b">
+                        <div className="flex items-center py-4 font-semibold text-gray-700">
+                            <img src={time} className="w-10 h-10" / >
+                            운영 시간
+                        </div>
+                        <div className="flex flex-col py-4 text-gray-700">
+                            <span className="font-semibold text-black">평일 09:00 ~ 18:00 (13:00 ~ 14:00 점심시간) <br/> 토·일요일, 공휴일 휴무</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] border-b">
+                        <div className="flex items-center py-4 font-semibold text-gray-700">
+                            <img src={car} className="w-10 h-10" / >
+                            <span></span>승용차 이용시
+                        </div>
+                        <div className="flex flex-col py-4 text-gray-700">
+                            <span>네비게이션 주소: {COMPANY.address}</span>
+                            <span>Tip : 자동차로 3층까지 올라오십시오 (기둥번호 2번) / 주차가능</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] text-[clamp(11px,1.2vw,14px)] border-b">
                     <div className="flex items-center py-4 font-semibold text-gray-700">
-                        <img src={time} className="w-10 h-10" / >
-                        운영 시간
+                        <img src={bus} className="w-10 h-10" / >
+                        <span></span>버스 이용시
                     </div>
-                    <div className="flex flex-col py-4 text-gray-700">
-                        <span className="font-semibold text-black">평일 09:00 ~ 18:00 (13:00 ~ 14:00 점심시간) <br/> 토·일요일, 공휴일 휴무</span>
+                    <div className="py-4 text-gray-700">
+                        <div className="font-semibold text-black">정류소명 : 삼송 한국지역난방공사</div>
+                        <div className="flex flex-col text-gray-500 mt-1">
+                            <span>
+                                경기북부(파주·삼송)에서 오시는 길 → N37, 17, 30, 31, 55, 567, 571, 701, 703, 705, 706, 708, 720, 730, 741, 773, 774, 761, 8722, 9703, 9709 (26년 현재)
+                            </span>
+                            <span>
+                                서울방향에서 오시는 길 → 17, 374, 567, 703, 705, 730, 790 (26년 현재)
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] border-b">
+                <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] text-[clamp(11px,1.2vw,14px)]">
                     <div className="flex items-center py-4 font-semibold text-gray-700">
-                        <img src={car} className="w-10 h-10" / >
-                        <span></span>승용차 이용시
+                        <img src={subway} className="w-10 h-10" / >
+                        <span>지하철 이용시</span>
                     </div>
-                    <div className="flex flex-col py-4 text-gray-700">
-                        <span>네비게이션 주소: {COMPANY.address}</span>
-                        <span>Tip : 자동차로 3층까지 올라오십시오 (기둥번호 2번) / 주차가능</span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] text-[clamp(11px,1.2vw,14px)] border-b">
-                <div className="flex items-center py-4 font-semibold text-gray-700">
-                    <img src={bus} className="w-10 h-10" / >
-                    <span></span>버스 이용시
-                </div>
-                <div className="py-4 text-gray-700">
-                    <div className="font-semibold text-black">정류소명 : 삼송 한국지역난방공사</div>
-                    <div className="flex flex-col text-gray-500 mt-1">
-                        <span>
-                            경기북부(파주·삼송)에서 오시는 길 → N37, 17, 30, 31, 55, 567, 571, 701, 703, 705, 706, 708, 720, 730, 741, 773, 774, 761, 8722, 9703, 9709 (26년 현재)
-                        </span>
-                        <span>
-                            서울방향에서 오시는 길 → 17, 374, 567, 703, 705, 730, 790 (26년 현재)
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] text-[clamp(11px,1.2vw,14px)]">
-                <div className="flex items-center py-4 font-semibold text-gray-700">
-                    <img src={subway} className="w-10 h-10" / >
-                    <span>지하철 이용시</span>
-                </div>
-                <div className="py-4 text-gray-700">
-                    <div className="flex flex-col text-gray-500">
-                        <span>지축역 1번 출구 → 도보 약20분거리</span>
-                        <span>삼송역 1번 출구 → 도보 약20분거리</span>
+                    <div className="py-4 text-gray-700">
+                        <div className="flex flex-col text-gray-500">
+                            <span>지축역 1번 출구 → 도보 약20분거리</span>
+                            <span>삼송역 1번 출구 → 도보 약20분거리</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-  );
+    );
 };
 
 

@@ -4,7 +4,6 @@ import { useMember } from "./context/MemberContext";
 import { toast } from 'react-toastify';
 
 import './App.css';
-import ScrollToTop from './components/ScrollToTop';
 import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
 import { MemberProvider } from './context/MemberContext';
 
@@ -101,6 +100,11 @@ function Layout() {
                       '/addrRegister', '/wishList', '/creditHistory', '/orderTracking', '/mypage/retouch'].some(p => path.startsWith(p)) || path.startsWith('/addrModify/') || path.startsWith('/orderDetail');
     const isAdmin = path.startsWith('/admin');
 
+    const extraPb = 
+        path === "/none_custom_detail" ? "mb-[100px] md:mb-0"
+        : path === "/customFrames" ? " mb-[50px] md:mb-0"
+        : "";
+
     const navigate = useNavigate();
     const { setMember } = useMember();
     // 깃 테스트 완료
@@ -152,10 +156,10 @@ function Layout() {
 
             {/* 헤더 */}
             <div className="sticky z-[9999] top-0 w-full bg-white">
-                <div className="max-w-[2560px] h-[40px] mx-auto">
+                <div className="max-w-[2560px] h-[45px] mx-auto">
                     <Header />
                 </div>
-                <div className="hidden md:flex w-full h-[40px] mx-auto">
+                <div className="hidden md:flex w-full h-[44px] mx-auto">
                     <Header_Menu />
                 </div>
             </div>
@@ -166,13 +170,14 @@ function Layout() {
                 </div>
             )}
 
-            <div className="
+            <div className={`
                 max-w-[1300px] 
                 min-h-[calc(100vh_-_150px)] 
                 md:min-h-[calc(100vh_-_180px)] 
                 lg:min-h-[calc(100vh_-_200px)] 
                 xl:min-h-[calc(100vh_-_210px)] 
-                mx-auto">
+                mx-auto
+            `}> 
                 {isMain && (
                     <div className="
                         xl:mt-32
@@ -198,9 +203,9 @@ function Layout() {
                 )}
             </div>
 
-            <div className="
+            <div className={`
                 xl:h-[210px] lg:h-[200px] md:h-[180px] h-[150px]
-                w-full bg-white">
+                w-full bg-white ${extraPb}`}>
                 <Footer />
             </div>
         </div>
@@ -209,9 +214,15 @@ function Layout() {
 
 function App() {
 
+    // 새로고침시 상단
+    useEffect(() => {
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+    }, []);
+
     return (
         <MemberProvider>
-            <ScrollToTop />
             <Routes>
                 <Route element={<Layout />}>
                     <Route path="/" element={<Main />}/>

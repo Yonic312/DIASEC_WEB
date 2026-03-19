@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
@@ -284,19 +284,24 @@ const Main_Items = () => {
 
     const q = titleSearch.trim().toLowerCase();
 
-    const filteredAuthorProducts = !q
-        ? authorProducts
-        : authorProducts.filter(p => (p.title ?? "").toLowerCase().includes(q));
+    const filteredAuthorProducts = useMemo(() => {
+        return !q
+            ? authorProducts
+            : authorProducts.filter(p => (p.title ?? "").toLowerCase().includes(q));
+    }, [authorProducts, q]);
 
-    const filteredHomeProducts = !q
-        ? homeProducts
-        : homeProducts.filter(p => (p.title ?? "").toLowerCase().includes(q));
+    const filteredHomeProducts = useMemo(() => {
+        return !q
+            ? homeProducts
+            : homeProducts.filter(p => (p.title ?? "").toLowerCase().includes(q));
+    }, [homeProducts, q]);
 
     // 검색 중이면 전부 보여주고, 검색 아닐 때만 visibleCount 적용
-    const displayProducts = 
-        author 
-        ? filteredAuthorProducts
-        : (["masterPiece", "koreanPainting"].includes(type) ? [] : filteredHomeProducts);
+    const displayProducts = useMemo(() => {
+        return author 
+            ? filteredAuthorProducts
+            : (["masterPiece", "koreanPainting"].includes(type) ? [] : filteredHomeProducts);
+    }, [author, type, filteredAuthorProducts, filteredHomeProducts]);
 
     useEffect(() => {
         setTitleSearch('');

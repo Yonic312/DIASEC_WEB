@@ -12,6 +12,9 @@ import custom3 from '../../assets/dropDownMenu/customFrame/c3.jpg';
 import custom4 from '../../assets/dropDownMenu/customFrame/c4.jpg'; 
 import custom5 from '../../assets/dropDownMenu/customFrame/c5.jpg'; 
 import custom6 from '../../assets/dropDownMenu/customFrame/c6.jpg'; 
+import custom7 from '../../assets/dropDownMenu/customFrame/c7.jpg'; 
+import custom8 from '../../assets/dropDownMenu/customFrame/c8.jpg'; 
+import custom9 from '../../assets/dropDownMenu/customFrame/c9.jpg'; 
 
 const Header_Menu = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -153,7 +156,14 @@ const Header_Menu = () => {
             { label: '반려동물', img:custom3, link:'/customFrames?preset=pet'}, 
             { label: '아기', img:custom4, link:'/customFrames?preset=baby'}, 
             { label: '프로필', img:custom5, link:'/customFrames?preset=profile'},
-            { label: '매장용', img:custom6, link:'/customFrames?preset=store'}],
+            { label: '풍경', img:custom9, link:'/customFrames?preset=sight'},
+            { label: '애니메이션', img:custom8, link:'/customFrames?preset=anime'},
+            { label: '게임', img:custom7, link:'/customFrames?preset=game'},
+            { label: '매장 인테리어', img:custom6, link:'/customFrames?preset=store'}],
+            
+
+            
+            
         companyOrder: [], 
         registerAuthor: [], 
         event: []
@@ -199,6 +209,7 @@ const Header_Menu = () => {
                             }
                         });
 
+
                         // 서버에서 받은 데이터를 헤더에서 사용하게 가공
                         const mapped = (data || []).map(x => ({
                             label: x.label,
@@ -234,7 +245,7 @@ const Header_Menu = () => {
                     });
                     return next;
                 });
-                } catch (e) {
+            } catch (e) {
                 console.error('헤더 preload 실패:', e);
             }
         };
@@ -273,24 +284,9 @@ const Header_Menu = () => {
             const mapped = (data || []).map(x => ({
                 label: x.label,
                 img: x.imageUrl,
-                link:`/main_Items?type=${key}&author=${encodeURIComponent(x.label)}`
+                link: `/main_Items?type=${key}&author=${encodeURIComponent(x.label)}`
             }));
-
-            warmImageCacheBatch(mapped.map(v => v.img));
-
-            setDropdown(prev => ({
-                ...prev,
-                [key]: [...(prev[key] || []), ...mapped]
-            }));
-
-            setPage(prev => ({
-                ...prev,
-                [key]: {
-                    offset: prev[key].offset + mapped.length,
-                    loading: false,
-                    hasMore: mapped.length === PAGE_SIZE
-                }
-            }));
+            
         } catch (e) {
             console.error('드롭다운 로드 실패', key, e);
             setPage(prev => ({

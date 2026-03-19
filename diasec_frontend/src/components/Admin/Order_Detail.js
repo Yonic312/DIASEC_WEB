@@ -6,6 +6,7 @@ import thumbCustom from '../../assets/CustomFrames/customFrames.png';
 
 const Order_Detail = () => {
     const API = process.env.REACT_APP_API_BASE;
+    const FILE_BASE = API.replace('/api', '');
     const printRef = useRef();
     const navigate = useNavigate();
     const location = useLocation();
@@ -277,9 +278,116 @@ const Order_Detail = () => {
             <head>
                 <title>주문서</title>
                 <style>
-                body { font-family: sans-serif; padding: 40px; }
-                table, th, td { border-collapse: collapse; }
-                .no-print { display: none; }
+                    * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: Arial, "Malgun Gothic", sans-serif;
+                    padding: 10px 16px;
+                    color: #111;
+                    line-height: 1.5;
+                    font-size: 12px;
+                }
+
+                .no-print {
+                    display: none !important;
+                }
+
+                .print-wrap {
+                    width: 100%;
+                }
+
+                .print-title {
+                    font-size: 24px;
+                    font-weight: 700;
+                    margin-bottom: 6px;
+                }
+
+                .print-sub {
+                    font-size: 12px;
+                    color: #555;
+                    margin-bottom: 20px;
+                }
+
+                .print-section {
+                    margin-top:12px;
+                    border: 1px solid #d9d9d9;
+                    padding: 0px 12px 10px;
+                    border-radius:8px;
+                    page-break-inside: avoid;
+                }
+
+                .print-section-title {
+                    font-size: 16px;
+                    font-weight: 700;
+                    margin-bottom: 10px;
+                }
+
+                .print-grid-2 {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px 20px;
+                }
+
+                .print-row {
+                    margin-bottom: 4px;
+                }
+
+                .print-label {
+                    font-weight: 700;
+                    margin-right: 6px;
+                }
+
+                .print-product-box {
+                    display: flex;
+                    gap: 16px;
+                    align-items: flex-start;
+                }
+
+                .print-thumb { 
+                    width: 110px;
+                    height: 110px;
+                    object-fit: cover;
+                    border: 1px solid #ddd;
+                }
+
+                .print-badge {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border: 1px solid #999;
+                    border-radius: 999px;
+                    font-size: 11px;
+                    margin-right: 6px;
+                }
+
+                .print-note-box {
+                    min-height: 70px;
+                    border: 1px dashed #bbb;
+                    padding: 10px;
+                    margin-top: 8px;
+                }
+
+                .print-check-row {
+                    display: flex; 
+                    gap: 18px;
+                    flex-wrap: wrap;
+                    margin-top: 8px;
+                }
+
+                .print-check-item {
+                    min-width: 120px;
+                }
+
+                @media print {
+                    body {
+                        padding: 0;
+                    }
+
+                    .print-section {
+                        break-inside: avoid;
+                    }
+                }
                 </style>
             </head>
             <body>
@@ -289,11 +397,40 @@ const Order_Detail = () => {
         `);
 
         printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    };
 
+        const images = printWindow.document.images;
+
+        if (images.length === 0) {
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+            return;
+        }
+
+        let loadedCount = 0;
+
+        const tryPrint = () => {
+            loadedCount += 1;
+            if (loadedCount === images.length) {
+                setTimeout(() => {
+                    printWindow.focus();
+                    printWindow.print();
+                    printWindow.close();
+                }, 300);
+            }
+        };
+
+        for (let i = 0; i < images.length; i++) {
+            const img = images[i];
+
+            if (img.complete) {
+                tryPrint();
+            } else {
+                img.onload = tryPrint;
+                img.onerror = tryPrint;
+            }
+        }
+    }
     // 인치 -> cm 변환
     const convertInchToCm = (size) => {
         if (!size || typeof size !== "string") return size;
@@ -394,9 +531,27 @@ const Order_Detail = () => {
         });
     };
 
-    // 맞춤액자시 썸네일 설정
-    const displayThumb = order.items[0].category === 'customFrames' ? thumbCustom : order.items[0] .thumbnail;
+    // 고객 업로드 보여주기
+    const customFrameThumb =
+        order.items[0].thumbnail
+            ? (
+                order.items[0].thumbnail.startsWith('http')
+                    ? order.items[0].thumbnail
+                    : `${FILE_BASE}${order.items[0].thumbnail}`
+            )
+            : thumbCustom;
 
+    // const hasCustomUploadImage = !!order.items[0].thumbnail;
+            
+    // 맞춤액자시 썸네일 설정
+    const displayThumb = 
+        order.items[0].category === 'customFrames' 
+            ? customFrameThumb
+            : ( 
+                order.items[0].thumbnail?.startsWith('http')
+                    ? order.items[0].thumbnail
+                    : `${FILE_BASE}${order.items[0].thumbnail}`
+            );
     // 맞춤액자 이미지 제거
     const handleDeleteCustomImage = async () => {
         if (!order?.items?.[0]) return;
@@ -485,13 +640,18 @@ const Order_Detail = () => {
     }
 
     return (
-        <div className="w-full bg-white px-8 py-10 shadow-md border border-gray-200 space-y-8 mb-20"
+        <div className="print-wrap w-full bg-white px-8 py-6 border border-gray-200 space-y-4"
             ref={printRef}
         >
             {/* Title */}
             <div>
                 <div className='flex items-center justify-between'>
-                    <h2 className="text-2xl font-bold mb-2">주문 상세 내역</h2>
+                    <div>
+                        <h2 className="print-title text-2xl font-bold mb-2">주문 상세 내역</h2>
+                        <p className="print-sub text-sm text-gray-500">
+                            주문번호: <span className="font-medium">{order.oid}</span> | 주문일자 {order.createdAt?.slice(0, 16)}
+                        </p>
+                    </div>
                     <div className="flex gap-1 no-print">
                         {order.items[0].category === 'customFrames' && order.items[0]?.thumbnail && (
                             <button
@@ -578,54 +738,129 @@ const Order_Detail = () => {
                         </button>
                     </div>
                 </div>
-                <p className="text-sm text-gray-500">주문번호: <span className="font-medium">{order.oid}</span> | 주문일자 {order.createdAt?.slice(0, 16)}</p>
+            </div>
+
+            {/* 주문 기본 정보 */}
+            <div className="print-section">
+                <h3 className="print-section-title font-semibold text-lg">주문 기본 정보</h3>
+                <div className="print-grid-2 text-sm text-gray-700">
+                    <div><span className="print-label font-medium">주문번호:</span> {order.oid}</div>
+                    <div><span className="print-label font-medium">주문상태:</span> {order.items[0].orderStatus}</div>
+                    <div><span className="print-label font-medium">주문일시:</span> {order.createdAt?.slice(0, 16)}</div>
+                    <div><span className="print-label font-medium">주문수단:</span> {order.paymentMethod}</div>
+                    <div><span className="print-label font-medium">주문자명:</span> {order.ordererName}</div>
+                    <div><span className="print-label font-medium">주문자 연락처:</span> {order.ordererPhone}</div>
+                </div>
             </div>
 
             {/* 상단 상품 정보 */}
-            <div className="flex gap-6 items-start border rounded-lg p-6 bg-gray-50">
-                <img 
-                    src={displayThumb} 
-                    alt={order.items[0].title} 
-                    className="w-28 h-28 object-cover rounded border" />
-                <div className="flex flex-col h-28 justify-between flex-1">
-                    <div className="text-lg font-semibold mb-2">
-                        {order.items[0].title}
-                    </div>
-                    <div>
-                        <div className="flex justify-between">
-                            <div>
-                                <div className="text-sm">수량: {order.items[0].quantity}개</div>
-                                <div className="text-sm text-gray-500 mb-1">
-                                    카테고리: {convertCategoryName(order.items[0].category)} <br />
-                                    사이즈: {convertInchToCm(order.items[0].size)} <br />
-                                    {order.items[0].category === 'lease' && (
-                                        `기간 : ${order.items[0].period}`
-                                    )}
-                                    {order.items[0].category === 'lease' && order.items[0].leaseStart != null && (
-                                        ` / (${order.items[0].leaseStart} ~ ${order.items[0].leaseEnd})`)
-                                    }
-                                </div>
-                                    
-                                {/* 맞춤액자 경우 고객 업로드 파일 다운로드 버튼 */}
-                                {order.items[0].category === 'customFrames' && order.items[0].thumbnail && (
-                                    <div className="mt-2">
-                                        <a 
-                                            href={order.items[0].thumbnail}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-sm text-blue-600 underline hover:text-blue-800"
-                                        >
-                                            고객 업로드 이미지 다운로드
-                                        </a>
-                                    </div>
-                                )}
+            <div className="print-section">
+                <h3 className="print-section-title font-semibold text-lg">상품 / 제작 정보</h3>
+
+                <div className="print-product-box flex gap-6 items-start">
+                    <img 
+                        src={displayThumb} 
+                        alt={order.items[0].title} 
+                        className="print-thumb w-28 h-28 object-cover rounded border" 
+                    />
+                    
+                    <div className="flex-1">
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            <span className="print-badge">
+                                {convertCategoryName(order.items[0].category)}
+                            </span>
+                            <span className="print-badge">
+                                 {item.finishType === 'matte' ? '무광' : '유광'}
+                            </span>
+                            <span className="print-badge">
+                                수량 {order.items[0].quantity}개
+                            </span>
+                        </div>
+ 
+                        <div className="text-sm text-gray-700 leading-6">
+                            <div className="print-label text-black font-bold">
+                                {order.items[0].title}
                             </div>
-                            <div className="flex items-end text-base font-bold text-right mt-1">{(order.items[0].price * order.items[0].quantity).toLocaleString()}원</div>
+                            <div>
+                                <span className="print-label">사이즈:</span>
+                                {convertInchToCm(order.items[0].size)}
+                            </div>
+
+                            <div>
+                                <span className="print-label">작가:</span>
+                                {order.items[0].author}
+                            </div>
+                                        
+                            <div>
+                                <span className="print-label">상품금액:</span>
+                                {(order.items[0].price * order.items[0].quantity).toLocaleString()}원
+                            </div>            
+
+                            {/* {order.items[0].category === 'customFrames' && hasCustomUploadImage && (
+                                <div className="mt-2">
+                                    <span className="print-label">고객 업로드 이미지:</span>
+                                    <a
+                                        href={customFrameThumb}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-blue-600 underline hover:text-blue-800"
+                                    >
+                                        보기
+                                    </a>
+                                </div>
+                            )} */}
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* 맞춤액자 사진보정 정보 */}
+            {order.items?.[0]?.category === 'customFrames' && (() => {
+                const item = order.items[0];
+
+                const retouchEnabled =
+                    item.retouchEnabled === 1 || item.retouchEnabled === true;
+
+                const retouchTypes = (item.retouchTypes || '')
+                    .split(',')
+                    .map(v => v.trim())
+                    .filter(Boolean);
+
+                return (
+                    <div className="print-section"> 
+                        <h3 className="print-section-title font-semibold text-lg">사진 보정 정보</h3>
+
+                        <div className="text-sm leading-6">
+                            <div>
+                                <span className='print-label'>보정 신청:</span>
+                                {retouchEnabled ? '신청' : '미신청'}
+                            </div>
+
+                            <div>
+                                <span className="print-label">고객 원본 이미지:</span>
+                                {item.thumbnail ? '있음' : '없음'}
+                            </div>
+
+                            {retouchEnabled && (
+                                <>
+                                    <div className="mt-2">
+                                        <span className="print-label">보정 항목:</span>
+                                        {retouchTypes.length > 0 ? retouchTypes.join(', ') : '선택 없음'}
+                                    </div>
+
+                                    <div className="mt-2">    
+                                        <span className="print-label">요청사항:</span>
+                                        <div className="print-note-box whitespace-pre-line">
+                                            {item.retouchNote || '없음'}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            })()}
+                    
             {/* 반품 입력창 */}
             {showReturnForm && order.items[0].orderStatus !== '반품신청' && (
                 <div className="space-y-2 mt-4 text-sm text-gray-700 border rounded p-4 bg-gray-50">
@@ -737,7 +972,7 @@ const Order_Detail = () => {
                 )}
 
                 {['교환신청', '교환회수완료', '교환배송중', '교환완료'].includes(order.items[0].orderStatus) && (
-                    <div>
+                    <div className="no-print">
                         <h3 className="font-semibold mb-4 text-lg">교환 진행 상황</h3>
                         {renderClaimInfo()}
                         <div className="p-4 mt-2 border rounded bg-yellow-50 text-sm text-yellow-700 font-medium">
@@ -794,7 +1029,7 @@ const Order_Detail = () => {
                 )}
                 
             </div> {/* 주문 진행 상황 */}
-
+            
             {/* 배송 상태 단계 */}
             <div className="no-print">
                 {!['입금대기', '결제완료', '취소', '반품신청', '반품회수완료', '환불처리중', '환불완료', 
@@ -837,121 +1072,98 @@ const Order_Detail = () => {
             </div>
 
             { /* 결제 정보 */}
-            <div>
-                <h3 className="font-semibold mb-4 text-lg">결제 정보</h3>
-                <div className="bg-gray-50 p-4 rounded-md text-sm leading-6">
-                    <div ><span className="font-semibold text-black mb-2">결제 수단:</span> {order.paymentMethod}</div>
+            <div className="print-section">
+                <h3 className="print-section-title font-semibold text-lg">결제 정보</h3>
+                <div className="text-sm leading-6">
+                    <div>
+                        <span className="print-label">결제 수단:</span> {order.paymentMethod}
+                    </div>
+
                     { order.paymentMethod === '무통장입금' && (
                         <>
-                            <div><span className="font-semibold text-black mb-2">입금자명:</span> {order.depositor}</div>
-                            <div><span className="font-semibold text-black mb-2">입금 계좌:</span> {order.bankAccount}</div>
+                            <div>
+                                <span className="print-label">입금자명:</span> {order.depositor}
+                            </div>
+                            <div>
+                                <span className="print-label">입금 계좌:</span> {order.bankAccount}
+                            </div>
                         </>
                     )}
-                    <div><span className="font-semibold text-black mb-2">총 상품금액:</span> {order.totalPrice.toLocaleString()}원</div>
-                    <div><span className="font-semibold text-black mb-2">적립금 사용:</span> {order.usedCredit.toLocaleString()}원</div>
-                    {order.items[0].category === 'lease' && (
-                        <div><span className="font-semibold text-black mb-2">보증금:</span> {order.items[0].deposit.toLocaleString()}원</div>
-                    )}
-                    <div><span className="font-semibold text-black mb-2">배송비:</span> {order.deliveryFee.toLocaleString()}원</div>
+
                     <div>
-                        <span className="font-semibold text-black mb-2">최종 결제금액:</span> 
+                        <span className="print-label">총 상품금액:</span> {order.totalPrice.toLocaleString()}원
+                    </div>
+                    
+                    <div>
+                        <span className="print-label">적립금 사용:</span> {order.usedCredit.toLocaleString()}원
+                    </div>
+
+                    <div>
+                        <span className="print-label">배송비:</span> {order.deliveryFee.toLocaleString()}원
+                    </div>
+
+                    <div>
+                        <span className="print-label">최종 결제금액:</span> 
                         {order.finalPrice.toLocaleString()}원 
                         {orderCountFromState > 1 ? ` (외 ${orderCountFromState - 1}개 상품 포함)` : ''}
                     </div>
                 </div>
             </div>
 
-            {/* 현금 영수증 */}
-            {order.receiptInfo && (
-                <div className="mt-6 p-5 border border-gray-200 rounded-md bg-gray-50 text-sm text-gray-800">
-                    <h3 className="font-semibold text-lg text-gray-900 mb-4">현금 영수증 정보</h3>
-
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                        <span className='text-gray-600'>발급 유형</span>
-                        <span className="font-medium text-gray-800">{order.receiptType || '정보 없음'}</span>
-                    </div>
-                    
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                        <span className="text-gray-600">신청 방법</span>
-                        <span className="font-medium text-gray-800">{order.receiptMethod || '정보 없음'}</span>
-                    </div>
-
-                    <div className="flex justify-between py-1">
-                        <span className="text-gray-600">신청 번호</span>
-                        <span className="font-medium text-gray-800">{order.receiptInfo || '정보 없음'}</span>
-                    </div>
-                </div>
-            )}
-
-            {/* 맞춤액자 사진보정 정보 */}
-            {order.items?.[0]?.category === 'customFrames' && (() => {
-                const item = order.items[0];
-
-                const retouchEnabled =
-                    item.retouchEnabled === 1 || item.retouchEnabled === true;
-
-                const retouchTypes = (item.retouchTypes || '')
-                    .split(',')
-                    .map(v => v.trim())
-                    .filter(Boolean);
-
-                return (
-                    <div>
-                        <h3 className="font-semibold mb-4 text-lg">사진 보정 정보</h3>
-
-                        <div className="bg-gray-50 p-4 rounded-md text-sm leading-6">
-                            <div>
-                                <span className='font-semibold text-black mb-2'>보정 신청:</span>{' '}
-                                {retouchEnabled ? '신청' : '미신청'}
-                            </div>
-
-                            {retouchEnabled && (
-                                <>
-                                    <div className="mt-2">
-                                        <span className="font-semibold text-black mb-2">보정 항목:</span>
-                                        {retouchTypes.length > 0 ? (
-                                            <div className="mt-2 flex flex-wrap gap-2">
-                                                {retouchTypes.map(t => (
-                                                    <span
-                                                        key={t}
-                                                        className="px-2 py-1 text-xs border rounded-full bg-white"
-                                                    >
-                                                        {t}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <span className="ml-2 text-gray-500">선택 없음</span>
-                                        )}
-                                    </div>
-
-                                    <div className='mt-2'>
-                                        <span className="font-semibold text-black mb-2">요청사항:</span>{' '}
-                                        {item.retouchNote ? (
-                                            <span className="whitespace-pre-line">{item.retouchNote}</span>
-                                        ) : (
-                                            <span className="text-gray-500">없음</span>
-                                        )}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )
-            })()}
-
             { /* 배송지 정보 */}
-            <div>
-                <h3 className="font-semibold mb-4 text-lg">배송지 정보</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 text-sm text-gray-700">
-                    <div><span className="font-medium">이름:</span> {order.ordererName}</div>
-                    <div><span className="font-medium">연락처:</span> {order.ordererPhone}</div>
-                    <div><span className="font-medium">이메일:</span> {order.email}</div>
+            <div className="print-section">
+                <h3 className="print-section-title font-semibold text-lg">배송지 정보</h3>
+                <div className="print-grid-2 text-sm text-gray-700">
                     <div>
-                        <span className="font-medium">주소:</span>{order.address}<br />
-                        {order.detailAddress}({order.postcode})
+                        <span className="font-medium">수령인:</span> {order.ordererName}
                     </div>
+                    <div>
+                        <span className="font-medium">연락처:</span> {order.ordererPhone}
+                    </div>
+                    <div>
+                        <span className="font-medium">이메일:</span> {order.email}
+                    </div>
+                    <div>
+                        <span className="font-medium">우편번호:</span> {order.postcode}
+                    </div>
+
+                    <div className="sm:col-span-2">
+                        <span className="font-medium">주소:</span> {order.address}<br />
+                        {order.deliveryAddress} ({order.postcode})
+                    </div>
+
+                    {order.deliveryRequest && (
+                        <div className="sm:col-span-2">
+                            <span className="font-medium">배송메모:</span> {order.deliveryRequest}
+                        </div>
+                    )}
                 </div>
+            </div>
+
+            <div className="print-section">
+                <h3 className="print-section-title font-semibold text-lg">작업 확인란</h3>
+
+                <div className="print-check-row text-sm">
+                    <div className="print-check-item">□ 입금 확인</div>
+                    <div className="print-check-item">□ 제작 시작</div>
+                    <div className="print-check-item">□ 제작 완료</div>
+                    <div className="print-check-item">□ 포장 완료</div>
+                    <div className="print-check-item">□ 출고 완료</div>
+                </div>
+
+                <div className="mt-4 text-sm">
+                    <div>
+                        <span className="print-label">운송장번호:</span>
+                    </div>
+
+                    <div className="mb-2">
+                        <span className="print-label">작업자</span>
+                    </div>    
+                    <div>
+                        <span className="print-label">특이사항:</span>
+                        <div className="print-note-box"></div>
+                    </div>
+                </div> 
             </div>
 
             {/* 배송 페이지 모달창 */}
@@ -1019,45 +1231,6 @@ const Order_Detail = () => {
                     </div>
                 </div>
             )}
-
-            {/* 리스정보 수정 모달
-            {showLeaseModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg w-[420px] shadow-lg relative">
-                        <h3 className="text-lg font-bold mb-4">리스 기간 수정</h3>
-
-                        <label className="block text-sm font-medium mt-2">리스 시작일</label>
-                        <input 
-                            type="date"
-                            value={leaseStart}
-                            onChange={(e) => setLeaseStart(e.target.value)}
-                            className='border px-2 py-1 w-full text-sm'
-                        />
-
-                        <label className="block text-sm font-medium mt-2">리스 종료일</label>
-                        <input 
-                            type="date"
-                            value={leaseEnd}
-                            onChange={(e) => setLeaseEnd(e.target.value)}
-                            className="border px-2 py-1 w-full text-sm"
-                        />
-
-                        <button
-                            onClick={() => handleLeaseSave()}
-                            className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-                        >
-                            저장
-                        </button>
-
-                        <button
-                            onClick={() => setShowLeaseModal(false)}
-                            className="absolute top-3 right-3 text-gray-400 hover:text-black"
-                        >
-                            ✕
-                        </button>
-                    </div>
-                </div>
-            )} */}
 
             {/* 비회원 비밀번호 수정 */}
             {showGuestPwModal && (

@@ -12,6 +12,7 @@ public class OrderItemsVo {
     private Long pid;
     private String category;
     private String title;
+    private String author;
     private int quantity;
     private int deposit;
     private int price;

@@ -440,7 +440,7 @@ const OrderDetail = () => {
                                             text-gray-500">
                                         <span className="text-black">카테고리: {convertCategoryName(item.category)} ({item.finishType === 'matte' ? '무광' : '유광'})</span> <br />
                                         사이즈: {convertInchToCm(item.size)} <br />
-                                        수량: ({item.quantity}개) <br />
+                                        수량: {item.quantity}개 <br />
                                         {item.category === 'lease' && (
                                         `기간 : ${item.period}`
                                         )}

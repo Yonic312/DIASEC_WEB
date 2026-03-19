@@ -51,11 +51,11 @@
     <!-- order_items 테이블에 주문 아이템 목록 저장 -->
     <insert id="insertOrderItem" parameterType="map">
         INSERT INTO order_items (
-            oid, cid, pid, category, title, quantity, price, period, size, thumbnail, 
+            oid, cid, pid, category, title, author, quantity, price, period, size, thumbnail, 
             order_status, deposit, finish_type, 
             retouch_enabled, retouch_types, retouch_note
         ) VALUES (
-            #{oid}, #{item.cid}, #{item.pid}, #{item.category}, #{item.title}, #{item.quantity}, #{item.price}, 
+            #{oid}, #{item.cid}, #{item.pid}, #{item.category}, #{item.title}, #{item.author}, #{item.quantity}, #{item.price}, 
             #{item.period}, #{item.size}, #{item.thumbnail}, #{item.orderStatus}, #{item.deposit}, #{item.finishType},
             COALESCE(#{item.retouchEnabled}, 0), #{item.retouchTypes}, #{item.retouchNote}
         )
@@ -117,7 +117,7 @@
     <!-- 3. 상세페이지로 들어갈 itemId 개별 주문 상품 조회 -->
     <select id="selectOrderItemById" resultType="OrderItemsVo">
         SELECT 
-            item_id as itemId, oid, cid, pid, category, title, quantity, price, deposit, finish_type as finishType,
+            item_id as itemId, oid, cid, pid, category, title, author, quantity, price, deposit, finish_type as finishType,
             period, size, thumbnail, order_status as orderStatus, 
             lease_start as leaseStart, lease_end as leaseEnd,
             tracking_number as trackingNumber, tracking_company as trackingCompany,

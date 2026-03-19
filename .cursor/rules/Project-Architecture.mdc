@@ -1,0 +1,14 @@
+---
+description: 
+alwaysApply: true
+---
+
+This project uses:
+- React frontend
+- Spring Boot backend
+- MyBatis mapper XML
+- REST API architecture
+
+Backend uses Controller → Service → Mapper → XML structure.
+Frontend communicates with backend via REST APIs using Axios.
+When suggesting code, follow this architecture.

@@ -140,7 +140,7 @@ const Insert_Product = () => {
                 </>
             )}
 
-            <input type="text" placeholder="순위" value={sort_order} onChange={(e) => setSort_Order(e.target.value)} className="border px-2 py-1" />
+            <input type="text" placeholder="순위 (0)" value={sort_order} onChange={(e) => setSort_Order(e.target.value)} className="border px-2 py-1" />
             <input type="text" placeholder="상품명" value={title} onChange={(e) => setTitle(e.target.value)} className="border px-2 py-1" />
             
             <span>이미지 썸네일 (드래그로 순서 변경)</span>

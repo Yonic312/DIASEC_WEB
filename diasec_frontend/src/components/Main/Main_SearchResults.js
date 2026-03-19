@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import axios from "axios"
+import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
 
 const CATS = [
     { key: "masterPiece", label: "명화갤러리" },
@@ -15,6 +16,7 @@ const Main_SearchResults = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [hoveredPid, setHoveredPid] = useState(null);
     const queryParams = new URLSearchParams(location.search);
     const q = (queryParams.get("q") || "").trim();
 
@@ -34,6 +36,8 @@ const Main_SearchResults = () => {
         photoIllustration: 0,
         fengShui: 0,
     });
+
+    const [priceMap, setPriceMap] = useState({});
 
     // 토글 (접고 펴기)
     const [openMap, setOpenMap] = useState(() => 
@@ -57,6 +61,66 @@ const Main_SearchResults = () => {
     const goItems = (type, keyword) => {
         navigate(`/main_Items?type=${type}&q=${encodeURIComponent(keyword)}`);
     };
+
+    const loadImageSize = (src) => {
+        return new Promise ((resolve, reject) => {
+            if (!src) {
+                reject(new Error("이미지 URL 없음"));
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => resolve({ width: img.width, height: img.height });
+            img.onerror = reject;
+            img.src = src;
+        })
+    }
+
+    useEffect(() => {
+    let cancelled = false;
+
+    const allProducts = [
+        ...data.masterPiece,
+        ...data.koreanPainting,
+        ...data.photoIllustration,
+        ...data.fengShui,
+    ];
+
+    const run = async () => {
+        try {
+            const entries = await Promise.all(
+                allProducts.map(async (p) => {
+                    try {
+                        const { width, height } = await loadImageSize(p.imageUrl);
+                        const ratio = width / height;
+                        const cfg = getMinFrameConfigByRatio(ratio);
+
+                        return [p.pid, cfg.price];
+                    } catch (e) {
+                        console.error("검색결과 가격 계산 실패:", p.pid, e);
+                        return [p.pid, null];
+                    }
+                })
+            );
+
+            if (cancelled) return;
+                setPriceMap(Object.fromEntries(entries));
+            } catch (e) {
+                console.error("검색결과 가격 map 생성 실패:", e);
+                if (!cancelled) setPriceMap({});
+            }
+        };
+
+        if (allProducts.length > 0) {
+            run();
+        } else {
+            setPriceMap({});
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [data]);
 
     useEffect(() => {
         if (!q) {
@@ -105,21 +169,23 @@ const Main_SearchResults = () => {
         }
 
         return (
-            <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] mt-4 px-1">
+            <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-y-10 md:gap-x-[2%] gap-x-[5%] mt-4 px-1">
                 {items.slice(0, 12).map((p) => (
                     <button
                         key={p.pid}
                         onClick={() => 
                             navigate(`/none_custom_detail?pid=${p.pid}&category=${encodeURIComponent(p.category)}`)
                         }
-                        className="text-left"
+                        onMouseEnter={() => setHoveredPid(p.pid)}
+                        onMouseLeave={() => setHoveredPid(null)}
+                        className="text- left"
                     >
                         <div className="flex flex-col w-full h-auto cursor-pointer">
                             <div className="flex justify-center items-center w-full aspect-[292/292] overflow-hidden bg-white">
                                 <img 
                                     className="h-[100%] w-[100%] object-contain"
                                     style={{ boxShadow: "8px 8px 10px rgba(0,0,0,0.2)" }}
-                                    src={p.imageUrl}
+                                    src={hoveredPid == p.pid && p.hoverImageUrl ? p.hoverImageUrl :  p.imageUrl}
                                     alt={p.title}
                                 />
                             </div>
@@ -130,6 +196,11 @@ const Main_SearchResults = () => {
                             <span className="lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)] line-clamp-1 font-bold text-[#83807d]">
                                 {p.author}
                             </span>
+
+                            <span className="text-[15px] font-semibold text-[#a67a3e] mt-[2px]">
+                                {priceMap[p.pid] ? `${priceMap[p.pid].toLocaleString()}원~` : ''}
+                            </span>
+
                             <hr className="my-1" />
                         </div>
                     </button>

@@ -268,19 +268,12 @@ const OrderForm = () => {
         if (!validateOrder()) return;
 
         // 무통장 입금
-        if (paymentMethod === "무통장입금") {
-            if (!depositor || !bankAccount) {
-                toast.error("입금자명과 계좌 정보를 입력해주세요.");
-                return;
-            }
-
-            if (receiptType === "개인" && !receiptInfo) {
-                toast.error("현금영수증 정보를 입력해주세요.");
-                return;
-            }
-            submitOrder();
+        if (receiptType === "개인" && !receiptInfo) {
+            toast.error("현금영수증 정보를 입력해주세요.");
             return;
         }
+        submitOrder();
+        return;
 
         // 카드결제
         if (paymentMethod === '카드결제') {
@@ -366,6 +359,7 @@ const OrderForm = () => {
                 pid: item.pid,
                 category : item.category,
                 title: item.title,
+                author: item.author,
                 quantity: item.quantity,
                 price: item.price,
                 period: item.period,
@@ -382,7 +376,13 @@ const OrderForm = () => {
             }))
         };
 
+        // submitOrder() 안, orderData 만든 다음에 추가 / 테스트
+        console.log("[ORDER SUBMIT] location.state.orderItems =", location.state?.orderItems);
+        console.log("[ORDER SUBMIT] items(state) =", items);
+        console.log("[ORDER SUBMIT] orderData.items(payload) =", orderData.items);
+
         try {
+            console.log("[ORDER SUBMIT] location.key =", location.key);
             const response = await axios.post(`${API}/order/insert`, orderData);
             if (response.data.success) {
                 // 장바구니 삭제
@@ -598,8 +598,13 @@ const OrderForm = () => {
                             <div className="flex flex-col">
                                 <span className="
                                     md:text-base text-[clamp(11px,2.085vw,16px)]
-                                    font-semibold line-clamp-1">{item.title}</span>
+                                    font-semibold line-clamp-1">{item.title}
+                                </span>
+                                <span className="text-gray-500 text-[12px]">
+                                    {item.author}
+                                </span>
                             </div>
+                        
                             <div 
                                 className="
                                     flex flex-col items-start
@@ -739,10 +744,11 @@ const OrderForm = () => {
                                     <option value="직접입력">직접입력</option>
                                 </select>    
                             </div>
-                        <span 
+                        {/* <span 
                             className="
                                 md:text-xs text-[clamp(7px,1.5645vw,12px)] 
-                                ml-1">(영문 대소문자/숫자/특수문자 중 2가지 이상 조합, 8자~16자)</span>
+                                ml-1">(영문 대소문자/숫자/특수문자 중 2가지 이상 조합, 8자~16자)
+                        </span> */}
                     </div>
                 </div>
 
@@ -1032,14 +1038,14 @@ const OrderForm = () => {
                     />
                 )}
 
-                {paymentMethod === "카드결제" && (
+                {/* {paymentMethod === "카드결제" && (
                     <div className="
                         flex flex-col p-2 gap-2
                         md:text-sm text-[clamp(11px,1.8252vw,14px)]">
                         <span className="flex">- 소액 결제의 경우 PG사 정책에 따라 결제 금액 제한이 있을 수 있습니다.</span>
                         <span className="flex">- 카드사 제휴혜택은 제공되지 않습니다</span>
                     </div>
-                )}
+                )} */}
 
                 {paymentMethod === "카카오페이" && (
                     <div className="
@@ -1087,7 +1093,8 @@ const OrderForm = () => {
                         md:text-base text-[clamp(11px,2.085vw,16px)]">
                         배송비
                     </div>
-                    <span> {deliveryFee.toLocaleString()} 원</span>
+                    {/* <span> {deliveryFee.toLocaleString()} 원</span> */}
+                    <span className="text-green-600">무료배송</span>
                 </div>
                 <hr />
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">

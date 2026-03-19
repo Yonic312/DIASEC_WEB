@@ -17,6 +17,51 @@ const ReviewWrite = () => {
     const [content, setContent] = useState('');
     const [images, setImages] = useState([]);
     const [selectedItemId, setSelectedItemId] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    // 이미지 업로드
+    const MAX_IMAGES = 5;
+    const MAX_FILE_BYTES = 3 * 1024 * 1024; // 3MB
+    const COMPRESS_MAX_PX = 1000;
+    const COMPRESS_JPEG_QUALITY = 1;
+
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                let w = img.naturalWidth, h = img.naturalHeight;
+                if (w > COMPRESS_MAX_PX || h > COMPRESS_MAX_PX) {
+                    if (w >= h) {
+                        h = Math.round((h * COMPRESS_MAX_PX) / w);
+                        w = COMPRESS_MAX_PX;
+                    } else {
+                        w = Math.round((w * COMPRESS_MAX_PX) / h);
+                        h = COMPRESS_MAX_PX;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) { reject(new Error('compress failed')); return; }
+                        const name = (file.name && file.name.replace(/\.[^.]+$/i, '')) || 'image';
+                        resolve(new File([blob], `${name}.jpg`, { type: 'image/jpeg' }));
+                    },
+                    'image/jpeg',
+                    COMPRESS_JPEG_QUALITY
+                );
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image load failed')); };
+            img.src = url;
+        });
+    };
+
+    // 이미지 업로드 //
 
     useEffect(() => {
         if (member?.id) {
@@ -32,19 +77,17 @@ const ReviewWrite = () => {
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
 
-        if (files.length > 5) {
-            toast.error("이미지는 최대 5장까지 업로드 가능합니다.");
+        if (files.length > MAX_IMAGES) {
+            toast.error(`이미지는 최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
             return;
         }
-
         for (const file of files) {
-            if (file.size > 2 * 1024 * 1024) {
-                toast.error('각 이미지는 2MB 이하만 등록 가능합니다.');
+            if (file.size > MAX_FILE_BYTES) {
+                toast.error('각 이미지는 3MB 이하만 등록 가능합니다.');
                 return;
             }
-        }
-
-        setImages(files);
+            setImages(files);
+        } 
         setPreviewImages(files.map(file => URL.createObjectURL(file)));
     };
 
@@ -56,6 +99,18 @@ const ReviewWrite = () => {
 
         if (images.length === 0) {
             toast.error('리뷰 이미지를 최소 1장 이상 업로드해주세요.');
+            return;
+        }
+
+        setSubmitting(true);
+        let compressedFiles;
+        try {
+            compressedFiles = await Promise.all(images.map(compressImage));
+        } catch (err) {
+            console.error('이미지 최적화 실패', err);
+            toast.error('이미지 처리에 실패했습니다. 다시 시도해주세요.');
+            setSubmitting(false);
+            return;
         }
 
         const formData = new FormData();
@@ -67,7 +122,7 @@ const ReviewWrite = () => {
             ['content', content],
             ['itemId', selectedItemId]
         ].forEach(([key, value]) => formData.append(key, value));
-        images.forEach(file => formData.append('images', file));
+        compressedFiles.forEach(file => formData.append('images', file));
 
         try {
             await axios.post(`${API}/review/write`, formData, {
@@ -78,6 +133,8 @@ const ReviewWrite = () => {
         } catch (err) {
             console.error('리뷰 등록 실패', err);
             toast.error('리뷰 등록에 실패했습니다.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -211,13 +268,13 @@ const ReviewWrite = () => {
                         e.preventDefault();
                         setIsDragOverThumb(false);
                         const files = Array.from(e.dataTransfer.files);
-                        if (files.length + images.length > 5) {
-                        toast.error("이미지는 최대 5장까지 업로드 가능합니다.");
-                        return;
+                        if (files.length + images.length > MAX_IMAGES) {
+                            toast.error("이미지는 최대 ${MAX_IMAGES}장까지 업로드 가능합니다.");
+                            return;
                         }
                         for (const file of files) {
-                        if (file.size > 2 * 1024 * 1024) {
-                            toast.error('각 이미지는 2MB 이하만 등록 가능합니다.');
+                        if (file.size > MAX_FILE_BYTES) {
+                            toast.error('각 이미지는 3MB 이하만 등록 가능합니다.');
                             return;
                         }
                         }
@@ -228,20 +285,20 @@ const ReviewWrite = () => {
                     >
                     <label className="cursor-pointer block md:text-sm text-[clamp(11px,1.824vw,14px)]">
                         여기에 이미지를 드래그하거나 클릭하여 선택하세요 <br />
-                        <span className="md:text-xs text-[clamp(10px,1.564vw,12px)] text-gray-400">(최소 1장, 최대 5장, 각 10MB 이하)</span>
+                        <span className="md:text-xs text-[clamp(10px,1.564vw,12px)] text-gray-400">(최소 1장, 최대 5장, 각 3MB 이하)</span>
                         <input
                         type="file"
                         accept="image/png, image/jpeg"
                         multiple
                         onChange={(e) => {
                             const files = Array.from(e.target.files);
-                            if (files.length + images.length > 5) {
-                            toast.error("이미지는 최대 5장까지 업로드 가능합니다.");
-                            return;
+                            if (files.length + images.length > MAX_IMAGES) {
+                                toast.error(`이미지는 최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
+                                return;
                             }
                             for (const file of files) {
-                            if (file.size > 10 * 1024 * 1024) {
-                                toast.error('각 이미지는 10MB 이하만 등록 가능합니다.');
+                            if (file.size > MAX_FILE_BYTES) {
+                                toast.error('각 이미지는 3MB 이하만 등록 가능합니다.');
                                 return;
                             }
                             }
@@ -318,7 +375,8 @@ const ReviewWrite = () => {
                 <div className="text-center">
                     <button
                         onClick={handleSubmit}
-                        className='w-full md:text-sm text-[clamp(11px,1.824vw,14px)] bg-black text-white py-3 px-6 rounded-md font-semibold hover:bg-gray-800 transition'>
+                        disabled={submitting}
+                        className='w-full md:text-sm text-[clamp(11px,1.824vw,14px)] bg-black text-white py-3 px-6 rounded-md font-semibold hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed'>
                         후기 등록
                     </button>
                 </div>

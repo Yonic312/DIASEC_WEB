@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
@@ -8,18 +8,18 @@ import customFrame from '../../assets/banner/customFrame.png';
 import aboutBanner from '../../assets/images/introduce.png';
 
 // 보정
-import faceDot_1 from '../../assets/custom_Frames/faceDot_1.jpg';
-import faceDot_2 from '../../assets/custom_Frames/faceDot_2.jpg';
-import faceENM_1 from '../../assets/custom_Frames/faceENM_1.jpg';
-import faceENM_2 from '../../assets/custom_Frames/faceENM_2.jpg';
-import portrait_1 from '../../assets/custom_Frames/portrait_1.jpg';
-import portrait_2 from '../../assets/custom_Frames/portrait_2.jpg';
-import backlight_1 from '../../assets/custom_Frames/backlight_1.jpg';
-import backlight_2 from '../../assets/custom_Frames/backlight_2.jpg';
-import bg_1 from '../../assets/custom_Frames/bg_1.jpg';
-import bg_2 from '../../assets/custom_Frames/bg_2.jpg';
-import blur_1 from '../../assets/custom_Frames/blur_1.jpg';
-import blur_2 from '../../assets/custom_Frames/blur_2.jpg';
+// import faceDot_1 from '../../assets/custom_Frames/faceDot_1.jpg';
+// import faceDot_2 from '../../assets/custom_Frames/faceDot_2.jpg';
+// import faceENM_1 from '../../assets/custom_Frames/faceENM_1.jpg';
+// import faceENM_2 from '../../assets/custom_Frames/faceENM_2.jpg';
+// import portrait_1 from '../../assets/custom_Frames/portrait_1.jpg';
+// import portrait_2 from '../../assets/custom_Frames/portrait_2.jpg';
+// import backlight_1 from '../../assets/custom_Frames/backlight_1.jpg';
+// import backlight_2 from '../../assets/custom_Frames/backlight_2.jpg';
+// import bg_1 from '../../assets/custom_Frames/bg_1.jpg';
+// import bg_2 from '../../assets/custom_Frames/bg_2.jpg';
+// import blur_1 from '../../assets/custom_Frames/blur_1.jpg';
+// import blur_2 from '../../assets/custom_Frames/blur_2.jpg';
 
 
 // 공통 axios get helper
@@ -39,6 +39,105 @@ const Main = () => {
     const [categoryList, setCategoryList] = useState([]);
     const [bestPriceMap, setBestPriceMap] = useState({});
     const [newPriceMap, setNewPriceMap] = useState({});
+    
+
+    // 올라오는 효과
+    const [hasScrolled, setHasScrolled] = useState(false);
+    const newSectionRef = useRef(null);
+    const reviewSectionRef = useRef(null);
+    const aboutSectionRef = useRef(null);
+
+    const [visibleSections, setVisibleSections] = useState({
+        new: false,
+        review: false,
+        about: false,
+    });
+
+    // 스크롤 감지
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 10) {
+                setHasScrolled(true);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        const refs = [
+            { key: 'new', ref: newSectionRef },
+            { key: 'review', ref: reviewSectionRef },
+            { key: 'about', ref: aboutSectionRef },
+        ];
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    const targetKey = entry.target.dataset.section;
+                    if (!targetKey) return;
+
+                    // 신규작품은 실제 스크롤 이후에만 애니메이션
+                    if (targetKey === 'new' && !hasScrolled) return;
+
+                    if (entry.isIntersecting) {
+                        setVisibleSections((prev) => {
+                            if (prev[targetKey]) return prev;
+
+                            return {
+                                ...prev,
+                                [targetKey]: true,
+                            };
+                        });
+                    }
+                });
+            },
+            {
+                threshold: 0.08,
+                rootMargin: '0px 0px -6% 0px',
+            }
+        );
+
+        refs.forEach(({ key, ref }) => {
+            if (ref.current) {
+                ref.current.dataset.section = key;
+                observer.observe(ref.current);
+            }
+        });
+
+        return () => observer.disconnect();
+    }, [hasScrolled]);
+
+    useEffect(() => {
+        const sectionMap = [
+            { key: 'review', ref: reviewSectionRef },
+            { key: 'about', ref: aboutSectionRef },
+        ];
+
+        const nextVisible = {};
+
+        sectionMap.forEach(({ key, ref }) => {
+            const el = ref.current;
+            if (!el) {
+                nextVisible[key] = false;
+                return;
+            }
+
+            const rect = el.getBoundingClientRect();
+            const isInitiallyVisible = 
+                rect.top < window.innerHeight * 0.95 && rect.bottom > 0;
+
+            nextVisible[key] = isInitiallyVisible;
+        });
+
+        setVisibleSections((prev) => ({
+            ...prev,
+            ...nextVisible,
+        }));
+    }, []);
+
+    // 올라오는 효과 //
 
     // 작가 카테고리는 빼기
     const filteredCategoryList = categoryList.filter(c => c.name !== 'authorCollection');
@@ -174,19 +273,6 @@ const Main = () => {
                             const { width, height } = await loadImageSize(item.imageUrl);
                             const ratio = width / height;
                             const cfg = getMinFrameConfigByRatio(ratio);
-
-                            console.log('신규 가격 계산', {
-                                pid: item.pid,
-                                title: item.title,
-                                imageUrl: item.imageUrl,
-                                naturalWidth: width,
-                                naturalHeight: height,
-                                ratio,
-                                minWidth: cfg.width,
-                                minHeight: cfg.height,
-                                price: cfg.price,
-                            });
-
                             return [item.pid, cfg.price];
                         } catch (e) {
                             console.error("신규작품 가격 map 생성 실패:", item.pid, e);
@@ -215,19 +301,19 @@ const Main = () => {
     }, [new_Items]);
     
     // [보정] 사진 befor / after
-    const beforeAfterData = [
-        { title: '피부 보정', before: faceDot_1, after: faceDot_2},
-        { title: '얼굴 디테일 보정', before: faceENM_1, after: faceENM_2},
-        { title: '얼굴 라인·피부 결 리터칭', before: portrait_1, after: portrait_2},
-        { title: '이미지 역광 및 색감보정', before: backlight_1, after: backlight_2},
-        { title: '불필요한 배경 삭제 및 변경', before: bg_1, after: bg_2},
-        { title: '업스케일링 (흐릿한 사진 선명보정)', before: blur_1, after: blur_2},
-    ]
+    // const beforeAfterData = [
+    //     { title: '피부 보정', before: faceDot_1, after: faceDot_2},
+    //     { title: '얼굴 디테일 보정', before: faceENM_1, after: faceENM_2},
+    //     { title: '얼굴 라인·피부 결 리터칭', before: portrait_1, after: portrait_2},
+    //     { title: '이미지 역광 및 색감보정', before: backlight_1, after: backlight_2},
+    //     { title: '불필요한 배경 삭제 및 변경', before: bg_1, after: bg_2},
+    //     { title: '업스케일링 (흐릿한 사진 선명보정)', before: blur_1, after: blur_2},
+    // ]
 
     const [activeIndex, setActiveIndex] = useState(0);
     const [showAfter, setShowAfter] = useState(false);
 
-    const current = beforeAfterData[activeIndex];
+    // const current = beforeAfterData[activeIndex];
 
 
     // [리뷰] 상단 리뷰 슬라이더
@@ -295,11 +381,11 @@ const Main = () => {
             {/* 인기작품 */}
             <div>
                 <div className='
-                    xl:mb-8 lg:mb-6 mb-2
+                    lg:mb-4 mb-2
                     text-center'>
                     <span className='
                         md:text-3xl text-[clamp(18px,3.911vw,30px)]
-                        font-bold tracking-wide text-[#b29476] inline-block'
+                        font-bold tracking-wide text-black inline-block'
                     >
                         인기작품
                     </span>
@@ -380,7 +466,7 @@ const Main = () => {
 
                                 <span className="
                                     text-[15px]
-                                    font-semibold text-[#a67a3e] mt-[2px]">
+                                    font-semibold text-[#d0ac88] mt-[2px]">
                                     {bestPriceMap[item.pid] ? `${bestPriceMap[item.pid].toLocaleString()}원~` : ''}
 
                                 </span>
@@ -393,13 +479,22 @@ const Main = () => {
            {/* /인기작품 */}
 
            {/* 신규작품 */}
-            <div>
+            <div
+                ref={newSectionRef}
+                className={`transition-all duration-700 ease-out ${
+                    visibleSections.new
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-6'
+                }`}
+            >
                 <div className='
-                    xl:mb-8 lg:mb-6 mb-2
+                    lg:mb-4 mb-2
                     text-center'>
+
+                    {/* text-[#d0ac88] */}
                     <span className='
                         md:text-3xl text-[clamp(18px,3.911vw,30px)]
-                        font-bold tracking-wide text-[#d0ac88] inline-block'>
+                        font-bold tracking-wide text-black inline-block'>
                         신규작품
                     </span>
                     {/* <p className='
@@ -479,7 +574,7 @@ const Main = () => {
 
                                 <span className="
                                     text-[15px]
-                                    font-semibold text-[#a67a3e] mt-[2px]">
+                                    font-semibold text-[#d0ac88] mt-[2px]">
                                     {newPriceMap[item.pid] ? `${newPriceMap[item.pid].toLocaleString()}원~` : ''}
                                 </span>
 
@@ -489,192 +584,16 @@ const Main = () => {
                     })}
                 </div>
             </div>
-            {/* /신규작품 */}
-            
-            {/*                     
-                {false && (맞춤액자 배너 )}
-                <div>
-                    <img src={customFrame} className='w-full aspect-[1300/240] cursor-pointer' onClick={() => navigate('/customFrames')}/>
-                </div>
-                {false && (맞춤액자 배너 )}
-            */}
-
-            {/*             
-                {false && (보정)}
-                <div>
-                    <div className="text-center mt-20 mb-3">
-                        <h2 className='
-                            md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
-                            font-bold text-gray-800'>보정 서비스 미리보기</h2>
-                    </div>
-                    <div>
-                        {false && (보정 비교
-                            xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
-                        )}
-                        <div className='
-                            max-w-[550px] w-[61%]
-                            aspect-[450/670] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
-                            xl:p-6 lg:p-5 md:p-4 p-2
-                            shadow-xl'>
-                            <h3 className='
-                                lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
-                                font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
-                            
-                            <div className='relative w-full flex justify-center items-center'>
-                                <img src={
-                                    showAfter ? current.after : current.before}
-                                    alt="보정 비교" 
-                                    className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
-                                />
-                                <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {false &&  (transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다)}
-                                    <button
-                                        className={`
-                                            lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                            px-4 py-1 rounded-full font-semibold transition ${
-                                            !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
-                                        onClick = {() => setShowAfter(false)}
-                                        onMouseEnter={() => setShowAfter(false)}
-                                    >
-                                        원본사진
-                                    </button>
-                                    <button
-                                        className={`
-                                            lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                            px-4 py-1 rounded-full font-semibold transition ${
-                                            showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
-                                        }`}
-                                        onClick = {() => setShowAfter(true)}
-                                        onMouseEnter={() => setShowAfter(true)}
-                                    >
-                                        보정사진
-                                    </button>
-                                </div>
-                            </div>
-
-                            {false && (페이지 네이션)}
-                            <div className="mt-6 flex justify-center gap-2">
-                                {beforeAfterData.map((_, idx) => (
-                                    <button
-                                        key={idx}
-                                        className={`
-                                            xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
-                                            xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
-                                            rounded-full transition ${
-                                            activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
-                                        }`}
-                                        onClick={() => {
-                                            setActiveIndex(idx);
-                                            setShowAfter(false);
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                            <span
-                            className="
-                                flex flex-col justify-center items-center
-                                mt-4
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                font-medium tracking-wide
-                                text-gray-600
-                                px-4
-                            "
-                            >
-                            원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
-                        </span>
-                        </div>
-                    </div>
-                </div>
-                {false && (보정)}
-            */}
-
-            {/* 이벤트 배너 */}
-            {/* <div>
-                <h2 className="
-                    md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
-                    font-bold text-center mb-2">고객님을 위한 이벤트</h2>
-                <p className="
-                    md:text-base text-[clamp(11px,2.086vw,16px)]
-                    text-center text-gray-600">
-                    지금 참여할 수 있는 다양한 이벤트를 소개합니다!
-                </p>
-                <div className="overflow-hidden relative mt-3">
-                    <div className='flex w-full py-1 transition-transform duration-500 ease-in-out'
-                        style={{ transform: `translateX(-${currentIndex * 33.3333}%)` }}
-                    >
-                        {(events.length >= 4 ? events.concat(events) : events).map((event, i) => (
-                            <div
-                                key={`${event?.eventId}-${i}`} 
-                                className="
-                                    w-1/2 md:w-1/3 flex-shrink-0 px-[1.5%]">
-                                <div
-                                    key={`${event?.eventId}-${i}`}
-                                    className='bg-white rounded-lg overflow-hidden shadow-md cursor-pointer hover:shadow-lg transition hover:scale-105'
-                                    onClick={() => navigate(`/mainEventDetail/${event.eventId}`)}
-                                >
-                                    <div className="w-full aspect-[407/197] bg-gray-100 overflow-hidden">
-                                        <img 
-                                            src={event.thumbnailUrl}
-                                            alt={event.title}
-                                            className='w-full h-full object-cover'
-                                        />
-                                        
-                                    </div>
-
-                                    <div className='p-4'>
-                                        <span className="text-sm">{event.period}</span>
-                                        <h3 className='
-                                            lg:text-[18px] text-[clamp(16px,1.759vw,18px)]
-                                            font-bold text-gray-800 line-clamp-1 mb-1 '>
-                                            {event.title}
-                                        </h3>
-                                        <p className="
-                                            lg:text-[14px] text-[clamp(13.5px,1.368vw,14px)]
-                                            text-gray-500 line-clamp-2"> {false && (clamp-2는 최대 2줄까지만 텍스트 출력)}
-                                            {event.description || '이벤트에 참여하고 혜택을 받아보세요.'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {false && (좌우 버튼)}
-                    {events.length > 3 && (
-                        <div className="absolute top-1/3 -translate-y-1/2 w-full flex justify-between px-4 z-10">
-                            <button
-                                onClick={() =>
-                                    setCurrentIndex((prev) => (prev - 1 + events.length) % events.length)
-                                }
-                                className="
-                                xl:w-10 lg:w-9 md:w-7 w-5
-                                xl:h-10 lg:h-9 md:h-7 h-5
-                                xl:text-xl lg:text-[18px] md:text-[16px] text-[13px]
-                                bg-white shadow-md rounded-full  
-                                flex justify-center items-center font-bold hover:bg-gray-100"
-                            >
-                                🡐
-                            </button>
-                            <button
-                                onClick={() =>
-                                    setCurrentIndex((prev) => (prev + 1) % events.length)
-                                }
-                                className="
-                                xl:w-10 lg:w-9 md:w-7 w-5
-                                xl:h-10 lg:h-9 md:h-7 h-5
-                                xl:text-xl lg:text-[18px] md:text-[16px] sm:text-[13px]
-                                bg-white shadow-md rounded-full 
-                                flex justify-center items-center font-bold hover:bg-gray-100"
-                            >
-                                🡒
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div> */}
-            {/* /이벤트 배너 */}
 
             {/* 🔶 리뷰 썸네일 슬라이더 영역 */}
-            <div>
+            <div
+                ref={reviewSectionRef}
+                className={`transition-all duration-700 ease-out ${
+                    visibleSections.review
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-6'
+                }`}
+            >
                 <h2 className='
                     md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
                     font-bold mb-2 text-center'>고객 리뷰</h2>
@@ -729,7 +648,7 @@ const Main = () => {
                                 className="
                                 xl:w-10 lg:w-9 md:w-7 w-5
                                 xl:h-10 lg:h-9 md:h-7 h-5
-                                text-[clamp(13px,1.538vw,20px)]
+                                text-[12px]
                                 bg-white shadow-md rounded-full  
                                 flex justify-center items-center font-bold hover:bg-gray-100"
                             >
@@ -745,7 +664,7 @@ const Main = () => {
                                 className="
                                 xl:w-10 lg:w-9 md:w-7 w-5
                                 xl:h-10 lg:h-9 md:h-7 h-5
-                                text-[clamp(13px,1.538vw,20px)]
+                                text-[12px]
                                 bg-white shadow-md rounded-full 
                                 flex justify-center items-center font-bold hover:bg-gray-100"
                             >
@@ -757,12 +676,12 @@ const Main = () => {
 
                 <button className="
                     md:text-base text-[clamp(11px,2.085vw,16px)]
-                    xl:px-10 lg:px-6 md:px-4 px-3
-                    xl:py-3 lg:py-2 py-1
+                    lg:px-6 md:px-4 px-3
+                    lg:py-2 py-1
                     flex mt-2 mx-auto font-semibold text-white bg-[#303030] rounded hover:bg-opacity-80"
                     onClick={() => navigate('/reviewBoard')}
                 >
-                    리뷰 더보기 +
+                    리뷰 더보기
                 </button>
             </div>
             
@@ -776,7 +695,7 @@ const Main = () => {
                     }}
                 >
                     <div 
-                        className="bg-white w-[44%] sm:p-8 p-2 rounded shadow-lg relative"
+                        className="bg-white w-[34%] sm:p-8 p-2 rounded shadow-lg relative"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
@@ -844,37 +763,64 @@ const Main = () => {
 
             {/* 회사 소개 및 디아섹이란 배너 (사진 배경형) */}
             <div
-                className="w-full aspect-[1300/280] bg-cover bg-center relative flex items-center justify-center"
+                ref={aboutSectionRef}
+                className={`w-full aspect-[1300/280] bg-cover bg-center relative flex items-center justify-center transition-all duration-700 ease-out ${
+                    visibleSections.about
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-10'
+                }`}
                 style={{
                     backgroundImage: `url(${aboutBanner})`
                 }}
             >
                 <div className="absolute inset-0 bg-black bg-opacity-40" /> {/* 어두운 오버레이 */}
                 
-                <div className="flex flex-col items-center justify-center w-full z-10 text-center text-white lg:gap-4 md:gap-2 gap-1">
+                <div className="flex flex-col items-center justify-center w-full z-10 text-center text-white gap-2">
                     <h2 className="
-                        md:text-3xl text-[clamp(15px,3.911vw,30px)]
-                        font-bold">
+                        md:text-3xl text-[clamp(16px,3.5vw,30px)]
+                        font-bold tracking-tight">
                         디아섹에 대해 더 알고 싶으신가요?
                     </h2>
-                    <div className="flex justify-center gap-4">
+
+                    <p className="text-white/80 text-sm md:text-base">
+                        디아섹의 제작 방식과 브랜드 스토리를 확인해보세요
+                    </p>
+
+                    <div className="flex justify-center gap-3 mt-2">
+
+                        {/* 회사소개 */}
                         <button
                             // onClick={() => navigate('/about')}
                             className="
-                                md:text-lg text-[clamp(11px,2.3455vw,18px)]
-                                lg:px-6 md:px-4 px-2
-                                xl:py-3 md:py-2 py-1
-                                rounded-full bg-white text-[#333] font-semibold hover:bg-gray-400 transition"
+                                md:text-base text-[clamp(12px,2.4vw,16px)]
+                                px-6 py-2.5
+                                rounded-full
+                                bg-white text-[#222]
+                                font-semibold
+                                shadow-md
+                                hover:bg-gray-100
+                                hover:scale-105
+                                transition-all duration-300
+                            "
                         >
                             회사 소개
                         </button>
+
+                        {/* 디아섹이란 */}
                         <button
                             onClick={() => navigate('/introduce')}
                             className="
-                                md:text-lg text-[clamp(11px,2.3455vw,18px)]
-                                lg:px-6 md:px-4 px-2
-                                xl:py-3 md:py-2 py-1
-                                rounded-full bg-white text-[#333] font-semibold hover:bg-gray-400 transition"
+                                md:text-base text-[clamp(12px,2.4vw,16px)]
+                                px-6 py-2.5
+                                rounded-full
+                                border border-white
+                                text-white
+                                font-semibold
+                                backdrop-blur-sm
+                                hover:bg-white hover:text-[#222]
+                                hover:scale-105
+                                transition-all duration-300
+                            "
                         >
                             디아섹이란?
                         </button>
