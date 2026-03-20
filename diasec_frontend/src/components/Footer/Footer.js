@@ -4,67 +4,79 @@ const Footer = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-[#b29476] mt-20">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-[#b29476] mb:mt-20 mt-10">
             <div className="
-                lg:text-[13.5px] md:text-[clamp(12.5px,1.319vw,13.5px)] sm:text-[clamp(11.5px,1.629vw,12.5px)] text-[clamp(9.5px,1.7996vw,11.5px)]
+                
+                md:text-[15px] text-[clamp(12px,1.955vw,15px)]
                 flex flex-col items-center text-white">
                 <div className="
-                    text-[15px]
-                    flex gap-2 mt-[2%]"
+                    md:text-[15px] text-[clamp(12px,1.955vw,15px)]
+                    flex
+                    gap-2 mt-[2%] mb-[6px] md:mb-0"
                 >
-                    <span> 상호명 : 디아섹코리아</span> | 
-                    <span> 대표 : 임정원</span> |
+                    <span> 상호명 : 디아섹코리아</span> 
+                    <span className="md:block hidden">|</span>
+                    <span> 대표 : 임정원</span> 
+                    
+                </div> 
+
+                <div className="
+                    flex flex-col md:flex-row md:gap-2 text-center
+                ">
+                    <span> 메일 : d2one@naver.com</span>
+                    <span className="md:block hidden">|</span>
+                    <span> 고객센터 : 02-389-5879</span>
+                    <span className="md:block hidden">|</span>
+                    <span> 사업자등록번호 : 357-78-00448</span>
+                    
+                </div>
+
+                <div className="
+                    flex flex-col md:flex-row md:gap-2 text-center
+                ">
+                    <span> 통신판매업신고번호 : 2026-고양덕양구-0505</span>
+                    <span className="md:block hidden">|</span>
                     <span> 주소 : 경기 고양시 덕양구 통일로 140 삼송테크노밸리 A동 355호</span>
                 </div>
 
-                <div className="
-                    text-[15px]
-                    flex gap-2
-                ">
-                    <span> 메일 : d2one@naver.com</span>
-                    <span> 고객센터 : 02-389-5879</span>
-                    <span> 사업자등록번호 : 357-78-00448</span>
-                    <span> 통신판매업신고번호 : 2026-고양덕양구-0505</span>
-                </div>
-
-                <div className="flex my-[1%]">
+                <div className="flex md:text-[15px] text-[12px]">
                     <span>Copyright ⓒ2000 DIASEC KOREA All right reserved</span>
                 </div>
 
                 <div className="
-                    text-[15px]
-                    flex gap-2"
+                    flex md:gap-2 gap-[4px] mt-[6px]
+                    "
                 >
                     <button
                         onClick={() => navigate('/')}
                     >
                         홈
                     </button>
-                    /
+                    |
                     <button
                         onClick={() => navigate('/main_CompanyProfile')}
                     >
                         회사소개
                     </button>
-                    /
+                    |
                     <button
                         onClick={() => navigate('/policy/terms')}
                     >
                         이용약관
                     </button>
-                    /
+                    |
                     <button
                         onClick={() => navigate('/policy/privacy')}
                     >
                         개인정보 취급방침
                     </button>
-                    /
+                    |
                     <button
                         onClick={() => navigate('')}
                     >
                         기업컨설팅
                     </button>
-                    /
+                    |
                     <button
                         onClick={() => navigate('')}
                     >

@@ -1401,11 +1401,11 @@ const Main_CustomFrames = () => {
             {/* 보정 요청 모달 */}
             {retouchModalOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-4 mt-[74px]"
+                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center mt-[74px]"
                     onClick={closeRetouchModal}
                 >
                     <div
-                        className="w-full h-[800px] overflow-y-scroll max-w-lg bg-white shadow-xl p-5"
+                        className="w-full h-[81%] overflow-y-scroll max-w-lg bg-white shadow-xl pt-5 px-5"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="relative flex items-start justify-between border-b-[1px]">
@@ -1459,10 +1459,13 @@ const Main_CustomFrames = () => {
                                         className="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                     />
                                     <p className="text-xs text-gray-500 mt-2">
-                                        ※ 보정 요청이 있을 경우 추가 작업이 진행되어 배송 일정이 다소 지연될 수 있으니 참고 부탁드립니다.
+                                        ※ 고난도 보정은 작업 난이도에 따라 추가 비용이 발생할 수 있으며, 상담 후 진행됩니다.
                                     </p>
                                     <p className="text-xs text-gray-500 mt-2">
-                                        ※ 고난도 보정은 작업 난이도에 따라 추가 비용이 발생할 수 있으며, 자세한 사항은 전화 상담을 통해 안내드립니다.
+                                        ※ 보정 요청 시 추가 작업으로 인해 배송 일정이 다소 지연될 수 있습니다.
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        ※ 트리밍(이미지 자르기) 작업은 별도 문의 부탁드립니다. 
                                     </p>
                                 </div>
                             </div>

@@ -17,11 +17,10 @@ import p10_1 from '../../assets/p10_1.png'
 import p10_2 from '../../assets/p10_2.png'
 
 const images = [
-    { src: p8, text: p8_1, img:p8_2, title: "디아섹은 테두리에 프레임이 없습니다", desc: `프레임이 없으면, 작품은 더 선명해집니다.` },
-    { src: p7, text: p7_1, title: "보존의 철학에서 태어난 디아섹", desc: `50여 년 전, 스위스의 한 부부는\n 가족의 행복한 순간을 오래도록 간직하고자 노력했습니다 \n 그 마음은 지금도 디아섹에 고스란히 담겨 있습니다` },
-    // { src: p9, text: p9_1, title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
-    { src: p9, text: '', title: "웨딩 액자의 대명사, 디아섹", desc: "오랜 시간이 지나도 변색 없이 사랑의 순간을 영원히 담아냅니다." },
-    { src: p10, text: p10_2, title: "디아섹코리아의 약속", desc: "액자의 최상위 레벨 \n 디아섹을 거는 순간 달리진 분위기로 고객만족을 약속드립니다." },
+    { src: p8, text: p8_1, img:p8_2, },
+    { src: p7, text: p7_1,},
+    { src: p9, text: '',}, // 9_1
+    { src: p10, text: p10_2,},
 ];
 
 const Main_Image = () => {
@@ -169,7 +168,8 @@ const Main_Image = () => {
                             const isActive = idx === currentIndex;
                             const isPrev = idx === prevIndex;
 
-                            const isNoDarkSlide = idx === 0;
+                            const isNoDarkSlide = idx === 0 || idx === 2;
+                            // const isNoDarkSlide = idx === 0;
 
                             const overlayOpacity = isNoDarkSlide
                                 ? 0
@@ -265,8 +265,8 @@ const Main_Image = () => {
                 onClick={handlePrev}
                 className="absolute left-2 top-1/2 -translate-y-1/2 z-20
                             flex items-center justify-center
-                            xl:w-12 lg:w-10 md:w-9 w-7
-                            xl:h-12 lg:h-10 md:h-9 h-7
+                            xl:w-12 lg:w-11 md:w-10 w-8
+                            xl:h-12 lg:h-11 md:h-10 h-8
                             rounded-full bg-black/30 
                             md:hover:bg-black/70 active:bg-black/80
                             text-white shadow-lg transition"
@@ -278,8 +278,8 @@ const Main_Image = () => {
                 onClick={handleNext}
                 className="absolute right-2 top-1/2 -translate-y-1/2 z-20
                             flex items-center justify-center
-                            xl:w-12 lg:w-10 md:w-9 w-7
-                            xl:h-12 lg:h-10 md:h-9 h-7
+                            xl:w-12 lg:w-11 md:w-9 w-7
+                            xl:h-12 lg:h-11 md:h-9 h-7
                             rounded-full bg-black/30 
                             md:hover:bg-black/70 active:bg-black/80
                             text-white shadow-lg transition"
@@ -294,8 +294,8 @@ const Main_Image = () => {
                         key={i}
                         onClick={() => handleIndicatorClick(i)}
                         className={`
-                            xl:w-4.5 lg:w-[16px] w-[12px]
-                            xl:h-4.5 lg:h-[16px] h-[12px]
+                            xl:w-[18px] lg:w-[16px] w-[12px]
+                            xl:h-[18px] lg:h-[16px] h-[12px]
                             rounded-full ${i === currentIndex ? 'bg-white' : 'bg-gray-400'} transition-all duration-300`}
                     />
                 ))}

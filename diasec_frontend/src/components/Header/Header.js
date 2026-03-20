@@ -40,8 +40,8 @@ const Header = () => {
         { key:'Contemporary',        label:'현대작가',                      link:'/main_items?type=Contemporary' },
         { key:'authorCollection',    label:'작가',                         link:'/main_items?type=authorCollection' },
         { key:'customFrame',         label:'맞춤액자/사진보정',               link:'/customFrames' },
-        { key:'companyOrder',        label:'기업주문',                      link:'/bizOrderBoard' },
-        { key:'registerAuthor',      label:'작가등록',                      link:'/authorRegisterIntro' },
+        // { key:'companyOrder',        label:'기업주문',                      link:'/bizOrderBoard' },
+        // { key:'registerAuthor',      label:'작가등록',                      link:'/authorRegisterIntro' },
         { key:'event',               label:'이벤트',                        link:'/mainEvent' },
     ]), []);
 
@@ -201,20 +201,20 @@ const Header = () => {
 
     return (
         <div className="sticky z-[9999] top-0 w-full h-full flex items-center justify-between px-1 bg-[#ecd2af]">
-            <div className="w-[1300px] h-full flex items-center justify-between mx-auto">
+            <div className="w-full max-w-[1300px] h-full flex items-center justify-between mx-auto">
                 <div className="flex items-center flex-1 h-full">
                     <button 
                         onClick={() => window.location.href = '/'} 
                         className="h-full font-bold text-lg"
                     >
-                        <img className="h-full" src={logo} />
+                        <img className="w-auto h-[75%] md:h-full" src={logo} />
 
                         {/* <span className="font-bold lg:text-lg md:text-[clamp(14px,1.564vw,16px)] text-[14px]" translate="no">DIASEC</span>
                         
                         <span className="ml-[2px] lg:text-[13px] md:text-[clamp(10px,1.026vw,10.5px)] text-[clamp(9px,1.303vw,10px)] font-semibold" translate="no">KOREA</span> */}
                     </button>
 
-                    <span className='ml-[1%] lg:text-[14.5px] md:text-[clamp(10px,1.026vw,13px)] text-[clamp(9px,1.303vw,10px)]'>
+                    <span className='ml-[1%] lg:text-[14.5px] md:text-[clamp(11px,1.4173vw,14.5px)] text-[11px]'>
                         &nbsp; | 
                         &nbsp;액자의 최상위 레벨 - 디아섹
                     </span>
@@ -226,9 +226,10 @@ const Header = () => {
                         xl:gap-4 lg:gap-3 md:gap-2
                         md:flex hidden text-xs">
                     <div className="
-                            md:text-[clamp(11px,1.0769vw,14px)]
+                            
+                            lg:text-[14.5px] md:text-[clamp(11px,1.4173vw,14.5px)] text-[11px]
                             xl:gap-4 lg:gap-3 md:gap-2
-                            md:flex hidden text-xs
+                            md:flex hidden
                             flex-row items-center
                         "
                     >
@@ -237,8 +238,8 @@ const Header = () => {
                                 {/* 관리자 */}
                                 {member.role === 'ADMIN' && (
                                     <>
-                                        <button className="mb-1" onClick={() => navigate('/admin/insert_Product')}>관리자페이지</button>
-                                        <span className="mb-1 opacity-15">|</span>
+                                        <button onClick={() => navigate('/admin/insert_Product')}>관리자페이지</button>
+                                        <span className="opacity-15">|</span>
                                     </>
                                 )}
                                 <button onClick={handleLogout}>로그아웃</button>
@@ -249,12 +250,12 @@ const Header = () => {
                             </>
                         ) : (
                             <>
-                                <button className="mb-1" onClick={() => navigate('/userLogin')}>로그인</button>
-                                <span className="mb-1 opacity-15">|</span>
-                                <button className="mb-1" onClick={() => navigate('/join')}>회원가입</button>
+                                <button onClick={() => navigate('/userLogin')}>로그인</button>
+                                <span className="opacity-15">|</span>
+                                <button onClick={() => navigate('/join')}>회원가입</button>
                             </>
                         )}  
-                        <span className="mb-1 opacity-15">|</span>
+                        <span className="opacity-15">|</span>
                         <div
                             ref={supportRef}
                             className="relative h-full cursor-pointer"

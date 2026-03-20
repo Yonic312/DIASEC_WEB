@@ -204,7 +204,7 @@ function Layout() {
             </div>
 
             <div className={`
-                xl:h-[210px] lg:h-[200px] md:h-[180px] h-[150px]
+                xl:h-[210px] lg:h-[200px] md:h-[180px] h-[200px]
                 w-full bg-white ${extraPb}`}>
                 <Footer />
             </div>

@@ -7,6 +7,9 @@ import ProductDetailTabs from '../ProductDetailTabs/ProductDetailTabs';
 import { toast } from 'react-toastify';
 import bg from '../../assets/CustomFrames/p.png';
 import bg2 from '../../assets/CustomFrames/p2.png'; // 현재 배경
+import wide from '../../assets/images/width.jpg';
+import length from '../../assets/images/length.jpg';
+
 
 const None_Custom_Detail = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -19,6 +22,7 @@ const None_Custom_Detail = () => {
     const category = queryParams.get("category");
     const pid = queryParams.get("pid");
     const [showGuestChoice, setShowGuestChoice] = useState(false); // 구매시 비회원 구매 상태
+    const [showRecommendedSizeModal, setShowRecommendedSizeModal] = useState(false);
 
     const [product, setProduct] = useState(null);
 
@@ -739,7 +743,20 @@ const None_Custom_Detail = () => {
 
                     {/* 사이즈 입력 */}
                     <div className="flex flex-col">
-                        <label className="md:mt-2 text-base font-semibold">사이즈 조정</label>
+                        <div className="md:mt-2 flex flex-wrap items-center justify-between gap-2">
+                            <label className="text-base font-semibold">사이즈 조정</label>
+                            <button
+                                type="button"
+                                onClick={() => setShowRecommendedSizeModal(true)}
+                                className="
+                                    text-xs md:text-sm font-medium text-[#a67a3e]
+                                    border border[#D0AC88]/70 rounded-full px-3 py-1
+                                    hover:bg-[#fdf4ea] transition whitespace-nowrap"
+                            >
+                                추천 사이즈 안내
+                            </button>
+                        </div>
+                        
                         {/* <p className="text-sm text-gray-500 mt-2">원하는 사이즈(cm)를 입력해 주세요</p> */}
 
                         <div className="flex gap-3 items-end mt-1">
@@ -1110,6 +1127,68 @@ const None_Custom_Detail = () => {
                                 className='flex items-center justify-center w-1/2 xl:h-[66px] lg:h-[clamp(60px,5.16vw,66px)] md:h-[52px] h-[50px] bg-white text-[#D0AC88] border-[#D0AC88] border-[1px]'
                                 onClick={handleAddToWishlist}>관심상품
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 추천 사이즈 안내 모달 */}
+            {showRecommendedSizeModal && (
+                <div
+                    className="fixed inset-0 flex items-center justify-center bg-blcck/50 z-[55]"
+                    onClick={() => setShowRecommendedSizeModal(false)}
+                    role="presentation"
+                >
+                    <div
+                        className="bg-white rounded-2xl shadow-xl w-full max-w-[440px] overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="recommended-size-title"
+                    >
+                        <div className="relative px-6 pt-5 pb-3 border-b border-gray-200">
+                            <h2
+                                id="recommended-size-title"
+                                className="text-center text-base md:text-lg font-bold text-gray-800 pr-8"
+                            >
+                                추천 사이즈 안내
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={() => setShowRecommendedSizeModal(false)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-500 hover:bg-gray-100"
+                                aria-label="닫기"
+                            >
+                                <img src={icon_x} alt="" className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="px-6 py-4 text-center">
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                                명화 및 작품 제작 시 가장 많이 사용되는 사이즈입니다.
+                            </p>
+                        </div>
+
+                        <div className="px-6 pb-4 space-y-4">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-[140px] h-[165px] rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-[11px] text-gray-400 text-center p-2">
+                                    <img src={length} className="w-full h-full" />
+                                </div>
+                                <p className="text-sm text-gray-800 font-medium">
+                                    세로작품 → 가로 약 55cm
+                                </p>
+                            </div>
+
+                            <div className="border-t border-dotted border-gray-300" />
+
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-[180px] h-[125px] rounded-lg border border-dashed border-gray-300 bg-gray-100 flex items-center justify-center text-[11px] text-gray-400 text-center p-2">
+                                    <img src={wide} className="w-full h-full" />
+                                </div>
+                                <p className="text-sm text-gray-800 font-medium">
+                                    가로 작품 → 가로 약 70cm
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

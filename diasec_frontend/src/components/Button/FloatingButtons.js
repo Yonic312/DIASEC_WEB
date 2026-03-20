@@ -10,7 +10,7 @@ const FloatingButtons = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     return (
-        <div className="fixed bottom-4 right-3 flex flex-col gap-3 z-50">
+        <div className="fixed bottom-9 right-3 flex flex-col gap-3 z-50">
             <button
                 onClick={() => {
                     if (!member) {

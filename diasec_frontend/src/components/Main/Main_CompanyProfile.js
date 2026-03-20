@@ -288,11 +288,12 @@ const Main_CompanyProfile = () => {
                 text-[clamp(24px,6.258vw,48px)] md:text-5xl
                 text-center text-[#b19376] mt-24 font-bold leading-tight px-4"
             >
-                The Standard of Korea, DIASEC KOREA
+                <span>The Standard of Korea, </span>
+                <span>DIASEC KOREA</span>
             </h2>
 
             <p className="
-                text-center text-gray-500 leading-[1.9] mt-5 break-keep
+                text-center text-gray-500  mt-5 break-keep
                 text-[clamp(13px,1.8vw,17px)] px-6
             ">
                 19년간 오직 디아섹 공법에만 집중해온 전문 제작 브랜드입니다<br/>
@@ -301,7 +302,7 @@ const Main_CompanyProfile = () => {
             </p>
 
             <div className="w-full flex justify-center">
-                <img className="max-w-6xl" src={logoType} />
+                <img className="max-w-6xl w-full" src={logoType} />
             </div>
 
             {/* <div className="max-w-6xl mx-auto px-6 mt-8">
@@ -509,7 +510,7 @@ const Main_CompanyProfile = () => {
             
             {/* 지도 */}
             {/* 회사 위치 / 지도 */}
-            <div className="max-w-6xl mx-auto w-full px-6 pb-24">
+            <div className="max-w-6xl mx-auto w-full px-6">
                 <h2 className="text-left font-bold text-[#4b4b4b] text-[18px] mb-3">
                     회사위치 / 주소 : 경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)
                 </h2>

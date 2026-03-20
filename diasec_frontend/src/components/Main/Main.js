@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from 'axios';
 import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
 
@@ -142,6 +143,14 @@ const Main = () => {
     // 작가 카테고리는 빼기
     const filteredCategoryList = categoryList.filter(c => c.name !== 'authorCollection');
     const [reviewIndex, setReviewIndex] = useState(0); // 리뷰 슬라이드
+
+    const [reviewVisibleCount, setReviewVisibleCount] = useState(3);
+    useEffect(() => {
+        const calc = () => setReviewVisibleCount(window.innerWidth < 768 ? 2 : 3);
+        calc();
+        window.addEventListener('resize', calc);
+        return () => window.removeEventListener('resize', calc);
+    }, []);
 
     // 마우스 호버 상태 저장(img)
     const [bestHoveredPid, setBestHoveredPid] = useState(null);
@@ -320,6 +329,12 @@ const Main = () => {
     const [topThumbnailReviews, setTopThumbnailReviews] = useState([]);
     const [selectedReview, setSelectedReview] = useState(null);
 
+    // 화면 데이터에 맞게 reviewIndex 범위 클렘프
+    useEffect(() => {
+        const maxIndex = Math.max(0, topThumbnailReviews.length - reviewVisibleCount);
+        setReviewIndex((prev) => Math.min(prev, maxIndex));
+    }, [reviewVisibleCount, topThumbnailReviews.length]);
+
     // 리뷰 상세 페이지 이미지 슬라이드
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -424,7 +439,7 @@ const Main = () => {
                     })}
                 </div>
 
-                <div className="grid md:grid-cols-4 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] mt-5 px-4">
+                <div className="grid md:grid-cols-4 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] gap-y-8 mt-5 px-4">
                     {best_Items.map((item) => {
                         const isHoverd = bestHoveredPid === item.pid;
 
@@ -532,7 +547,7 @@ const Main = () => {
                     })}
                 </div>
 
-                <div className="grid md:grid-cols-4 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] mt-5 px-4">
+                <div className="grid md:grid-cols-4 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] gap-y-8 mt-5 px-4">
                     {new_Items.map((item) => {
                         const isHoverd = newHoveredPid === item.pid;
 
@@ -595,7 +610,7 @@ const Main = () => {
                 }`}
             >
                 <h2 className='
-                    md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
+                    md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[clamp(18px,3.755vw,24px)]
                     font-bold mb-2 text-center'>고객 리뷰</h2>
                 <p className="
                     md:text-base text-[clamp(11px,2.086vw,16px)]
@@ -604,10 +619,10 @@ const Main = () => {
                 </p>
                 <div className="relative overflow-hidden mt-3">
                     <div className="flex transition-transform duration-500 ease-in-out"
-                        style={{ transform: `translateX(-${reviewIndex * 33.33333}%)` }} // 4등분(25%)씩 이동
+                        style={{ transform: `translateX(-${reviewIndex * (100 / reviewVisibleCount)}%)` }} // 4등분(25%)씩 이동
                     >
                         {topThumbnailReviews.map((review, i) => (
-                            <div key={i} className="w-1/3 flex-shrink-0 px-3 cursor-pointer"
+                            <div key={i} className="w-1/2 md:w-1/3 flex-shrink-0 px-3 cursor-pointer"
                                 onClick={() => setSelectedReview(review)}
                             >
                                 <img
@@ -615,19 +630,19 @@ const Main = () => {
                                     alt="리뷰 이미지"
                                     className="w-full aspect-[300/240] object-cover"
                                 />
-                                <div className="p-3">
+                                <div className="py-3">
                                     <div className="
-                                        md:text-base text-[clamp(11px,2.085vw,16px)]
+                                        md:text-base text-[clamp(14px,2.085vw,16px)]
                                         text-orange-400 mb-1">
                                         {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                                     </div>
                                     <div className="
-                                        md:text-lg text-[clamp(11px,2.3455vw,18px)]
+                                        md:text-lg text-[clamp(15px,2.3455vw,18px)]
                                         font-semibold truncate mb-0.5">
                                         {review.title}
                                     </div>
                                     <div className="
-                                        md:text-base text-[clamp(11px,2.085vw,16px)]
+                                        md:text-base text-[clamp(12px,2.085vw,16px)]
                                         text-gray-500 truncate">
                                         {review.content}
                                     </div>
@@ -636,46 +651,44 @@ const Main = () => {
                         ))}
                     </div>
 
-                    {topThumbnailReviews.length > 4 && (
+                    {topThumbnailReviews.length > reviewVisibleCount && (
                         <div className="absolute top-1/3 -translate-y-1/2 w-full flex justify-between px-2 z-10">
                             <button
                                 onClick={() => {
-                                        const visible = 4;
-                                        const maxIndex = Math.max(0, topThumbnailReviews.length - visible);
+                                        const maxIndex = Math.max(0, topThumbnailReviews.length - reviewVisibleCount);
                                         setReviewIndex((prev) => (prev === 0 ? maxIndex : prev -1 ));
                                     }
                                 }
                                 className="
-                                xl:w-10 lg:w-9 md:w-7 w-5
-                                xl:h-10 lg:h-9 md:h-7 h-5
+                                xl:w-10 lg:w-9 md:w-8 w-7
+                                xl:h-10 lg:h-9 md:h-8 h-7
                                 text-[12px]
                                 bg-white shadow-md rounded-full  
                                 flex justify-center items-center font-bold hover:bg-gray-100"
                             >
-                                🡐
+                                <ChevronLeft className="w-full h-full" />
                             </button>
                             <button
                                 onClick={() => {
-                                        const visible = 4;
-                                        const maxIndex = Math.max(0, topThumbnailReviews.length - visible);
+                                        const maxIndex = Math.max(0, topThumbnailReviews.length - reviewVisibleCount);
                                         setReviewIndex((prev) => (prev === maxIndex ? 0 : prev +1 ));
                                     }
                                 }
                                 className="
-                                xl:w-10 lg:w-9 md:w-7 w-5
-                                xl:h-10 lg:h-9 md:h-7 h-5
+                                xl:w-10 lg:w-9 md:w-8 w-7
+                                xl:h-10 lg:h-9 md:h-8 h-7
                                 text-[12px]
                                 bg-white shadow-md rounded-full 
                                 flex justify-center items-center font-bold hover:bg-gray-100"
                             >
-                                🡒
+                                <ChevronRight className="w-full h-full" />
                             </button>
                         </div>
                     )}
                 </div>
 
                 <button className="
-                    md:text-base text-[clamp(11px,2.085vw,16px)]
+                    md:text-base text-[clamp(13px,2.085vw,16px)]
                     lg:px-6 md:px-4 px-3
                     lg:py-2 py-1
                     flex mt-2 mx-auto font-semibold text-white bg-[#303030] rounded hover:bg-opacity-80"
@@ -764,7 +777,7 @@ const Main = () => {
             {/* 회사 소개 및 디아섹이란 배너 (사진 배경형) */}
             <div
                 ref={aboutSectionRef}
-                className={`w-full aspect-[1300/280] bg-cover bg-center relative flex items-center justify-center transition-all duration-700 ease-out ${
+                className={`w-full aspect-[650/200] md:aspect-[1300/280] bg-cover bg-center relative flex items-center justify-center transition-all duration-700 ease-out ${
                     visibleSections.about
                         ? 'opacity-100 translate-y-0'
                         : 'opacity-0 translate-y-10'
@@ -775,16 +788,17 @@ const Main = () => {
             >
                 <div className="absolute inset-0 bg-black bg-opacity-40" /> {/* 어두운 오버레이 */}
                 
-                <div className="flex flex-col items-center justify-center w-full z-10 text-center text-white gap-2">
-                    <h2 className="
-                        md:text-3xl text-[clamp(16px,3.5vw,30px)]
-                        font-bold tracking-tight">
-                        디아섹에 대해 더 알고 싶으신가요?
-                    </h2>
-
-                    <p className="text-white/80 text-sm md:text-base">
-                        디아섹의 제작 방식과 브랜드 스토리를 확인해보세요
-                    </p>
+                <div className="flex flex-col items-center justify-center w-full z-10 text-center text-white md:gap-2 gap-[2px]">
+                    <div>
+                        <h2 className="
+                            md:text-3xl text-[clamp(16px,3.5vw,30px)]
+                            font-bold tracking-tight">
+                            디아섹에 대해 더 알고 싶으신가요?
+                        </h2>
+                        <p className="text-white/80 text-sm md:text-base">
+                            디아섹의 제작 방식과 브랜드 스토리를 확인해보세요
+                        </p>
+                    </div>
 
                     <div className="flex justify-center gap-3 mt-2">
 
@@ -792,8 +806,9 @@ const Main = () => {
                         <button
                             // onClick={() => navigate('/about')}
                             className="
-                                md:text-base text-[clamp(12px,2.4vw,16px)]
-                                px-6 py-2.5
+                                md:text-base text-[clamp(13px,2.085vw,16px)]
+                                lg:px-6 md:px-4 px-2
+                                lg:py-2 py-[2px]
                                 rounded-full
                                 bg-white text-[#222]
                                 font-semibold
@@ -810,8 +825,8 @@ const Main = () => {
                         <button
                             onClick={() => navigate('/introduce')}
                             className="
-                                md:text-base text-[clamp(12px,2.4vw,16px)]
-                                px-6 py-2.5
+                                lg:px-6 md:px-4 px-2
+                                lg:py-2 py-[2px]
                                 rounded-full
                                 border border-white
                                 text-white
