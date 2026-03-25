@@ -1,7 +1,7 @@
 const DeliveryReturn = () => {
     return (
         <div className="
-            flex flex-col space-y-10 text-gray-800 leading-relaxed
+            flex flex-col space-y-10 text-gray-800 leading-relaxed break-keep
             md:text-[15px] text-[clamp(13px,1.955vw,15px)]">
             <span 
                 className="
@@ -13,7 +13,9 @@ const DeliveryReturn = () => {
                 <span 
                     className="
                         md:text-xl text-[clamp(18px,2.607vw,20px)] 
-                        font-semibold">결제 안내</span>
+                        font-semibold">
+                    결제 안내
+                </span>
                 <ul className="list-disc pl-5 space-y-1 mt-2">
                     <li>고액결제의 경우 카드사 확인 절차가 있을 수 있습니다. 도난 카드나 타인 명의의 결제 등 이상 거래로 판단될 경우, 주문은 임의로 보류 또는 취소될 수 있습니다.</li>
                     <li>무통장 입금 시 주문자명과 입금자명을 동일하게 부탁드리며, 7일 이내 미입금 시 주문은 자동 취소됩니다.</li>

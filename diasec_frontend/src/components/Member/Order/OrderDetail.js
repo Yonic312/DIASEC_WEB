@@ -22,6 +22,102 @@ const OrderDetail = () => {
         note: '',
     });
 
+
+    // 보정 미리보기 관련
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImg, setPreviewImg] = useState("");
+    const [rejectOpen, setRejectOpen] = useState();
+    const [rejectItemId, setRejectItemId] = useState(null);
+    const [rejectMsg, setRejectMsg] = useState("");
+    const [rejectTypes, setRejectTypes] = useState([]);
+    const [acting, setActing] = useState(false);
+
+    const parseTypes = (v) => {
+        if (!v) return [];
+        if (Array.isArray(v)) return v;
+        return String(v).split(',').map(s => s.trim()).filter(Boolean);
+    };
+
+    const statusBadge = (s) => {
+        const base = "inline-flex px-2 py-0.5 rounded-full text-xs border";
+        if (!s) return <span className={`${base} bg-gray-50 text-gray-600`}>미업로드</span>
+        if (s === "WAITING_CUSTOMER") return <span className={`${base} bg-yellow-50 text-yellow-700 border-yellow-200`}>승인대기</span>
+        if (s === "APPROVED") return <span className={`${base} bg-green-50 text-green-700 border-green-200`}>승인완료</span>
+        if (s === "REJECTED") return <span className={`${base} bg-red-50 text-red-700 border-red-200`}>반려</span>
+        return <span className={`${base} bg-gray-50 text-gray-700`}>{s}</span>
+    };
+
+    const openPreview = (url) => {
+        if (!url) return;
+        setPreviewImg(url);
+        setPreviewOpen(true);
+    };
+
+    const toggleRejectType = (t) => {
+        setRejectTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+    };
+
+    const submitDecision = async ({ itemId, decision, feedback, types }) => {
+        if (!itemId) return;
+        setActing(true);
+        try {
+            let url = "";
+            let body = {};
+            if (decision === "APPROVED") {
+                url = `${API}/order/retouch/${itemId}/approve`;
+                body = {};
+            } else if (decision === "REJECTED") {
+                url = `${API}/order/retouch/${itemId}/approve`;
+                body = {};
+            } else {
+                throw new Error("잘못된 decision");
+            }
+
+            const res = await axios.post(url, body, { withCredentials: true });
+            if (!res.data?.success) throw new Error(res.data?.message || "처리 실패");
+
+            toast.success(decision === "APPROVED" ? "승인 처리 완료" : "반려 처리 완료");
+            const fresh = await axios.get(`${API}/order/detail/oid/${oid}`, { withCredentials: true});
+            setOrder(fresh.data);
+        } catch (e) {
+            console.error(e);
+            toast.error(e.message || "처리 중 오류");
+        } finally {
+            setActing(false);
+        }
+    };
+
+    const onApprove = (itemId) => {
+        if (acting) return;
+        const ok = window.confirm("보정 시안을 승인할까요? 승인 후 제작이 진행됩니다.");
+        if (!ok) return;
+        submitDecision({ itemId, decision: "APPROVED"});
+    };
+
+    const onOpenReject = (item) => {
+        if (acting) return;
+        setRejectTypes(parseTypes(item.retouchTypes));
+        setRejectItemId(item.itemId);
+        setRejectMsg("");
+        setRejectOpen(true);
+    };
+
+    const onRejectSubmit = () => {
+        if (rejectMsg.trim().length < 5) {
+            toast.error("반려 사유를 5자 이상 입력해주세요.");
+            return;
+        }
+        submitDecision({
+            itemId: rejectItemId,
+            decision: "REJECTED",
+            feedback: rejectMsg.trim(),
+            types: rejectTypes,
+        });
+        setRejectOpen(false);
+    }
+
+    // 보정 미리보기 관련 //
+
     const retouchOptions = [
         '피부 보정',
         '얼굴 디테일 보정',
@@ -744,75 +840,127 @@ const OrderDetail = () => {
                     .filter(Boolean);
 
                 return (
-                    <div>
+                    <section className="mt-1">
                         <h3 className="font-semibold mb-4 text-lg">사진 보정 정보</h3>
 
-                        <div className="bg-gray-50 p-4 rounded-md text-sm leading-6">
-                            <div>
-                                <span className='font-semibold text-black mb-2'>보정 신청:</span>{' '}
-                                {retouchEnabled ? '신청' : '미신청'}
+                        <div className="rounded-2xl border border-[#eadfce] bg-white shadow-sm">
+                            <div className="px-4 py-3 border-b border-[#f2e8da] bg-[#fffaf3] rounded-t-2xl">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span
+                                        className={`text-[11px] px-2 py-[2px] rounded-full border whitespace-nowrap
+                                            ${retouchEnabled
+                                                ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e]'
+                                                : 'bg-gray-100 border-gray-200 text-gray-500'
+                                            }`}
+                                    >
+                                        {retouchEnabled ? '보정 요청 있음' : '보정 미신청'}
+                                    </span>
+                                    {statusBadge(item.previewStatus)}
+                                    {item.previewUrl ? (
+                                        <span className="text-[11px] text-green-700 bg-green-50 border border-green-200 rounded-full px-2 py-[2px]">
+                                            시안 업로드됨
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2 py-[2px]">
+                                            시안 미업로드
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
-                            {retouchEnabled && (
-                                <>
-                                    <div className="mt-2">
-                                        <span className="font-semibold text-black mb-2">보정 항목:</span>
-                                        {retouchTypes.length > 0 ? (
+                            <div className="p-4 text-sm leading-6">
+                                <div className="grid md:grid-cols-[1.2fr_0.8fr] gap-4">
+                                    <div>
+                                        <div className="text-[12px] font-semibold text-gray-700">보정 항목</div>
+                                        {retouchEnabled && retouchTypes.length > 0 ? (
                                             <div className="mt-2 flex flex-wrap gap-2">
-                                                {retouchTypes.map(t => (
+                                                {retouchTypes.map((t) => (
                                                     <span
                                                         key={t}
-                                                        className="px-2 py-1 text-xs border rounded-full bg-white"
+                                                        className="px-2 py-1 text-xs border border-[#ead7c2] rounded-full bg-[#fffaf3] text-[#8a5a2b]"
                                                     >
                                                         {t}
                                                     </span>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <span className="ml-2 text-gray-500">선택 없음</span>
+                                            <div className="mt-2 text-xs text-gray-400">선택 없음</div>
                                         )}
+
+                                        <div className="mt-3 text-[12px] font-semibold text-gray-700">요청사항</div>
+                                        <div className="mt-1 text-xs text-gray-700 bg-gray-50 border rounded-lg px-3 py-2 break-words min-h-[52px]">
+                                            {retouchEnabled
+                                                ? (item.retouchNote ? item.retouchNote : "없음")
+                                                : "보정 미신청"}
+                                        </div>
                                     </div>
 
-                                    <div className='mt-2'>
-                                        <span className="font-semibold text-black mb-2">요청사항:</span>{' '}
-                                        {item.retouchNote ? (
-                                            <span className="whitespace-pre-line">{item.retouchNote}</span>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-[12px] font-semibold text-gray-700">시안</div>
+                                        {item.previewUrl ? (
+                                            <button
+                                                className="group rounded-lg border border-gray-200 overflow-hidden bg-white hover:shadow-sm transition text-left"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openPreview(item.previewUrl);
+                                                }}
+                                            >
+                                                <img
+                                                    src={item.previewUrl}
+                                                    alt="보정 시안"
+                                                    className="w-full h-[120px] object-cover group-hover:opacity-90 transition"
+                                                />
+                                                <div className="px-2 py-1 text-[11px] text-gray-600">시안 보기</div>
+                                            </button>
                                         ) : (
-                                            <span className="text-gray-500">없음</span>
+                                            <div className="h-[120px] rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
+                                                업로드 대기
+                                            </div>
                                         )}
                                     </div>
+                                </div>
 
-                                    {item.category === 'customFrames' && (
-                                    <div className="mt-2 flex items-center gap-2">
-                                        {/* 보정 상태 뱃지 */}
-                                        <span
-                                        className={`text-[11px] px-2 py-[2px] rounded-full border whitespace-nowrap
-                                            ${((item.retouchEnabled === 1 || item.retouchEnabled === true))
-                                            ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e]'
-                                            : 'bg-gray-100 border-gray-200 text-gray-500'
-                                            }`}
-                                        >
-                                        {(item.retouchEnabled === 1 || item.retouchEnabled === true) ? '보정 요청 있음' : '보정 없음'}
-                                        </span>
-
-                                        {/* 보정 요청 버튼 */}
-                                        {canEditRetouchByStatus(item.orderStatus) && (
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    {canEditRetouchByStatus(item.orderStatus) && !item.previewUrl && (
                                         <button
-                                            className="px-2 py-[2px] text-[11px] rounded-xl border border-[#D0AC88] text-[#a67a3e] hover:bg-[#fffaf3] transition whitespace-nowrap"
+                                            className="px-3 py-1.5 text-xs rounded-xl border border-[#D0AC88] text-[#a67a3e] hover:bg-[#fffaf3] transition whitespace-nowrap"
                                             onClick={(e) => {
-                                            e.stopPropagation();
-                                            openRetouchModal(item);
+                                                e.stopPropagation();
+                                                openRetouchModal(item);
                                             }}
                                         >
-                                            {(item.retouchEnabled === 1 || item.retouchEnabled === true) ? '보정 요청 수정' : '보정 요청하기'}
+                                            {retouchEnabled ? '보정 요청 수정' : '보정 요청하기'}
                                         </button>
-                                        )}
-                                    </div>
                                     )}
-                                </>
-                            )}
+
+                                    {item.previewStatus === "WAITING_CUSTOMER" && (
+                                        <>
+                                            <button
+                                                className="px-3 py-1.5 text-xs rounded-xl border border-green-300 text-green-700 hover:bg-green-50 transition whitespace-nowrap disabled:opacity-50"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onApprove(item.itemId);
+                                                }}
+                                                disabled={acting}
+                                            >
+                                                {acting ? "처리중..." : "승인"}
+                                            </button>
+                                            <button
+                                                className="px-3 py-1.5 text-xs rounded-xl border border-red-300 text-red-700 hover:bg-red-50 transition whitespace-nowrap disabled:opacity-50"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onOpenReject(item);
+                                                }}
+                                                disabled={acting}
+                                            >
+                                                {acting ? "처리중..." : "반려"}
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </section>
                 )
             })()}
 
@@ -840,7 +988,7 @@ const OrderDetail = () => {
                 </div>
             </div>
 
-            {/* 보정 요청 모달 */}
+            {/* 보정 요청/수정 모달 */}
             {retouchModalOpen && (
             <div
                 className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-4"
@@ -942,6 +1090,87 @@ const OrderDetail = () => {
                 </div>
                 </div>
             </div>
+            )}
+
+            {/* 보정 요청사항 모달 */}
+            {/* 미리보기 모달 */}
+            {previewOpen && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setPreviewOpen(false)}>
+                    <div className="bg-white rounded-lg p-3 max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-2">
+                            <div className="text-sm font-medium">보정 시안 미리보기</div>
+                            <button className="text-gray-500 hover:text-black" onClick={() => setPreviewOpen(false)}>✕</button>
+                        </div>
+                        <img src={previewImg} alt="preview-large" className="max-w-[70vw] max-h-[80vh] object-contain rounded" />
+                    </div>
+                </div>
+            )}
+
+            {/* 반려 사유 모달 */}
+            {rejectOpen && (
+                <div
+                    className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+                    onClick={() => { if (!acting) setRejectOpen(false); }}
+                >
+                    <div className="bg-white w-[420px] max-w-[92vw] rounded-lg shadow-lg p-5 relative" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold mb-2">반려 사유 입력</h3>
+                        <p className="text-sm text-gray-500 mb-3">
+                            어떤 부분을 수정하면 되는지 구체적으로 적어주세요.
+                        </p>
+
+                        <div className="mt-3">
+                            <div className="text-sm font-semibold text-gray-700 mb-2">수정이 필요한 항목</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {retouchOptions.map((opt) => {
+                                    const checked = rejectTypes.includes(opt);
+                                    return (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            className={`text-sm px-3 py-2 rounded-xl border transition text-left
+                                                ${checked
+                                                    ? "border-[#D0AC88] bg-[#fffaf3] text-[#a67a3e]"
+                                                    : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                                                }`}
+                                            onClick={() => toggleRejectType(opt)}
+                                            disabled={acting}
+                                        >
+                                            {opt}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-2 text-[11px] text-gray-500">
+                                선택은 선택사항이고, 아래에 상세 사유는 꼭 적어주세요.
+                            </div>
+                        </div>
+
+                        <textarea
+                            className="mt-3 w-full border rounded-md px-3 py-2 text-sm"
+                            rows={5}
+                            value={rejectMsg}
+                            onChange={(e) => setRejectMsg(e.target.value)}
+                            placeholder="예) 얼굴 보정이 과해요. 자연스럽게 톤만 정리해주세요."
+                        />
+
+                        <div className="flex gap-2 mt-4">
+                            <button
+                                className="flex-1 py-2 rounded bg-black text-white hover:bg-gray-800 disabled:opacity-50"
+                                onClick={onRejectSubmit}
+                                disabled={acting}
+                            >
+                                반려 제출
+                            </button>
+                            <button
+                                className="flex-1 py-2 rounded border hover:bg-gray-50"
+                                onClick={() => setRejectOpen(false)}
+                                disabled={acting}
+                            >
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )

@@ -10,7 +10,7 @@ const FloatingButtons = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     return (
-        <div className="fixed bottom-9 right-3 flex flex-col gap-3 z-50">
+        <div className="fixed bottom-28 right-3 flex flex-col gap-3 z-50">
             <button
                 onClick={() => {
                     if (!member) {
@@ -20,8 +20,8 @@ const FloatingButtons = () => {
                     navigate("/cart")
                 }}
                 className="flex items-center justify-center 
-                xl:w-16 lg:w-14 md:w-12 w-[40px]
-                xl:h-16 lg:h-14 md:h-12 h-[40px]
+                xl:w-16 lg:w-14 md:w-12 w-[42px]
+                xl:h-16 lg:h-14 md:h-12 h-[42px]
                 p-3 rounded-full bg-[#a67a3e] text-white shadow-lg hover:bg-[#8b652f] transition"
             >
                 <ShoppingCart/>
@@ -30,8 +30,8 @@ const FloatingButtons = () => {
             <button
                 onClick={() => window.scrollTo({ top:0, behavior: "smooth" })}
                 className="flex items-center justify-center 
-                xl:w-16 lg:w-14 md:w-12 w-[40px]
-                xl:h-16 lg:h-14 md:h-12 h-[40px]
+                xl:w-16 lg:w-14 md:w-12 w-[42px]
+                xl:h-16 lg:h-14 md:h-12 h-[42px]
                 p-3 rounded-full bg-gray-700 text-white shadow-lg hover:bg-gray-900 transition"
             >
                 <ArrowUp/>

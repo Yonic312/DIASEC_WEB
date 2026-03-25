@@ -10,6 +10,7 @@ import ex from '../../assets/CustomFrames/ex.jpg';
 import icon_kakao from '../../assets/button/icon_kakao.png';
 import icon_naver from '../../assets/button/icon_naver.png';
 import mainPage from '../../assets/CustomFrames/상세페이지.jpg';
+import ProductDetailTabs from '../ProductDetailTabs/ProductDetailTabs.js';
 
 // 드롭메뉴 사진
 import c1 from '../../assets/dropDownMenu/customFrame/c1.jpg';
@@ -58,6 +59,7 @@ const Main_CustomFrames = () => {
     const searchParams = new URLSearchParams(location.search);
     const presetKey = searchParams.get('preset');
     const initialExampleImage = presetImageMap[presetKey] || ex;
+    const CUSTOM_FRAME_TAB_PRODUCT = { pid: -3 };
 
     const [width, setWidth] = useState(35.6);
     const [height, setHeight] = useState(27.9);
@@ -222,7 +224,8 @@ const Main_CustomFrames = () => {
         return new File([u8arr], filename, { type: mime });
     }
 
-    const MAX_SIZE = 20 * 1024 * 1024;
+    const MAX_SIZE = 30 * 1024 * 1024; // 이미지 업로드 30MB
+    const MAX_CUSTOM_ORDER_ITEMS = 10;
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
@@ -230,12 +233,28 @@ const Main_CustomFrames = () => {
 
         const tooBig = files.find(f => f.size > MAX_SIZE);
         if (tooBig) {
-            alert(`20MB 초과 파일이 포함되어 있습니다. \n(${tooBig.name})`);
+            alert(`30MB 초과 파일이 포함되어 있습니다. \n(${tooBig.name})`);
             e.target.value = "";
             return;
         }
 
-        files.forEach(file => {
+        const remainingSlots = MAX_CUSTOM_ORDER_ITEMS - customItems.length;
+        if (remainingSlots <= 0) {
+            if (e.target && typeof e.target.value !== 'undefined') {
+                e.target.value = "";
+            }
+            toast.warn(`맞춤 액자는 한 번에 최대 ${MAX_CUSTOM_ORDER_ITEMS}개까지 주문할 수 있습니다.`);
+            return;
+        }
+
+        const filesToProcess = files.slice(0, remainingSlots);
+        if (files.length > filesToProcess.length) {
+            toast.info(
+                `한 번에 최대 ${MAX_CUSTOM_ORDER_ITEMS}개까지 등록할 수 있습니다. 초과분 ${files.length - filesToProcess.length}개는 제외되었습니다.`
+            )
+        }
+
+        filesToProcess.forEach(file => {
             const reader = new FileReader();
             reader.onload = () => {
                 const img = new Image();
@@ -448,6 +467,8 @@ const Main_CustomFrames = () => {
     };
 
     const actualMaxWidth = getActualMaxWidth();
+    const isCustomOrderFull = customItems.length >= MAX_CUSTOM_ORDER_ITEMS;
+    const UploadAreaTag = isCustomOrderFull ? 'div' : 'label';
 
     // 이미지 드래그 앤 드랍 이벤트 핸들러
     const [isDragging, setIsDragging] = useState(false);
@@ -455,7 +476,8 @@ const Main_CustomFrames = () => {
     const handleDrop = (e) => {
         e.preventDefault();
         e.stopPropagation();
-
+        if (isCustomOrderFull) return;
+        
         const files = Array.from(e.dataTransfer.files);
 
         if (files.length > 0) {
@@ -482,6 +504,10 @@ const Main_CustomFrames = () => {
     const handleBuyNow = () => {
         if (customItems.length === 0) {
             toast.warn("이미지를 등록해주세요.");
+            return;
+        }
+        if (customItems.length > MAX_CUSTOM_ORDER_ITEMS) {
+            toast.warn(`맞춤 액자는 한 번에 최대 ${MAX_CUSTOM_ORDER_ITEMS}개까지 주문할 수 있습니다.`);
             return;
         }
 
@@ -823,22 +849,27 @@ const Main_CustomFrames = () => {
                                 onChange={handleImageUpload}
                                 className="hidden"
                                 multiple
+                                disabled={isCustomOrderFull}
                             />
 
                             {/* 드래그 앤 드랍 + 클릭 영역 */}
-                            <label
-                                htmlFor="fileInput"
+                            <UploadAreaTag
+                                {...(!isCustomOrderFull ? { htmlFor: 'fileInput'} : {})}
                                 className={` 
                                     w-full
                                     md:h-[140px] h-[110px]
                                     text-base md:mt-2 md:py-2 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center text-gray-500 mb-2 md:mb-4 cursor-pointer
                                         transition-colors duration-200 
                                         ${ isDragging ? 'border-[#ccc26c] bg-[#fdebd4]' : 'border-dashed border-gray-400'}
-                                        hover:border-[#ccc26c] hover:bg-[#fdebd4]
+                                        ${isCustomOrderFull
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : 'cursor-pointer hover:border-[#ccc26c] hover:bg-[#fdebd4]'
+                                        }
                                     `}
                                     onDragEnter={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
+                                    if (isCustomOrderFull) return;
                                     setIsDragging(true)
                                 }}
                                 onDragLeave={(e) => {
@@ -864,6 +895,7 @@ const Main_CustomFrames = () => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     setIsDragging(false);
+                                    if (isCustomOrderFull) return;
 
                                     const MAX_SIZE = 20 * 1024 * 1024;
 
@@ -871,7 +903,7 @@ const Main_CustomFrames = () => {
 
                                     const tooBig = files.find(f => f.size > MAX_SIZE);
                                     if (tooBig) {
-                                        alert(`20MB 초과 파일이 포함되어 있습니다 \n(${tooBig.name})`);
+                                        alert(`30MB 초과 파일이 포함되어 있습니다 \n(${tooBig.name})`);
                                         return;
                                     }
 
@@ -897,10 +929,16 @@ const Main_CustomFrames = () => {
                                     </svg>
                                     <span className="text-sm text-center">
                                             여기를 클릭하거나 <br /> 이미지를 드래그해서 올려주세요 <br />
-                                        <span className="text-xs text-gray-500">(JPG, PNG 파일만 가능)</span>
+                                        <span className="text-xs text-gray-500">(JPG, PNG 파일만 가능, 파일당 최대 30MB)</span>
+                                        <br />
+                                        {/* <span className="text-xs text-[a67a3e] font-medium mt-1 inline-block">
+                                            {isCustomOrderFull
+                                                ? `최대 ${MAX_CUSTOM_ORDER_ITEMS}개까지 등록되었습니다.`
+                                                : `등록 ${customItems.length} / ${MAX_CUSTOM_ORDER_ITEMS}`}
+                                        </span> */}
                                     </span>
                                 </div>
-                            </label>
+                            </UploadAreaTag>
                         </div>
                     </div>
                     
@@ -1012,156 +1050,167 @@ const Main_CustomFrames = () => {
                         </div>
 
                         <hr className='mt-3 border-[1px] border-gray-200 opacity-80' />
-                        
+
                         {/* 결제 목록 */}
                         {selectedItem && (
-                            <div className='max-h-[300px] overflow-y-scroll mt-3 space-y-2'>
-                                {customItems.map((item, idx) => (
-                                    <div 
-                                        key={item.id} 
-                                        onClick={() => setSelectedItemId(item.id)} 
-                                        className={`relative flex items-center gap-2 border rounded-2xl p-[8px] shadow-sm cursor-pointer bg-white transition
-                                            ${selectedItemId === item.id ? 'border-[#D0AC88] bg-[#fffaf3]' : 'hover:bg-[#fdf4ea]'}`}>
-                                        {/* 썸네일 */}
-                                        <img 
-                                            src={item.imageSrc}
-                                            alt={`미리보기 ${idx + 1}`}
-                                            className='w-[70px] h-[70px] object-cover object-center rounded-md border'
-                                        />
+                            <>
+                                <span
+                                    className={`
+                                        mt-2 ml-1 inline-flex items-center text-[12px] font-semibold
+                                        ${isCustomOrderFull ? ' text-[#a67a3e]' : ' text-gray-600'}
+                                    `}
+                                >
+                                    등록 {customItems.length} / {MAX_CUSTOM_ORDER_ITEMS}
+                                </span>
+                                <div className='max-h-[300px] overflow-y-scroll mt-1 space-y-2'>
+                                    {customItems.map((item, idx) => (
+                                        <div 
+                                            key={item.id} 
+                                            onClick={() => setSelectedItemId(item.id)} 
+                                            className={`relative flex items-center gap-2 border rounded-2xl p-[8px] shadow-sm cursor-pointer bg-white transition
+                                                ${selectedItemId === item.id ? 'border-[#D0AC88] bg-[#fffaf3]' : 'hover:bg-[#fdf4ea]'}`}>
+                                            {/* 썸네일 */}
+                                            <img 
+                                                src={item.imageSrc}
+                                                alt={`미리보기 ${idx + 1}`}
+                                                className='w-[70px] h-[70px] object-cover object-center rounded-md border'
+                                            />
 
-                                        {/* 우측 영역 */}
-                                        <div className='flex-1 min-w-0'>
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="min-w-0">
-                                                    <p className='text-[12.5px] font-semibold text-gray-800'>
-                                                        {Math.floor(item.width)} x {Math.floor(item.height)}cm
-                                                    </p>
-                                                    <p className="mt-[-4px] mb-[4px] text-[14px]">{item.price.toLocaleString()}원</p>
-                                                </div>
+                                            {/* 우측 영역 */}
+                                            <div className='flex-1 min-w-0'>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="min-w-0">
+                                                        <p className='text-[12.5px] font-semibold text-gray-800'>
+                                                            {Math.floor(item.width)} x {Math.floor(item.height)}cm
+                                                        </p>
+                                                        <p className="mt-[-4px] mb-[4px] text-[14px]">{item.price.toLocaleString()}원</p>
+                                                    </div>
 
-                                                {/* 삭제 버튼 */}
-                                                <button
-                                                    className='w-6 h-6 shrink-0 text-red-500 hover:text-white hover:bg-red-500 border border-red-300 rounded-full flex items-center justify-center transition'
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-
-                                                        const deleteId = item.id;
-
-                                                        setCustomItems(prev => {
-                                                            const newItems = prev.filter ((it) => it.id !== deleteId);
-
-                                                            // 마지막 아이템 삭제면 즉시 기본 리셋
-                                                            if (newItems.length === 0) {
-                                                                setTimeout(() => resetToDefault(), 0);
-                                                                return [];
-                                                            }
-
-                                                            if (selectedItemId === deleteId) {
-                                                                const first = newItems[0];
-
-                                                                setSelectedItemId(first.id);
-                                                                setImageSrc(first.imageSrc);
-
-                                                                setWidth(first.width);
-                                                                setHeight(first.height);
-                                                                setAspectRatio(first.aspectRatio);
-                                                                setMaxWidth(first.maxWidth);
-                                                                setMaxHeight(first.maxHeight);
-
-                                                                setWidthInput(String(Math.floor(first.width)));
-
-                                                                // if (newItems.length > 0) {
-                                                                //     setSelectedItemId(newItems[0].id);
-                                                                //     setImageSrc(newItems[0].imageSrc);
-                                                                // } else {
-                                                                //     setSelectedItemId(null);
-                                                                //     setImageSrc(null);
-                                                                // }
-                                                            }
-
-                                                            return newItems;
-                                                        });
-                                                    }}
-                                                    aria-label="삭제"
-                                                    title="삭제"
-                                                >
-                                                    ×
-                                                </button>
-                                            </div>
-
-                                            {/* 보정상태와 버튼 */}
-                                            <div className="flex flex-col items-center justify-end gap-1">
-                                                <div className="w-full flex flex-row">
+                                                    {/* 삭제 버튼 */}
                                                     <button
-                                                        type="button"
+                                                        className='w-6 h-6 shrink-0 text-red-500 hover:text-white hover:bg-red-500 border border-red-300 rounded-full flex items-center justify-center transition'
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            if (item.finishType !== 'matte') return;
-                                                            toggleFinishType(item.id);
+
+                                                            const deleteId = item.id;
+
+                                                            setCustomItems(prev => {
+                                                                const newItems = prev.filter ((it) => it.id !== deleteId);
+
+                                                                // 마지막 아이템 삭제면 즉시 기본 리셋
+                                                                if (newItems.length === 0) {
+                                                                    setTimeout(() => resetToDefault(), 0);
+                                                                    return [];
+                                                                }
+
+                                                                if (selectedItemId === deleteId) {
+                                                                    const first = newItems[0];
+
+                                                                    setSelectedItemId(first.id);
+                                                                    setImageSrc(first.imageSrc);
+
+                                                                    setWidth(first.width);
+                                                                    setHeight(first.height);
+                                                                    setAspectRatio(first.aspectRatio);
+                                                                    setMaxWidth(first.maxWidth);
+                                                                    setMaxHeight(first.maxHeight);
+
+                                                                    setWidthInput(String(Math.floor(first.width)));
+
+                                                                    // if (newItems.length > 0) {
+                                                                    //     setSelectedItemId(newItems[0].id);
+                                                                    //     setImageSrc(newItems[0].imageSrc);
+                                                                    // } else {
+                                                                    //     setSelectedItemId(null);
+                                                                    //     setImageSrc(null);
+                                                                    // }
+                                                                }
+
+                                                                return newItems;
+                                                            });
                                                         }}
-                                                        className={`
-                                                            flex-1 w-full h-[26px] rounded-md border text-[13px] font-semibold rounded-r-none
-                                                            ${ item.finishType !== 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
-                                                        `}
+                                                        aria-label="삭제"
+                                                        title="삭제"
                                                     >
-                                                        유광
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (item.finishType === 'matte') return;
-                                                            toggleFinishType(item.id);
-                                                        }}
-                                                        className={`
-                                                            flex-1 w-full h-[26px] rounded-md border border-l-0 text-[13px] font-semibold rounded-l-none
-                                                            ${ item.finishType === 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
-                                                        `}
-                                                    >
-                                                        무광
+                                                        ×
                                                     </button>
                                                 </div>
-                                                
-                                                {/* 보정 상태 뱃지 */}
-                                                <div className="w-full flex flex-row text-center">
-                                                    {/* 보정 요청 버튼 */}
-                                                    <button
-                                                        type="button"
-                                                        className={`flex-1 w-full h-[26px] px-2 py-[2px] text-[13px] rounded-l-xl border border-[#D0AC88] text-[#a67a3e] hover:bg-[#fff3e6] transition whitespace-nowrap
-                                                            ${!(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0)
-                                                                ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e] font-semibold'
-                                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
-                                                            }`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            clearRetouch(item.id);
-                                                        }}
-                                                    >
-                                                        보정 없음
-                                                    </button>
+
+                                                {/* 보정상태와 버튼 */}
+                                                <div className="flex flex-col items-center justify-end gap-1">
+                                                    <div className="w-full flex flex-row">
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (item.finishType !== 'matte') return;
+                                                                toggleFinishType(item.id);
+                                                            }}
+                                                            className={`
+                                                                flex-1 w-full h-[26px] rounded-md border text-[13px] font-semibold rounded-r-none
+                                                                ${ item.finishType !== 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
+                                                            `}
+                                                        >
+                                                            유광
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (item.finishType === 'matte') return;
+                                                                toggleFinishType(item.id);
+                                                            }}
+                                                            className={`
+                                                                flex-1 w-full h-[26px] rounded-md border border-l-0 text-[13px] font-semibold rounded-l-none
+                                                                ${ item.finishType === 'matte' ? 'bg-[#ecd2af] text-white border-[#ecd2af]' : 'bg-white text-gray-500 opacity-90 border-gray-300 hover:bg-gray-100'}    
+                                                            `}
+                                                        >
+                                                            무광
+                                                        </button>
+                                                    </div>
                                                     
-                                                    <button
-                                                        type="button"
-                                                        className={`flex-1 w-full h-[26px] text-[13px] px-2 py-[2px] rounded-r-xl border whitespace-nowrap transition
-                                                            ${(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0)
-                                                                ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e] font-semibold hover:bg-[#c49b6e]'
-                                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
-                                                            }`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openRetouchModal(item);
-                                                        }}
-                                                    >
-                                                        {/* {item.retouch?.enabled ? '보정 있음' : '보정 없음'} */}
-                                                        {(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0) ? '보정 수정' : '보정 요청'}
-                                                    </button>
+                                                    {/* 보정 상태 뱃지 */}
+                                                    <div className="w-full flex flex-row text-center">
+                                                        {/* 보정 요청 버튼 */}
+                                                        <button
+                                                            type="button"
+                                                            className={`flex-1 w-full h-[26px] px-2 py-[2px] text-[13px] rounded-l-xl border border-[#D0AC88] text-[#a67a3e] hover:bg-[#fff3e6] transition whitespace-nowrap
+                                                                ${!(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0)
+                                                                    ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e] font-semibold'
+                                                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
+                                                                }`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                clearRetouch(item.id);
+                                                            }}
+                                                        >
+                                                            보정 없음
+                                                        </button>
+                                                        
+                                                        <button
+                                                            type="button"
+                                                            className={`flex-1 w-full h-[26px] text-[13px] px-2 py-[2px] rounded-r-xl border whitespace-nowrap transition
+                                                                ${(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0)
+                                                                    ? 'bg-[#fff3e6] border-[#D0AC88] text-[#a67a3e] font-semibold hover:bg-[#c49b6e]'
+                                                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'
+                                                                }`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openRetouchModal(item);
+                                                            }}
+                                                        >
+                                                            {/* {item.retouch?.enabled ? '보정 있음' : '보정 없음'} */}
+                                                            {(item.retouch?.enabled && (item.retouch?.types?.length ?? 0) > 0) ? '보정 수정' : '보정 요청'}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            </>
                         )}
+                        
 
                         <div className="flex flex-col items-end mt-3">
                             <span className="text-[13px] font-semibold text-gray-600">
@@ -1217,121 +1266,14 @@ const Main_CustomFrames = () => {
                 </div>
             </div>
 
-            {/* 보정 */}
-            <div>
-                <div className="text-center mt-20 mb-3">
-                    <h2 className='
-                        md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
-                        font-bold text-gray-800'>보정 서비스 미리보기</h2>
-                </div>
-                <div>
-                    {/* 보정 비교 */}
-                    <div className='
-                        xl:w-[440px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)] w-[250px]
-                        aspect-[1024/1536] mx-auto bg-gray-200 bg-opacity-60 rounded-lg 
-                        xl:p-4 lg:p-5 md:p-4 p-2
-                        shadow-xl'>
-                        <h3 className='
-                            lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
-                            font-semibold text-center mb-1 text-[a67a3e]'>{current.title}</h3>
-                        
-                        <div className='relative w-full flex justify-center items-center'>
-                            <img src={showAfter ? current.after : current.before}
-                                alt="보정 비교" 
-                                // className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[699/918]'
-                                className='rounded-xl transition duration-500 shadow-lg w-full h-auto object-contain'
-                            />
-                            <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
-                                <button
-                                    className={`
-                                        lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                        px-4 py-1 rounded-full font-semibold transition ${
-                                        !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
-                                    onClick = {() => setShowAfter(false)}
-                                    onMouseEnter={() => setShowAfter(false)}
-                                >
-                                    원본사진
-                                </button>
-                                <button
-                                    className={`
-                                        lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
-                                        px-4 py-1 rounded-full font-semibold transition ${
-                                        showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
-                                    }`}
-                                    onClick = {() => setShowAfter(true)}
-                                    onMouseEnter={() => setShowAfter(true)}
-                                >
-                                    보정사진
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* 페이지 네이션 */}
-                        <div className="mt-4 flex justify-center gap-2">
-                            {beforeAfterData.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`
-                                        xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
-                                        xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
-                                        rounded-full transition ${
-                                        activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
-                                    }`}
-                                    onClick={() => {
-                                        setActiveIndex(idx);
-                                        setShowAfter(false);
-                                    }}
-                                />
-                            ))}
-                        </div>
-                        <span
-                        className="
-                            flex flex-col justify-center items-center
-                            mt-2
-                            md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                            font-medium tracking-wide
-                            text-gray-600
-                            px-4
-                        "
-                        >
-                        <div>원본사진과 보정사진을 <span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
-                    </span>
-                    </div>
-                </div>
-            </div>
-            {/* /보정 */}
-            
-            <div className='
-                md:mx-auto mx-4
-                max-w-3xl bg-white border border-[#D0AC88] rounded-2xl shadow-md 
-                md:p-6 p-[clamp(10px,3.128vw,24px)]
-                mt-14 text-[15px] text-gray-700 leading-relaxed
-                '>
-                <div className='flex items-center mb-4'>
-                    <div className='
-                        w-6 h-6 flex items-center justify-center rounded-full bg-[#D0AC88] text-white text-sm font-bold mr-2'>i</div>
-                    <h3 
-                        className="
-                            md:text-lg text-base
-                            font-bold text-gray-800">보정 서비스 안내</h3>
-                </div>
-                <hr className='mb-4 border-[#f1e2d1]' />
-                <ul 
-                    className='
-                        md:text-base text-[clamp(11px,2.085vw,16px)]
-                        space-y-3 pl-4 list-disc
-                '>
-                    {/* <li>예시 외 <span className='font-semibold text-gray-900'>난이도가 높은 보정 또는 작업 시간이 많이 소요되는 경우</span> 시간당 <span className='text-[#D0AC88] font-semibold'>5만원</span>입니다.</li> */}
-                    <li><span>원고 이미지가 지나치게 흐리거나 해상도가 낮은 경우, 화질 개선에 한계가 있을 수 있는 점 양해 부탁드립니다.</span></li>
-                    <li><span>작업 난이도가 높은 보정 작업은 추가 시간이 소요되며, 별도의 추가 비용이 발생할 수 있습니다.</span></li>
-                    <li><span>보정에 관한 궁금한 사항이 있으시면 문의 바랍니다.</span></li>                    
-                </ul>
+            <div className="mt-20 mb-[200px] flex w-full justify-center>">
+                <ProductDetailTabs product={CUSTOM_FRAME_TAB_PRODUCT} />
             </div>
                             
             {/* 상세페이지 */}
-            <div className="flex justify-center mt-10 w-full h-full">
+            {/* <div className="flex justify-center mt-10 w-full h-full">
                 <img src={mainPage} alt="상세페이지" className="w-[1000px] h-full" />
-            </div>
+            </div> */}
             
             {/* 여기부터 모달창 */}
             {showGuestChoice && (
@@ -1401,11 +1343,11 @@ const Main_CustomFrames = () => {
             {/* 보정 요청 모달 */}
             {retouchModalOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center mt-[74px]"
+                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center md:mt-[74px]"
                     onClick={closeRetouchModal}
                 >
                     <div
-                        className="w-full h-[81%] overflow-y-scroll max-w-lg bg-white shadow-xl pt-5 px-5"
+                        className="w-full h-[81%] overflow-y-scroll max-w-lg bg-white shadow-xl py-3 px-4 md:px-4 mx-4"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="relative flex items-start justify-between border-b-[1px]">
@@ -1490,24 +1432,26 @@ const Main_CustomFrames = () => {
                             {/* 보정 비교 */}
                             {/* xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)]  */}
                             <div className='
-                                w-[380px]
-                                aspect-[1024/1536] mx-auto bg-opacity-60 rounded-lg 
+                                max-w-[380px] border
+                                aspect-[1024/1366] mx-auto bg-opacity-60 rounded-lg mt-5
                                 xl:p-6 lg:p-5 md:p-4 p-2
                             '>
                                 <h3 className='
-                                    lg:text-[18px] md:text-[clamp(16px,1.759vw,18px)] text-[clamp(13px,2.086vw,16px)]
-                                    font-semibold text-center mb-4 text-[a67a3e]'>{current.title}</h3>
+                                    text-[clamp(16px,1.759vw,18px)] lg:text-[18px]
+                                    font-semibold text-center  text-[a67a3e]'>{current.title}</h3>
                                 
                                 <div className='relative w-full flex justify-center items-center'>
                                     <img src={
                                         showAfter ? current.after : current.before}
                                         alt="보정 비교" 
-                                        className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[1024/1536] object-contain'
+                                        className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[1024/1366] object-contain'
                                     />
-                                    <div className='absolute bottom-4 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
+                                    <div className='
+                                        text-[clamp(14px,1.9544vw,15px)] md:text-[clamp(15px,1.564vw,16px)] lg:text-[16px]
+                                        
+                                        absolute bottom-2 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
                                         <button
                                             className={`
-                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
                                                 px-4 py-1 rounded-full font-semibold transition ${
                                                 !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
                                             onClick = {() => setShowAfter(false)}
@@ -1517,7 +1461,6 @@ const Main_CustomFrames = () => {
                                         </button>
                                         <button
                                             className={`
-                                                lg:text-[14px] md:text-[clamp(12px,1.368vw,14px)] text-[clamp(8px,1.564vw,12px)]
                                                 px-4 py-1 rounded-full font-semibold transition ${
                                                 showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
                                             }`}
@@ -1535,8 +1478,8 @@ const Main_CustomFrames = () => {
                                         <button
                                             key={idx}
                                             className={`
-                                                xl:w-5 lg:w-[clamp(17px,1.5636vw,20px)] w-[clamp(14px,1.661vw,17px)]
-                                                xl:h-5 lg:h-[clamp(17px,1.5636vw,20px)] h-[clamp(14px,1.661vw,17px)]
+                                                w-[clamp(15px,2.215vw,17px)] md:w-[clamp(17px,1.954vw,20px)] xl:w-5
+                                                h-[clamp(15px,2.215vw,17px)] md:h-[clamp(17px,1.954vw,20px)] xl:h-5
                                                 rounded-full transition ${
                                                 activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
                                             }`}

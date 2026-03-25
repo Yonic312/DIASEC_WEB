@@ -709,10 +709,10 @@ const MyRetouchList = () => {
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setPreviewOpen(false)}>
                     <div className="bg-white rounded-lg p-3 max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-2">
-                            <div className="text-sm font-medium">프리뷰 미리보기</div>
+                            <div className="text-sm font-medium">보정 시안 미리보기</div>
                             <button className="text-gray-500 hover:text-black" onClick={() => setPreviewOpen(false)}>✕</button>
                         </div>
-                        <img src={previewImg} alt="preview-large" className="max-w-[85vw] max-h-[80vh] object-contain rounded" />
+                        <img src={previewImg} alt="preview-large" className="max-w-[70vw] max-h-[80vh] object-contain rounded" />
                     </div>
                 </div>
             )}

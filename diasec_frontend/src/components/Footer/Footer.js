@@ -12,7 +12,7 @@ const Footer = () => {
                 <div className="
                     md:text-[15px] text-[clamp(12px,1.955vw,15px)]
                     flex
-                    gap-2 mt-[2%] mb-[6px] md:mb-0"
+                    gap-2 mb-[6px] md:mb-0"
                 >
                     <span> 상호명 : 디아섹코리아</span> 
                     <span className="md:block hidden">|</span>
@@ -39,12 +39,8 @@ const Footer = () => {
                     <span> 주소 : 경기 고양시 덕양구 통일로 140 삼송테크노밸리 A동 355호</span>
                 </div>
 
-                <div className="flex md:text-[15px] text-[12px]">
-                    <span>Copyright ⓒ2000 DIASEC KOREA All right reserved</span>
-                </div>
-
                 <div className="
-                    flex md:gap-2 gap-[4px] mt-[6px]
+                        flex md:gap-2 gap-[4px]
                     "
                 >
                     <button
@@ -82,6 +78,10 @@ const Footer = () => {
                     >
                         제휴문의
                     </button>
+                </div>
+
+                <div className="flex md:text-[15px] text-[12px]  mt-[6px]">
+                    <span>Copyright ⓒ2000 DIASEC KOREA All right reserved</span>
                 </div>
             </div>
         </div>

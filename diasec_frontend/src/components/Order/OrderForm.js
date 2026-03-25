@@ -222,9 +222,9 @@ const OrderForm = () => {
     // [결제 / 무통장입금]
     const [bankAccount, setBankAccount] = useState('');
     const [depositor, setDepositor] = useState('');
-    const [receiptType, setReceiptType] = useState('');
-    const [receiptInfo, setReceiptInfo] = useState(''); // 휴대폰번호 or 사업자 번호
-    const [receiptMethod, setReceiptMethod] = useState('휴대폰번호'); // 선택된 방법 (개인일 경우)
+    // const [receiptType, setReceiptType] = useState('');
+    // const [receiptInfo, setReceiptInfo] = useState(''); // 휴대폰번호 or 사업자 번호
+    // const [receiptMethod, setReceiptMethod] = useState('휴대폰번호'); // 선택된 방법 (개인일 경우)
     const orderStatus = paymentMethod === "무통장입금" ? "입금대기" : "결제완료";
 
     // 상세주소 검색
@@ -268,10 +268,10 @@ const OrderForm = () => {
         if (!validateOrder()) return;
 
         // 무통장 입금
-        if (receiptType === "개인" && !receiptInfo) {
-            toast.error("현금영수증 정보를 입력해주세요.");
-            return;
-        }
+        // if (receiptType === "개인" && !receiptInfo) {
+        //     toast.error("현금영수증 정보를 입력해주세요.");
+        //     return;
+        // }
         submitOrder();
         return;
 
@@ -343,9 +343,9 @@ const OrderForm = () => {
             paymentMethod,
             depositor,
             bankAccount,
-            receiptType,
-            receiptInfo,
-            receiptMethod,
+            // receiptType,
+            // receiptInfo,
+            // receiptMethod,
             totalPrice,
             totalDeposit,
             finalPrice,
@@ -408,9 +408,9 @@ const OrderForm = () => {
                             bankAccount,
                             depositor,
                             dueText: "주문 후 24시간 이내 입금해 주세요.",
-                            receiptType,
-                            receiptMethod,
-                            receiptInfo,
+                            // receiptType,
+                            // receiptMethod,
+                            // receiptInfo,
                         } : null
                     }
                 });
@@ -562,121 +562,126 @@ const OrderForm = () => {
             <div 
                 className="
                     flex 
-                    md:text-xl text-[clamp(14px,2.607vw,20px)]
-                    font-bold pb-2 justify-center mb-5">주문</div>
+                    text-[20px] md:text-[24px]
+                    font-bold pb-2 justify-center mb-5">주문/결제</div>
 
             <div className="
-                w-full font-bold 
-                md:text-xl text-[clamp(14px,2.607vw,20px)]">
+                w-full font-bold mb-2
+                text-[16px] md:text-[18px]"
+            >
                 <span className="ml-2">주문상품</span>
                 <hr />
             </div>
 
-            <div className="
-                flex flex-row w-full text-center px-5 mt-4 font-medium
-                md:text-base text-[clamp(11px,2.085vw,16px)]">
+            {/* <div className="
+                flex flex-row w-full text-center px-5 mt-4 font-medium 
+                text-[13px] md:text-base">
                 <div className="w-[60%]"><span>상품정보</span></div>
                 <div className="w-[15%]"><span>수량</span></div>
                 <div className="w-[25%]"><span>주문금액</span></div>
-            </div>
+            </div> */}
             
             {/* 물건 */}
-            {items.map((item, index) => (
-                <div
-                    key={index}
-                    className="flex flex-row w-full px-5 py-2">
-                    <div className="flex gap-3 w-[60%]">
-                        <img src={item.thumbnail} 
-                            className="
-                                md:w-[100px] w-[clamp(50px,13.03vw,100px)]
-                                md:h-[100px] h-[clamp(50px,13.03vw,100px)]" alt={item.title} />
-                        <div 
-                            className="
-                                flex flex-col justify-between
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                            ">
-                            <div className="flex flex-col">
-                                <span className="
-                                    md:text-base text-[clamp(11px,2.085vw,16px)]
-                                    font-semibold line-clamp-1">{item.title}
-                                </span>
-                                <span className="text-gray-500 text-[12px]">
-                                    {item.author}
-                                </span>
-                            </div>
-                        
+            <div className="flex flex-col gap-2 w-full max-h-[200px] md:max-h-[300px] overflow-y-scroll">
+                {items.map((item, index) => (
+                    <div
+                        key={index}
+                        className="
+                            flex flex-row w-full h-full
+                            px-2 md:px-5 
+                            py-2">
+                        <div className="
+                            flex w-[58%] h-fit
+                            gap-[6px] md:gap-3"
+                        >
+                            <img src={item.thumbnail} 
+                                className="
+                                    shrink-0
+                                    md:w-[100px] w-[clamp(70px,13.03vw,100px)]
+                                    md:h-[100px] h-[clamp(70px,13.03vw,100px)]" alt={item.title} />
                             <div 
                                 className="
-                                    flex flex-col items-start
-                                    md:text-xs text-[clamp(7px,1.5645vw,12px)]"
-                            >
-                                <span className="
-                                    font-semibold 
-                                    md:text-sm text-[clamp(10px,1.8252vw,14px)]">
-                                        {item.price.toLocaleString()}원
-                                </span>
+                                    flex flex-col justify-between
+                                    text-[13px] md:text-base
+                                ">
+                                <div className="flex flex-col">
+                                    <span className="
+                                        font-semibold line-clamp-1">{item.title}
+                                    </span>
+                                    <span className="text-gray-500 text-[12px]">
+                                        {item.author}
+                                    </span>
+                                </div>
+                            
+                                <div 
+                                    className="
+                                        flex flex-col items-start
+                                        text-[12px] md:text-[14px]"
+                                >
+                                    {/* <span className="
+                                        font-semibold 
+                                        md:text-sm text-[clamp(10px,1.8252vw,14px)]">
+                                            {item.price.toLocaleString()}원
+                                    </span> */}
 
+                                    <span className="text-gray-500">
+                                        {convertCategoryName(item.category)} / {item.finishType === 'matte' ? '무광' : '유광'}
+                                    </span>
+                                    <span className="text-gray-500">
+                                        사이즈 : {convertInchToCm(item.size)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="
+                            flex justify-center items-end w-[12%]
+                            md:text-xl text-[clamp(14px,2.607vw,20px)]"
+                        >
+                            <span className="font-medium">
+                                {item.quantity}개
+                            </span>
+                        </div>
+
+                        <div className="flex justify-center items-end w-[30%] text-end flex-1">
+                            <div className="flex flex-col justify-between h-full">
                                 {/* 보정 확인 수정 버튼 */}
                                 {isCustomFrames(item) && (
-                                    <div className='w-full'>
-                                        <div className="text-[12px] text-gray-600">
-                                            <span className="font-semibold">보정:</span>{" "}
-                                            {Number(item.retouchEnabled) === 1 ? (
-                                                <>
-                                                    O
-                                                    {/* {item.retouchTypes ? (
-                                                        <span className="ml-1 text-gray-500">({item.retouchTypes})</span>
-                                                    ) : null}
-                                                    {item.retouchNote ? (
-                                                        <div className="text-gray-500 line-clamp-1">
-                                                            요청: {item.retouchNote}
-                                                        </div>
-                                                    ) : null} */}
-                                                </>
-                                            ) : (
-                                                "X"
-                                            )}
+                                    <div className='w-full h-full'>
+                                        <div className={`
+                                                top-0 text-[12px] 
+                                                ${Number(item.retouchEnabled) === 1 ? 'text-black' : 'text-gray-500'} `}
+                                        >
+                                            {/* <span className="font-semibold">보정:</span>{" "} */}
                                             <button
                                                 type="button"
                                                 onClick={() => openRetouchModal(index)}
-                                                className='ml-1 px-2 py-1 border text-[clamp(10px,1.56vw,12px)] hover:bg-gray-50'
+                                                className='ml-1 px-2 py-1 rounded border text-[clamp(10px,1.56vw,12px)] hover:bg-gray-50'
                                             >
-                                                보정 요청 수정
+                                                {Number(item.retouchEnabled) === 1 ?  '보정 수정' : '보정 요청'}
                                             </button>
                                         </div>
-
-                                        
                                     </div>
                                 )}
 
-                                <span className="text-gray-500">
-                                    {convertCategoryName(item.category)} / {item.finishType === 'matte' ? '무광' : '유광'} / 사이즈 : {convertInchToCm(item.size)}
+                                <span className="
+                                    font-bold
+                                    md:text-xl text-[clamp(14px,2.607vw,20px)]"
+                                > 
+                                    {(item.price * item.quantity).toLocaleString()}원
                                 </span>
                             </div>
                         </div>
                     </div>
-
-                    <div className="
-                        flex justify-center items-end w-[15%]
-                        md:text-xl text-[clamp(14px,2.607vw,20px)]">
-                        <span>{item.quantity}개</span>
-                    </div>
-
-                    <div className="flex justify-center items-end w-[25%]">
-                        <div className="flex flex-row mt-8">
-                            <span className="
-                                flex font-bold 
-                                md:text-xl text-[clamp(14px,2.607vw,20px)]"> {(item.price * item.quantity).toLocaleString()}원</span>
-                        </div>
-                    </div>
-                </div>
-            ))}
+                ))}
+            </div>
             {/* 물건 */}
             <hr/>
 
             <div className="
                 w-full mt-10 font-bold 
-                md:text-xl text-[clamp(14px,2.607vw,20px)]">
+                text-[16px] md:text-[18px]"
+            >
                 <span className="ml-2">주문자 정보</span>
             </div>
 
@@ -689,11 +694,18 @@ const OrderForm = () => {
                     flex md:flex-row flex-col md:items-center items-start
                     mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">
+                        text-[13px] md:text-base"
+                    >
                         주문자 이름
                     </div>
-                    <input type="text" value={ordererName} onChange={(e) => setOrdererName(e.target.value)} 
-                        className="md:w-[200px] w-full border-[1px] h-8 px-2" />
+                    <input 
+                        type="text" 
+                        value={ordererName} 
+                        onChange={(e) => setOrdererName(e.target.value)} 
+                        className="
+                        text-[13px] md:text-base    
+                        md:w-[200px] w-full border-[1px] h-8 px-2"
+                    />
                 </div>
 
                 <hr/>
@@ -702,11 +714,16 @@ const OrderForm = () => {
                     flex md:flex-row flex-col md:items-center items-start 
                     mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">
+                        text-[13px] md:text-base">
                         주문자 연락처
                     </div>
                     <div className="md:w-auto w-full flex gap-1">
-                        <select className="md:w-[100px] w-1/3 gap-1 h-8 border border-gray-300" value={phone1} onChange={(e) => setPhone1(e.target.value)}>
+                        <select className="
+                            text-[13px] md:text-base
+                            md:w-[100px] w-1/3 gap-1 h-8 border border-gray-300" 
+                            value={phone1} 
+                            onChange={(e) => setPhone1(e.target.value)}
+                        >
                             <option value="010">010</option>
                             <option value="011">011</option>
                             <option value="016">016</option>
@@ -714,20 +731,52 @@ const OrderForm = () => {
                             <option value="018">018</option>
                             <option value="019">019</option>
                         </select>
-                        <input type="text" value={phone2} onChange={(e) => setPhone2(e.target.value)} maxLength="4" inputMode="numeric" className="md:w-[100px] w-1/3 h-8 border border-gray-300 pl-2" />
-                        <input type="text" value={phone3} onChange={(e) => setPhone3(e.target.value)} maxLength="4" inputMode="numeric" className="md:w-[100px] w-1/3 h-8 border border-gray-300 pl-2" />
+                        <input 
+                            type="text" 
+                            value={phone2} 
+                            onChange={(e) => setPhone2(e.target.value)} 
+                            maxLength="4" 
+                            inputMode="numeric" 
+                            className="
+                                text-[13px] md:text-base
+                                md:w-[100px] w-1/3 h-8 border border-gray-300 pl-2"
+                        />
+                        <input 
+                            type="text" 
+                            value={phone3} 
+                            onChange={(e) => setPhone3(e.target.value)} 
+                            maxLength="4" 
+                            inputMode="numeric" 
+                            className="
+                                text-[13px] md:text-base
+                                md:w-[100px] w-1/3 h-8 border border-gray-300 pl-2"
+                        />
                     </div>
                 </div>
 
                 <hr/>
 
                 <div className="flex md:flex-row flex-col items-start mt-3 ml-3 mb-3">
-                    <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">이메일</div>
-                        <div className="flex flex-col">
-                            <div className="flex flex-row">
-                            <input type="text" value={emailLocal} onChange={(e) => setEmailLocal(e.target.value)} className="md:w-[200px] w-1/2 border-[1px] h-8 pl-2" />
-                                <span className="md:mx-2 mx-1">@</span>
+                    <div className="
+                        w-[150px] 
+                        text-[13px] md:text-base"
+                    >
+                        이메일
+                    </div>
+                        <div className="
+                            flex flex-col 
+                            text-[13px] md:text-base"
+                        >
+                            <div className="flex flex-row items-end">
+                                <input t
+                                    ype="text" 
+                                    value={emailLocal} 
+                                    onChange={(e) => setEmailLocal(e.target.value)} 
+                                    className="
+                                        text-[13px] md:text-base
+                                        md:w-[200px] w-1/2 border-[1px] h-8 pl-2" 
+                                />
+                                <span className="text-[15px] md:mx-2 mx-1">@</span>
                                 {emailDomain === '직접입력' ? (
                                     <input type="text" value={customDomain} onChange={(e) => setCustomDomain(e.target.value)} className="md:w-[200px] w-1/2 border-[1px] h-8 pl-2" 
                                     />
@@ -744,11 +793,6 @@ const OrderForm = () => {
                                     <option value="직접입력">직접입력</option>
                                 </select>    
                             </div>
-                        {/* <span 
-                            className="
-                                md:text-xs text-[clamp(7px,1.5645vw,12px)] 
-                                ml-1">(영문 대소문자/숫자/특수문자 중 2가지 이상 조합, 8자~16자)
-                        </span> */}
                     </div>
                 </div>
 
@@ -756,15 +800,23 @@ const OrderForm = () => {
                     <>
                         <hr/>
                         <div className="flex md:flex-row flex-col items-start mt-3 ml-3 mb-3">
-                            <div className=" w-[150px]">주문조회 비밀번호</div>
+                            <div className="w-[150px]">
+                                <span className="text-[13px] md:text-base">
+                                    주문조회 비밀번호
+                                </span>
+                            </div>
                             <div className="flex flex-col">
                                 <input
                                     type="password"
                                     value={guestPassword}
                                     onChange={(e) => setGuestPassword(e.target.value)}
-                                    className="md:w-[200px] w-full border-[1px] h-8 px-2"
+                                    className="
+                                        text-[13px] md:text-base    
+                                        md:w-[200px] w-full border-[1px] h-8 px-2"
                                 />
-                                <span className="md:text-xs text-[clamp(7px,1.5645vw,12px)] ml-1">
+                                <span className="
+                                    mt-1
+                                    md:text-xs text-[11px]">
                                     (6자 이상 20자 이하)
                                 </span>
                             </div>
@@ -772,21 +824,28 @@ const OrderForm = () => {
 
                         <hr/>
                         <div className="flex md:flex-row flex-col items-start mt-3 ml-3 mb-3 ">
-                            <div className=" w-[150px] md:text-base">비밀번호 확인</div>
+                            <div className="
+                                w-[150px] 
+                                text-[13px] md:text-base"
+                            >
+                                비밀번호 확인
+                            </div>
                             <div className="flex flex-col">
                                 <input
                                     type="password"
                                     value={guestPasswordConfirm}
                                     onChange={(e) => setGuestPasswordConfirm(e.target.value)}
-                                    className="md:w-[200px] border-[1px] h-8 px-2"
+                                    className="
+                                        text-[13px] md:text-base
+                                        md:w-[200px] border-[1px] h-8 px-2"
                                 />
 
                                 {/* 실시간 일치 여부 표시 */}
                                 {guestPwdMatch === false && (
-                                    <span className="text-xs text-red-500 mt-1">비밀번호가 일치하지 않습니다.</span>
+                                    <span className="text-[11px] text-red-500 mt-1">비밀번호가 일치하지 않습니다.</span>
                                 )}
                                 {guestPwdMatch === true && (
-                                    <span className="text-xs text-green-600 mt-1">비밀번호가 일치합니다.</span>
+                                    <span className="text-[11px] text-green-600 mt-1">비밀번호가 일치합니다.</span>
                                 )}
                             </div>
                         </div>
@@ -813,7 +872,7 @@ const OrderForm = () => {
 
             <div className="
                 w-full mt-10 font-bold 
-                md:text-xl text-[clamp(14px,2.607vw,20px)]">
+                text-[16px] md:text-[18px]">
                 <span className="ml-2">배송 정보</span>
             </div>
 
@@ -821,7 +880,7 @@ const OrderForm = () => {
                 {member ? (
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
-                    mt-3 ml-3 mb-3">
+                    mt-3 mx-3 mb-3">
                     <div className="w-[150px]">
                         <label className="md:text-base text-[clamp(11px,2.085vw,16px)]">내 배송지</label>
                     </div>
@@ -852,9 +911,12 @@ const OrderForm = () => {
                 <hr/>
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
-                    text-[clamp(11px,2.085vw,16px)]
+                    text-[13px] md:text-base
                     mt-3 mx-3 mb-3">
-                    <div className="w-[150px] md:text-base">
+                    <div className="
+                        w-[150px] 
+                        text-[13px] md:text-base"
+                    >
                         받는 사람
                     </div>
                     <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)} 
@@ -864,19 +926,19 @@ const OrderForm = () => {
                 <hr/>
 
                 <div className="
-                    flex md:flex-row flex-col md:items-center items-start 
+                    flex md:flex-row flex-col md:items-center items-start
+                    text-[13px] md:text-base
                     mt-3 ml-3 mb-3">
-                    <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">
+                    <div className="w-[150px]"
+                    >
                         주소
                     </div>
                     <div className="
-                        md:w-auto w-full flex flex-col gap-2 pr-2
-                        text-[clamp(11px,2.085vw,16px)]">
+                        md:w-auto w-full flex flex-col gap-2 pr-2">
                         <div className="flex">
                             <input type="text"  value={postcode} readOnly placeholder="우편번호" 
                                 className="md:w-[200px] w-1/2 border-[1px] h-8 pl-2" />
-                            <button className="h-8 bg-black text-white border-opacity-15 md:px-4 px-1  ml-3" onClick={openPostcodePopup}>주소검색</button>
+                            <button className="h-8 bg-black text-white rounded border-opacity-15 md:px-4 px-1 ml-3" onClick={openPostcodePopup}>주소검색</button>
                         </div>
                         <input type="text" value={address} readOnly placeholder="기본주소" className="border-[1px] md:w-[400px] w-full h-8 px-2" />
                         <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} placeholder="나머지 주소(선택 입력 가능)" className="border-[1px] h-8 px-2" />
@@ -886,15 +948,15 @@ const OrderForm = () => {
                 <hr/>
 
                 <div className="
+                    text-[13px] md:text-base
                     flex md:flex-row flex-col md:items-center items-start 
                     mt-3 ml-3 mb-3">
-                    <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">
+                    <div className="w-[150px]"
+                    >
                         휴대전화
                     </div>
                     <div className="
-                        flex md:w-auto w-full gap-1
-                        text-[clamp(11px,2.085vw,16px)]">
+                        flex md:w-auto w-full gap-1">
                         <select 
                             className=" w-[100px] h-8 border border-gray-300 pl-2"
                             value={recipientPhone1}    
@@ -929,9 +991,12 @@ const OrderForm = () => {
 
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
-                    md:text-base text-[clamp(11px,2.085vw,16px)]
+                    text-[13px] md:text-base
                     mt-3 mx-3 mb-3">
-                    <div className="min-w-[150px]">
+                    <div className="
+                        min-w-[150px]
+                        text-[13px] md:text-base"
+                    >
                         배송 메세지
                     </div>
                     <input 
@@ -945,9 +1010,10 @@ const OrderForm = () => {
 
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
-                    md:text-base text-[clamp(11px,2.085vw,16px)] 
+                    text-[13px] md:text-base
                     mt-3 mx-3 mb-3">
-                    <div className="min-w-[150px]">
+                    <div className="min-w-[150px]"
+                    >
                         구매자 요청사항
                     </div>
                     <input 
@@ -965,7 +1031,7 @@ const OrderForm = () => {
                 <>
                     <div className="
                         w-full mt-10 font-bold
-                        md:text-xl text-[clamp(14px,2.607vw,20px)]">
+                        text-[16px] md:text-[18px]">
                         <span className="ml-2">할인 / 부가결제 </span>
                     </div>
 
@@ -973,14 +1039,14 @@ const OrderForm = () => {
                         <hr/>
                         <div className="
                             flex md:flex-row flex-col md:items-center items-start
-                            md:text-base text-[clamp(11px,2.085vw,16px)]
+                            text-[13px] md:text-base
                             mt-3 ml-3 mb-3">
                             <div className="w-[150px]">
                                 적립금
                             </div>
                             <div>
                                 <div className="flex flex-row items-center">
-                                    <input type="text" inputMode="numeric" className="md:w-[200px] w-full border-[1px] h-8 pl-2 mr-1" value={usedCredit} 
+                                    <input type="text" inputMode="numeric" className="w-full md:w-[120px] border-[1px] h-8 pl-2 mr-1" value={usedCredit} 
                                         onChange={(e) => {
                                             const input = Number(e.target.value);
                                             const maxCredit = Number(member?.credit || 0);
@@ -994,9 +1060,12 @@ const OrderForm = () => {
                                                 setUsedCredit(input);
                                             }
                                     }}/>
-                                    <span className="md:text-base text-[clamp(11px,2.085vw,16px)]">원</span>
+                                    <span>원</span>
                                 </div>
-                                <span className="text-right text-gray-400"> (보유 : {Number(credit || 0).toLocaleString()}원)</span>
+                                <span className="
+                                    text-[12px] md:text-[14px]
+                                    text-right text-gray-500"
+                                > (보유 : {Number(credit || 0).toLocaleString()}원)</span>
                             </div>
                         </div>
                         
@@ -1007,15 +1076,15 @@ const OrderForm = () => {
             <div 
                 className="
                     w-full mt-10 font-bold pl-2
-                    md:text-xl text-[clamp(14px,2.607vw,20px)]">
+                    text-[16px] md:text-[18px]">
                 <span>결제수단</span>
             </div>
 
             <div className="w-full mb-10">
                 <hr/>
                 <div className="
-                    flex flex-row h-[50px] items-center mt-3 mb-3 mx-2
-                    md:text-base text-[clamp(11px,2.085vw,16px)]">
+                    flex flex-row h-[50px] items-center mt-3 mb-3 mx-3
+                    text-[13px] md:text-base">
                     {/* {["무통장입금", "카드결제", "카카오페이", "실시간계좌이체"].map((method) => ( */}
                     {["무통장입금", "카드결제"].map((method) => (
                     <button
@@ -1032,9 +1101,9 @@ const OrderForm = () => {
                     <BankTransfer 
                         bankAccount={bankAccount} setBankAccount={setBankAccount}
                         depositor={depositor} setDepositor={setDepositor}
-                        receiptType={receiptType} setReceiptType={setReceiptType}
-                        receiptMethod={receiptMethod} setReceiptMethod={setReceiptMethod}
-                        receiptInfo= {receiptInfo} setReceiptInfo={setReceiptInfo} // 휴대폰번호 or 사업자 번호
+                        // receiptType={receiptType} setReceiptType={setReceiptType}
+                        // receiptMethod={receiptMethod} setReceiptMethod={setReceiptMethod}
+                        // receiptInfo= {receiptInfo} setReceiptInfo={setReceiptInfo} // 휴대폰번호 or 사업자 번호
                     />
                 )}
 
@@ -1061,13 +1130,13 @@ const OrderForm = () => {
             
             <div className="
                 w-full mt-10 pl-2 font-bold
-                md:text-xl text-[clamp(14px,2.607vw,20px)]">
+                text-[16px] md:text-[18px]">
                 <span>결제금액 </span>
             </div>
 
             <div className="
                 w-full mx-auto mb-10
-                md:text-base text-[clamp(11px,2.085vw,16px)]">
+                text-[13px] md:text-base">
                 <hr/>
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                     <div className="w-[150px]">
@@ -1090,7 +1159,7 @@ const OrderForm = () => {
                 
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">
+                        ">
                         배송비
                     </div>
                     {/* <span> {deliveryFee.toLocaleString()} 원</span> */}
@@ -1099,7 +1168,7 @@ const OrderForm = () => {
                 <hr />
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
                     <div className="w-[150px] 
-                        md:text-base text-[clamp(11px,2.085vw,16px)]">
+                        ">
                         할인
                     </div>
                     <span> {usedCredit.toLocaleString()} 원</span>
@@ -1107,7 +1176,7 @@ const OrderForm = () => {
                 <hr />
                 <div className="
                     flex flex-row items-center justify-between mt-3 mx-3 mb-3 font-semibold 
-                    md:text-lg text-[clamp(12px,2.3455vw,18px)]">
+                    ">
                     <div className="w-[150px]">
                         최종 결제 금액
                     </div>
@@ -1115,14 +1184,14 @@ const OrderForm = () => {
                 </div>
                 <hr/>
 
-                <div className='flex items-center md:text-sm text-[clamp(11px,1.8252vw,14px)] ml-3 mt-4'>
+                <div className='flex items-center ml-3 mt-4'>
                     <input type="checkbox" id="agree" className="w-4 h-4 mr-2" />
                     <label htmlFor="agree">
                         결제 정보를 확인하였으며, 구매 진행에 동의합니다.
                     </label>
                 </div>
 
-                <div className='w-full h-[50px] md:text-lg text-[clamp(11px,2.3455vw,18px)] px-3 mt-5'
+                <div className='w-full h-[50px] px-3 mt-5'
                     onClick={handleOrder}>
                     <button className="w-full h-[50px] bg-black text-white "> <span className='font-semibold'>{finalPrice.toLocaleString()}원</span> 결제하기 </button>
                 </div>

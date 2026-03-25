@@ -504,6 +504,10 @@ const None_Custom_Detail = () => {
         })
         .catch(err=> {
             if (err.response?.status === 409) {
+                if (window.confirm("이미 관심상품에 등록된 상품입니다. 관심상품 페이지로 이동하시겠습니까?")) {
+                    navigate('/wishList');
+                    return;
+                }
                 toast.info("이미 관심상품에 등록된 상품입니다.");
                 return;
             }
@@ -749,8 +753,8 @@ const None_Custom_Detail = () => {
                                 type="button"
                                 onClick={() => setShowRecommendedSizeModal(true)}
                                 className="
-                                    text-xs md:text-sm font-medium text-[#a67a3e]
-                                    border border[#D0AC88]/70 rounded-full px-3 py-1
+                                    text-xs font-medium text-[#a67a3e]
+                                    border border[#D0AC88]/70 rounded-full px-2 py-1
                                     hover:bg-[#fdf4ea] transition whitespace-nowrap"
                             >
                                 추천 사이즈 안내
@@ -759,8 +763,8 @@ const None_Custom_Detail = () => {
                         
                         {/* <p className="text-sm text-gray-500 mt-2">원하는 사이즈(cm)를 입력해 주세요</p> */}
 
-                        <div className="flex gap-3 items-end mt-1">
-                            <div className="flex flex-col w-full">
+                        <div className="flex gap-3 items-start mt-1 h-fit">
+                            <div className="flex flex-col w-full h-fit">
                                 <span className="text-sm text-gray-500 mb-1">가로 (cm)</span>
                                 <input
                                     type="text"
@@ -772,14 +776,6 @@ const None_Custom_Detail = () => {
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter") {
                                             e.preventDefault();
-
-                                            // const v = parseFloat(widthInput);
-                                            // if (isNaN(v)) {
-                                            //     setWidthInput(String(Math.floor(width)));
-                                            //     return;
-                                            // }
-
-                                            // handleWidthChange({ target: { value: v } });
                                             e.currentTarget.blur();
                                         }
 
@@ -800,9 +796,21 @@ const None_Custom_Detail = () => {
                                     inputMode="numeric"
                                     className="w-full border border-gray-500 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#D0AC88]"
                                 />
+                                <input
+                                    type="range"
+                                    min={MIN_WIDTH}
+                                    max={actualMaxWidth}
+                                    step="0.1"
+                                    value={width}
+                                    onChange={(e) => {
+                                        const value = parseFloat(e.target.value);
+                                        if (!isNaN(value)) handleWidthChange(e);
+                                    }}
+                                    className="mt-[2px] w-full accent-[#D0AC88]"
+                                />
                             </div>
                             
-                            <span className="text-xl font-semibold text-gray-700">x</span>
+                            <span className="text-xl font-semibold text-gray-700 mt-10">x</span>
 
                             <div className="flex flex-col w-full">
                                 <span className="text-sm text-gray-500 mb-1">세로 (cm) </span>
@@ -812,26 +820,12 @@ const None_Custom_Detail = () => {
                                     readOnly
                                     className="w-full border border-gray-500 rounded px-3 py-2 text-base bg-gray-100 cursor-not-allowed"
                                 />
+                                <span className=" text-xs text-right text-gray-600">
+                                    (약 { Math.floor(width / 2.54) } x { Math.floor(height / 2.54) } inch)
+                                </span>
                             </div>
                         </div>
                         
-                        <div className="mt-[4px] flex justify-between">
-                            <input
-                                type="range"
-                                min={MIN_WIDTH}
-                                max={actualMaxWidth}
-                                step="0.1"
-                                value={width}
-                                onChange={(e) => {
-                                    const value = parseFloat(e.target.value);
-                                    if (!isNaN(value)) handleWidthChange(e);
-                                }}
-                                className="mt-[2px] md:w-[44%] w-[47%] accent-[#D0AC88]"
-                            />
-                            <span className=" text-xs text-right text-gray-600">
-                                    (약 { Math.floor(width / 2.54) } x { Math.floor(height / 2.54) } inch)
-                            </span>
-                        </div>
                         <span className="mt-1 text-[13.5px] text-gray-500">바를 움직이거나 직접 입력해 사이즈를 조정하세요</span>
 
                         <div className="w-full flex justify-between mt-2 gap-2">
@@ -1135,7 +1129,7 @@ const None_Custom_Detail = () => {
             {/* 추천 사이즈 안내 모달 */}
             {showRecommendedSizeModal && (
                 <div
-                    className="fixed inset-0 flex items-center justify-center bg-blcck/50 z-[55]"
+                    className="fixed inset-0 flex items-center justify-center bg-blcck/50 z-[55] w-[70%] mx-auto"
                     onClick={() => setShowRecommendedSizeModal(false)}
                     role="presentation"
                 >
@@ -1164,7 +1158,7 @@ const None_Custom_Detail = () => {
                         </div>
 
                         <div className="px-6 py-4 text-center">
-                            <p className="text-sm text-gray-600 leading-relaxed">
+                            <p className="text-sm text-gray-600 leading-relaxed break-keep">
                                 명화 및 작품 제작 시 가장 많이 사용되는 사이즈입니다.
                             </p>
                         </div>

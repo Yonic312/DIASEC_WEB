@@ -84,14 +84,24 @@
             oi.retouch_enabled as retouchEnabled,
             oi.retouch_types as retouchTypes,
             oi.retouch_note as retouchNote,
+            f.status as previewStatus,
+            f.file_url as previewUrl,
+            f.customer_feedback as customerFeedback,
+            f.created_at as previewCreatedAt,
+            f.delete_scheduled_at as deleteScheduledAt,
 
             oi.return_reason as reason,
             oi.return_detail as detail,
             oi.bank_name as bankName,
             oi.account_number as accountNumber,
             oi.account_holder as accountHolder
-        FROM order_items oi join orders o
-        ON oi.oid = o.oid
+        FROM order_items oi
+        JOIN orders o
+            ON oi.oid = o.oid
+        LEFT JOIN order_item_file f
+            ON f.item_id = oi.item_id
+            AND f.role = 'RETOUCH_PREVIEW'
+            AND f.deleted_at IS NULL
         WHERE oi.oid = #{oid}
     </select>
 
@@ -117,21 +127,30 @@
     <!-- 3. 상세페이지로 들어갈 itemId 개별 주문 상품 조회 -->
     <select id="selectOrderItemById" resultType="OrderItemsVo">
         SELECT 
-            item_id as itemId, oid, cid, pid, category, title, author, quantity, price, deposit, finish_type as finishType,
-            period, size, thumbnail, order_status as orderStatus, 
-            lease_start as leaseStart, lease_end as leaseEnd,
-            tracking_number as trackingNumber, tracking_company as trackingCompany,
-            retouch_enabled as retouchEnabled,
-            retouch_types as retouchTypes,
-            retouch_note as retouchNote,
+            oi.item_id as itemId, oi.oid, oi.cid, oi.pid, oi.category, oi.title, oi.author, oi.quantity, oi.price, oi.deposit, oi.finish_type as finishType,
+            oi.period, oi.size, oi.thumbnail, oi.order_status as orderStatus, 
+            oi.lease_start as leaseStart, oi.lease_end as leaseEnd,
+            oi.tracking_number as trackingNumber, oi.tracking_company as trackingCompany,
+            oi.retouch_enabled as retouchEnabled,
+            oi.retouch_types as retouchTypes,
+            oi.retouch_note as retouchNote,
+            f.status as previewStatus,
+            f.file_url as previewUrl,
+            f.customer_feedback as customerFeedback,
+            f.created_at as previewCreatedAt,
+            f.delete_scheduled_at as deleteScheduledAt,
 
-            return_reason as reason,
-            return_detail as detail,
-            bank_name as bankName,
-            account_number as accountNumber,
-            account_holder as accountHolder
-        FROM order_items
-        WHERE item_id = #{itemId}
+            oi.return_reason as reason,
+            oi.return_detail as detail,
+            oi.bank_name as bankName,
+            oi.account_number as accountNumber,
+            oi.account_holder as accountHolder
+        FROM order_items oi
+        LEFT JOIN order_item_file f
+            ON f.item_id = oi.item_id
+            AND f.role = 'RETOUCH_PREVIEW'
+            AND f.deleted_at IS NULL
+        WHERE oi.item_id = #{itemId}
     </select>
     
     <!-- 모든 주문 취소 -->

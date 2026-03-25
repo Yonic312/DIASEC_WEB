@@ -39,6 +39,11 @@ public class OrderItemsVo {
     private Integer retouchEnabled;
     private String retouchTypes;
     private String retouchNote;
+    private String previewStatus;
+    private String previewUrl;
+    private String customerFeedback;
+    private String previewCreatedAt;
+    private String deleteScheduledAt;
 
     // 이미지
     private List<OrderItemClaimFileVo> claimFiles;

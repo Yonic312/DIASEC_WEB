@@ -160,7 +160,7 @@ const Cart = () => {
         const wCm = Math.round(wInch * 2.54);
         const hCm = Math.round(hInch * 2.54);
 
-        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
+        return `${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)})`;
     };
 
     // ✅ 선택 주문: OrderForm으로 state 넘김 (너 프로젝트 방식)
@@ -206,38 +206,56 @@ const Cart = () => {
     }
 
     return (
-        <div className="w-full bg-white sm:px-8 px-2 sm:py-10 py-5 shadow-md border border-gray-200 space-y-4 mb-20">
-            <div className="flex items-center justify-between">
-                <h2 className="xl:text-2xl text-lg font-bold">장바구니</h2>
+        <div className="
+            w-full bg-white 
+            px-2 sm:px-8 py-4 sm:py-8
+            shadow-md border-y md:border border-gray-200 mt-10 mb-20">
+            <h2 className="
+                text-[clamp(18px,3.1288vw,20px)] sm:text-[clamp(20px,3.128vw,24px)] md:text-2xl
+                font-bold"
+            >
+                장바구니
+            </h2>
 
-                <div className="flex gap-2">
+            <div className="flex items-end justify-between">
+                <div className="
+                    text-[clamp(14px,2.085vw,16px)] md:text-[16px]
+                    text-gray-500">
+                    총 {items.length}개 / {checked.size}개 선택
+                </div>
+
+                <div className="
+                    text-[clamp(12px,1.824vw,14px)] md:text-[14px]
+                    flex 
+                    md:gap-2 gap-1"
+                >
                     <button
-                        className="px-3 py-2 text-sm border border-gray-400 rounded-xl hover:bg-gray-100"
+                        className="
+                            px-2 py-1  border border-gray-400 rounded-lg hover:bg-gray-100"
                         onClick={toggleAll}
                     >
                         {checked.size === items.length && items.length > 0 ? "전체해제" : "전체선택"}
                     </button>
 
                     <button
-                        className="px-3 py-2 text-sm bg-black text-white rounded-xl hover:opacity-90"
+                        className="
+                            px-2 py-1 bg-black text-white rounded-lg hover:opacity-90"
                         onClick={orderSelected}
                     >
                         선택주문
                     </button>
 
                     <button
-                        className="px-3 py-2 text-sm border border-red-300 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition"
+                        className="
+                            px-2 py-1 border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
                         onClick={deleteSelected}
                     >
                         선택삭제
                     </button>
                 </div>
             </div>
-
-            <div className="text-sm text-gray-500">
-                총 {items.length}개 / 선택 {checked.size}개
-            </div>
-
+            
+            {/* 장바구니 비었을 때 여기도 수정해야 함 */}
             {items.length === 0 ? (
                 <div className="text-center py-24 text-gray-600 space-y-6">
                     <div>
@@ -247,7 +265,9 @@ const Cart = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-3 mt-6">
+                    <div className="
+                        text-[clamp(12px,2.085vw,16px)] md:text-base
+                        flex flex-wrap justify-center gap-3 mt-6">
                         <button
                             onClick={() => navigate("/main_Items?type=masterPiece")}
                             className="px-4 py-2 border rounded-xl hover:bg-gray-100"    
@@ -286,87 +306,118 @@ const Cart = () => {
                 </div>
             ) : (
                 <>
-                    <div className="h-[540px] overflow-y-scroll space-y-2">
+                    <div className="max-h-[540px] overflow-y-scroll space-y-3 mt-2">
                         {items.map((it) => {
                             const cid = getKey(it);
                             const isChecked = checked.has(cid);
 
                             return (
-                                <div
-                                    key={cid}
-                                    className="flex items-center gap-3 border rounded-xl p-3 bg-gray-50 hover:bg-gray-100 transition"
-                                    onClick={() => {toggleOne(cid);}}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() => toggleOne(cid)}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                        }}
-                                        className="w-4 h-4"
-                                    />
+                                <div className="flex flex-col">
+                                    <div
+                                        key={cid}
+                                        className="flex items-center gap-[10px] border rounded-xl p-3 bg-white hover:bg-gray-100 transition"
+                                        onClick={() => {toggleOne(cid);}}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={() => toggleOne(cid)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="
+                                                w-[clamp(14px,2.086vw,16px)] md:w-4 
+                                                h-[clamp(14px,2.086vw,16px)] md:h-4 
+                                            "
+                                        />
 
-                                    <img
-                                        src={it.thumbnail}
-                                        alt={it.title}
-                                        className="w-20 h-20 object-cover rounded-lg border bg-white cursor-pointer"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)
-                                        }}
-                                    />
+                                        <img
+                                            src={it.thumbnail}
+                                            alt={it.title}
+                                            className="
+                                                w-[clamp(76px,11.4731vw,88px)] md:w-[clamp(88px,9.3841636vw,96px)] lg:w-24 
+                                                h-[clamp(76px,11.4731vw,88px)] md:h-[clamp(88px,9.3841636vw,96px)] lg:h-24
+                                                object-cover rounded-lg border bg-white cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)
+                                            }}
+                                        />
 
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="min-w-0">
-                                                <p className="font-semibold text-gray-800 truncate">{it.title}</p>
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    {categoryMap[it.category]} ({it.finishType === 'matte' ? '무광' : '유광'})
-                                                </p>
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    {it.size ? `사이즈: ${convertInchToCm(it.size)}` : ""}
-                                                </p>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-2">
+                                                {/* 여기 */}
+                                                <div className="w-full">
+                                                    <div className="w-full flex items-start justify-between">
+                                                        <div>
+                                                            <p className="
+                                                                text-[clamp(14px,1.9544vw,15px)] md:text-[clamp(15px,1.564vw,16px)] lg:text-[16px]
+                                                                font-semibold text-gray-800 truncate">
+                                                                {it.title}
+                                                            </p>
+                                                            <p className="
+                                                                text-[clamp(12px,1.694vw,13px)] md:text-[clamp(13px,1.368vw,14px)] lg:text-[14px]
+                                                                text-gray-500">
+                                                                {categoryMap[it.category]} ({it.finishType === 'matte' ? '무광' : '유광'})
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            className="shrink-0 px-2 py-1 text-[12.5px] border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                deleteOne(it);
+                                                            }}
+                                                            >
+                                                            삭제
+                                                        </button>
+                                                    </div>
+                                                    <p className="
+                                                        text-[clamp(12px,1.694vw,13px)] md:text-[clamp(13px,1.368vw,14px)] lg:text-[14px]
+                                                        text-gray-500">
+                                                        {it.size ? `사이즈: ${convertInchToCm(it.size)}` : ""}
+                                                    </p>
+                                                </div>
                                             </div>
 
-                                            <button
-                                                className="px-2 py-1 text-xs border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    deleteOne(it);
-                                                }}
-                                            >
-                                                삭제
-                                            </button>
-                                        </div>
+                                            <div className="flex items-center justify-between">
+                                                {/* 여기 */}
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        className="
+                                                            w-[clamp(28px,4.172vw,32px)] md:w-8 
+                                                            h-[clamp(28px,4.172vw,32px)] md:h-8 
+                                                            border rounded-lg bg-white hover:bg-gray-100"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            updateQty(it, (Number(it.quantity) || 1) - 1);  
+                                                        }}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="
+                                                        text-[13px] md:text-[14px]
+                                                        w-fit px-[2px] min-w-6 text-center font-semibold ">
+                                                        {Number(it.quantity) || 1}
+                                                    </span>
+                                                    <button
+                                                        className="
+                                                            w-[clamp(28px,4.172vw,32px)] md:w-8 
+                                                            h-[clamp(28px,4.172vw,32px)] md:h-8 
+                                                            border rounded-lg bg-white hover:bg-gray-100"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            updateQty(it, (Number(it.quantity) || 1) + 1);
+                                                        }}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
 
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    className="w-8 h-8 border rounded-lg bg-white hover:bg-gray-100"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        updateQty(it, (Number(it.quantity) || 1) - 1);  
-                                                    }}
-                                                >
-                                                    -
-                                                </button>
-                                                <span className="w-10 text-center font-semibold">
-                                                    {Number(it.quantity) || 1}
-                                                </span>
-                                                <button
-                                                    className="w-8 h-8 border rounded-lg bg-white hover:bg-gray-100"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        updateQty(it, (Number(it.quantity) || 1) + 1);
-                                                    }}
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-
-                                            <div className="text-sm text-gray-700 font-semibold">
-                                                {(Number(it.price || 0) * (Number(it.quantity) || 1)).toLocaleString()}원
+                                                <div className="
+                                                    text-[clamp(14px,2.085vw,16px)] md:text-[16px] 
+                                                    text-gray-700 font-semibold">
+                                                    {(Number(it.price || 0) * (Number(it.quantity) || 1)).toLocaleString()}원
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -375,10 +426,15 @@ const Cart = () => {
                         })}
                     </div>
 
-                    <div className="flex items-center justify-end pt-4 border-t">
+                    <div className="flex items-center justify-end mt-2 pt-4 border-t">
                         <div className="text-right">
                             <div className="text-sm text-gray-500">총 결제금액</div>
-                            <div className="text-xl font-bold">{totalPrice.toLocaleString()}원</div>
+                            <div className="
+                                text-[clamp(16px,2.6064vw,20px)] md:text-xl
+                                font-bold"
+                            >
+                                {totalPrice.toLocaleString()}원
+                            </div>
                         </div>
                     </div>
                 </>

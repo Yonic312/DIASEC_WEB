@@ -69,7 +69,7 @@ const Login = () => {
             setMember(profile.data);
             navigate('/');
         } catch (error) {
-            toast.error('로그인 실패');
+            toast.error('아이디 또는 비밀번호를 다시 확인해 주세요');
             console.error(error);
         } finally {
             setLoading(false);
@@ -100,7 +100,7 @@ const Login = () => {
             }
 
             if (type === "OAUTH_FAIL") {
-                toast.error("소셜 로그인 실패");
+                toast.error("소셜 로그인에 실패했습니다. 다시 시도해주세요.");
                 console.error("OAUTH_FAIL:", message);
                 return;
             }

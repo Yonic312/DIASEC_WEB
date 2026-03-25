@@ -9,11 +9,12 @@ import P3 from '../../assets/whatDiasec/3.jpg'
 import P4 from '../../assets/whatDiasec/4.png'
 import P5 from '../../assets/whatDiasec/5.png'
 import P6 from '../../assets/whatDiasec/6.png'
-import P7 from '../../assets/whatDiasec/7.png'
+import P7 from '../../assets/whatDiasec/7.jpg'
 import P8 from '../../assets/whatDiasec/8.png'
 import P9 from '../../assets/whatDiasec/9.jpg'
 import P10 from '../../assets/whatDiasec/10.jpg'
 import P11 from '../../assets/whatDiasec/11.png'
+import P12 from '../../assets/whatDiasec/12.jpg'
 
 import i1 from '../../assets/whatDiasec/i1.jpg'
 import i2 from '../../assets/whatDiasec/i2.jpg'
@@ -53,10 +54,40 @@ const Main_Introduce = () => {
                     />
                 </div>
 
+                {/* 디아섹이란? */}
+                <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-full gap-4 mb-10">
+                        <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
+                        <span className="lg:text-[36px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
+                            디아섹이란?
+                        </span>
+                        <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
+                    </div>
+                    <div className="w-full max-w-[840px] flex flex-col justify-center md:flex-row md:items-stretch gap-8 md:gap-10">
+                        <div className="w-full md:w-[30%] shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm ring-1 ring-black/5">
+                            <img 
+                                className="w-full h-auto object-cover" 
+                                src={P12} 
+                                alt="디아섹 액자 인테리어 예시"
+                            />
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 text-left">
+                            <h3 className="font-bold text-[24px] text-gray-900">
+                                이미지를 더 선명하게, 오래도록 남기는 액자 방식
+                            </h3>
+                            <span className="text-[19px] leading-relaxed text-gray-600">
+                                디아섹(Diasec)은 이미지를 투명 아크릴에 밀착해 제작하는 액자입니다.
+                                일반 액자와 달리 전면과 이미지 사이에 공간이 없어 하나의 이미지처럼 <br />선명하게 표현되며,
+                                깊이감 있는 시각적 효과를 제공합니다.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex flex-col items-center">
                     <div className="flex items-center justify-center w-full gap-4 mb-5">
                         <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
-                        <span className="lg:text-[36px] text-[clamp(13px,3.519vw,36px)] font-bold text-[#D0AC88]">
+                        <span className="lg:text-[36px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
                             디아섹 액자 구조
                         </span>
                         <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
@@ -64,91 +95,22 @@ const Main_Introduce = () => {
                     <img src={P9} />
                 </div>
 
-                <div className="flex flex-col items-center">
+                {/* <div className="flex flex-col items-center">
                     <div className="flex items-center justify-center w-full gap-4 mb-5">
                         <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
-                        <span className="lg:text-[36px] text-[clamp(13px,3.519vw,36px)] font-bold text-[#D0AC88]">
+                        <span className="lg:text-[36px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
                             디아섹의 추가 설명
                         </span>
                         <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
                     </div>
                     <img src={P10} />
-                </div>
-
-                <div className="flex flex-col items-center">
-                    <div className="flex items-center justify-center w-full gap-4 mb-10">
-                        <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
-                        <span className="lg:text-[36px] text-[clamp(13px,3.519vw,36px)] font-bold text-[#D0AC88]">
-                            디아섹의 부분들
-                        </span>
-                        <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
-                    </div>
-
-                    {/* <img src={P11}  className="lg:w-[55%]"/> */}
-
-                    <div className="w-full max-w-[1200px] mx-auto">
-                        <div className="w-[80%] mx-auto grid md:grid-cols-3 grid-cols-1 gap-8">
-                            {[
-                                {
-                                    title: "약 4H 수준의 표면 강도",
-                                    desc: `스크래치에 강한 UV 코팅으로 깨끗하게 오래 유지됩니다`,
-                                    img: i1
-                                },
-                                {
-                                    title: "안전을 고려한 모서리 마감",
-                                    desc: "부드러운 라운딩 처리로 안심하고 사용할 수 있습니다",
-                                    img: i2
-                                },
-                                {
-                                    title: "헤어라인 프레임 마감",
-                                    desc: "깔끔하고 세련된 후면 구조로 완성도를 높였습니다",
-                                    img: i3
-                                },
-                                {
-                                    title: "간편한 거치 시스템",
-                                    desc: "표시 스티커 부착으로 쉽고 정확하게 설치할 수 있습니다",
-                                    img: i4
-                                },
-                                {
-                                    title: "10년 품질 보증 제공",
-                                    desc: "후면 보증서 부착으로 안심하고 오래 사용 가능합니다",
-                                    img: i5
-                                },
-                                {
-                                    title: "보호 스티커 부착 안내",
-                                    desc: "사용 전 스티커 제거 후 최상의 상태로 감상하세요",
-                                    img: i6
-                                }
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="flex flex-col bg-white rounded-2xl shadow-md hover:shadow-lg transition overflow-hidden"
-                                >
-                                    <div className="bg-gray-100 flex items-center justify-center text-gray-400">
-                                        <img src={item.img} className="w-full h-full object-cover" />
-                                    </div>
-                                    
-                                    <div className="p-3 text-center">
-                                        <h3 className="font-semibold text-[19px] mb-[2px]">
-                                            {item.title}
-                                        </h3>
-                                        <p 
-                                            style={{ whiteSpace: 'pre-line' }}
-                                            className="text-[15.5px] text-gray-600">
-                                            {item.desc}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                </div> */}
 
                 <div>
                     <div className="flex flex-col items-center">
                         <div className="flex items-center justify-center w-full gap-4 mb-10">
                             <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
-                            <span className="lg:text-[36px] text-[clamp(13px,3.519vw,36px)] font-bold text-[#D0AC88]">
+                            <span className="lg:text-[36px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
                                 디아섹 액자 특징
                             </span>
                             <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
@@ -201,13 +163,13 @@ const Main_Introduce = () => {
                             </div>
                         </section>
 
-                        {/* 디아섹 액자 특징 1 */}
+                        {/* 디아섹 액자 특징 3 */}
                         <section className="lg:w-1/3 w-full flex flex-col items-start gap-4">
                             <div className="w-full object-cover">
                                 <img src={P5} className="w-full h-auto object-cover rounded-3xl" />
                             </div>
                             <div className="flex-1 w-full text-black flex flex-col">
-                                <h2 className="flex md:justify-center md:text-[28px] text-[clamp(20px,4.381vw,28px)] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-300">선명</h2>
+                                <h2 className="flex md:justify-center md:text-[28px] text-[clamp(20px,4.381vw,28px)] font-medium text-gray-900 mb-4 pb-2 border-b border-gray-300">선명함</h2>
                                 <div 
                                     className="
                                         md:text-base text-[clamp(11px,2.085vw,16px)] 
@@ -222,9 +184,84 @@ const Main_Introduce = () => {
                     </div>
                 </div>
 
+                <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-full gap-4 mb-10">
+                        <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
+                        <span className="lg:text-[36px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
+                            디아섹코리아의 디테일
+                        </span>
+                        <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
+                    </div>
+
+                    {/* <img src={P11}  className="lg:w-[55%]"/> */}
+
+                    <div className="w-full max-w-[1200px] mx-auto">
+                        <div className="w-[80%] mx-auto grid md:grid-cols-3 grid-cols-1 gap-8">
+                            {[
+                                {
+                                    title: "약 4H 수준의 표면 강도",
+                                    desc: `스크래치에 강한 UV
+                                            코팅으로 깨끗하게 오래 유지됩니다`,
+                                    img: i1
+                                },
+                                {
+                                    title: "안전을 고려한 모서리 마감",
+                                    desc: `부드러운 라운딩 처리로 안심하고 
+                                            사용할 수 있습니다`,
+                                    img: i2
+                                },
+                                {
+                                    title: "헤어라인 프레임 마감",
+                                    desc: `깔끔하고 세련된 후면 구조로 완성도를 
+                                            높였습니다`,
+                                    img: i3
+                                },
+                                {
+                                    title: "간편한 거치 시스템",
+                                    desc: `표시 스티커 부착으로 쉽고 정확하게 
+                                            설치할 수 있습니다`,
+                                    img: i4
+                                },
+                                {
+                                    title: "디아섹코리아의 자신감",
+                                    desc: `후면에 부착된 10년 품질 보증서로 
+                                            약속드립니다`,
+                                    img: i5
+                                },
+                                {
+                                    title: "사용전 안내문구",
+                                    desc: `최상의 상태로 감상 하기위한 내용이 
+                                            전면에 부착되어 있습니다`,
+                                    img: i6
+                                }
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="flex flex-col bg-white rounded-2xl shadow-md hover:shadow-lg transition overflow-hidden"
+                                >
+                                    <div className="bg-gray-100 flex items-center justify-center text-gray-400">
+                                        <img src={item.img} className="w-full h-full object-cover" />
+                                    </div>
+                                    
+                                    <div className="p-3 text-center">
+                                        <h3 className="font-semibold text-[19px] mb-[2px]">
+                                            {item.title}
+                                        </h3>
+                                        <p 
+                                            style={{ whiteSpace: 'pre-line' }}
+                                            className="text-[15.5px] text-gray-600">
+                                            {item.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex items-center justify-center w-full gap-4">
                     <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
-                    <span className=" lg:text-[60px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
+                    <span className="lg:text-[36px] text-[clamp(24px,5.865vw,60px)] font-bold text-[#D0AC88]">
                         DIASEC HISTORY
                     </span>
                     <div className="flex-1 border-t-2 border-[#D0AC88]"></div>
@@ -244,18 +281,18 @@ const Main_Introduce = () => {
                         <h2 className="md:text-[28px] text-[clamp(20px,4.381vw,28px)] font-medium text-gray-900 mb-4 border-b pb-2 border-gray-300">Heinz Sovila와 Brulhart</h2>
                         <div 
                             className="
-                                md:text-base text-[clamp(11px,2.085vw,16px)]
+                                md:text-[18px] text-[clamp(11px,2.085vw,16px)]
                                 leading-7 text-700 space-y-2 pr-5">
-                            <p className="leading-relaxed break-keep">
-                                디아섹(DIASEC)은 스위스의 Heinz Sovilla와 그의 아내 Brulhart 부부가 개발한
-                                사진 보존 기술입니다.
-                                이들은 시간이 지남에 따라 행복하고 소중한 가족사진이 변색되고 변형되는 것에
-                                안타까움을 느끼며, 이를 방지할 방법을 찾기 시작했습니다.
-                                개발은 1969년부터 시작되었으며, 완성까지 약 10년간의 연구와 실험이 이어졌습니다.
-                                마침내, 사진 위에 아크릴을 진공 상태에서 직접 부착하는 방식으로 사진의 변질을 막고
-                                오랜 시간 보존할 수 있는 새로운 형태의 액자가 탄생했습니다.
-                                이 기술은 ‘디아섹(DIASEC)’이라는 이름으로 특허 등록되었으며, 새로운 액자의
-                                트렌드로 전환점을 마련했습니다.
+                            <p className="leading-relaxed">
+                                디아섹(DIASEC)은 스위스의 Heinz Sovilla와 그의 아내 Brulhart 부부가 개발한 사진 보존 기술입니다.
+                                이들은 시간이 지남에 따라 행복하고 소중한 가족사진이 변색되고 변형되는 것에 안타까움을 느끼며,
+                                이를 방지할 방법을 찾기 시작했습니다.
+                                개발은 1969년부터 시작되었으며,
+                                완성까지 약 10년간의 연구와 실험이 이어졌습니다.
+                                마침내, 사진 위에 아크릴을 진공 상태에서 직접 부착하는 방식으로
+                                사진의 변질을 막고 오랜 시간 보존할 수 있는 새로운 형태의 액자가 탄생했습니다.
+                                이 기술은 ‘디아섹(DIASEC)’이라는 이름으로 특허 등록되었으며,
+                                새로운 액자의 트렌드로 전환점을 마련했습니다.
                             </p>
                         </div>
                     </div>

@@ -73,7 +73,10 @@ const ReviewList = ({ pid }) => {
                 md:p-6 p-[clamp(0.5rem,3.129vw,1.5rem)]
                 ">
                 <div className="flex items-center justify-between">
-                    <div className="text-black font-medium text-2xl">
+                    <div className="
+                        md:text-2xl text-[clamp(20px,3.128vw,24px)]
+                        text-black font-medium"
+                    >
                         후기 <span className="font-semibold text-gray-500">{totalReviews}</span>
                     </div>
                     <button onClick={handleWriteReview}

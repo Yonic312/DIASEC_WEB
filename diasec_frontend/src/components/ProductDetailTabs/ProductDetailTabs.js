@@ -105,39 +105,41 @@ const refs = {
                     ))}
                 </div>
             </div>
+            
+            <div className="px-3">
+                {/* 섹션들 한 페이지에 이어서 렌더 */}
+                <section
+                    ref={refs['상세정보']}
+                    data-key="상세정보"
+                    className="scroll-mt-[72px] pt-[100px]"
+                >
+                    <ProductDetail pid={product.pid} />
+                </section>
 
-            {/* 섹션들 한 페이지에 이어서 렌더 */}
-            <section
-                ref={refs['상세정보']}
-                data-key="상세정보"
-                className="scroll-mt-[72px] pt-[100px]"
-            >
-                <ProductDetail pid={product.pid} />
-            </section>
+                <section
+                    ref={refs['후기']}
+                    data-key="후기"
+                    className="scroll-mt-[72px] pt-[100px]"
+                >
+                    <ReviewList pid={product.pid} />
+                </section>
 
-            <section
-                ref={refs['후기']}
-                data-key="후기"
-                className="scroll-mt-[72px] pt-[100px]"
-            >
-                <ReviewList pid={product.pid} />
-            </section>
+                <section
+                    ref={refs['문의']}
+                    data-key="문의"
+                    className="scroll-mt-[72px] pt-[100px]"
+                >
+                    <InquiryList pid={product.pid} />
+                </section>
 
-            <section
-                ref={refs['문의']}
-                data-key="문의"
-                className="scroll-mt-[72px] pt-[100px]"
-            >
-                <InquiryList pid={product.pid} />
-            </section>
-
-            <section
-                ref={refs['배송/환불']}
-                data-key="배송/환불"
-                className="scroll-mt-[72px] pt-[100px]"
-            >
-                <DeliveryReturn />
-            </section>
+                <section
+                    ref={refs['배송/환불']}
+                    data-key="배송/환불"
+                    className="scroll-mt-[72px] pt-[100px]"
+                >
+                    <DeliveryReturn />
+                </section>
+            </div>
         </div>
     )
 }

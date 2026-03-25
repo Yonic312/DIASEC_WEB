@@ -1,22 +1,27 @@
-import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { MemberContext } from '../../../context/MemberContext';
 import lock from '../../../assets/lock.png';
 import { toast } from 'react-toastify';
+import InquiryForm from './InquiryForm';
 
 
 const InquiryList = ({ pid }) => {
     const API = process.env.REACT_APP_API_BASE;
-    const navigate = useNavigate();
     const { member } = useContext(MemberContext);
     const [inquiries, setInquiries] = useState([]);
     const [openIdx, setOpenIdx] = useState(null);
+    const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
+
+    const refreshInquiries = useCallback(() => {
+        fetch(`${API}/inquiry/list?pid=${pid}`)
+            .then((res) => res.json())
+            .then((data) => setInquiries(data))
+            .catch((err) => console.error('문의 목록 불러오기 실패', err));
+    }, [API, pid]);
 
     useEffect(() => {
-        fetch(`${API}/inquiry/list?pid=${pid}`)
-            .then(res => res.json())
-            .then(data => setInquiries(data))
-    }, [pid]);
+        refreshInquiries();
+    }, [refreshInquiries]);
 
     const maskedId = (id) => {
         if (id.length <= 2) return id[0] + '*';
@@ -121,7 +126,7 @@ const InquiryList = ({ pid }) => {
                             toast.warn('로그인 후 이용해주세요.');
                             return;
                         }
-                        navigate(`/inquiryForm?pid=${pid}`)
+                        setInquiryModalOpen(true);
                     }}
                     className="px-4 py-2 border text-sm text-gray-700 hover:bg-gray-100 mr-1">문의하기</button>
             </div>
@@ -133,7 +138,7 @@ const InquiryList = ({ pid }) => {
                 <div>답변상태</div>
             </div>
 
-            {inquiries.map((inq, idx) => {
+            {currentInquiries.map((inq, idx) => {
                 const isPrivate = inq.isPrivate == 1;
                 const isOpen = openIdx === idx;
 
@@ -356,6 +361,27 @@ const InquiryList = ({ pid }) => {
                     )
                 })()}
             </div>
+
+            {inquiryModalOpen && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="inquiry-modal-title"
+                    onClick={() => setInquiryModalOpen(false)}
+                >
+                    <div
+                        className="bg-white rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-y-auto relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <InquiryForm
+                            pid={pid}
+                            onClose={() => setInquiryModalOpen(false)}
+                            onSuccess={refreshInquiries}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

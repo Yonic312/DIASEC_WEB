@@ -239,7 +239,7 @@ const OrderList = () => {
                 xl:flex-row flex-col
                 ">
                 <div className="
-                    md:text-base text-[clamp(11px,2.085vw,16px)]
+                    text-[clamp(11px,2.085vw,16px)] md:text-base
                     flex sm:flex-row flex-col">
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} 
                         className="

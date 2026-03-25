@@ -698,24 +698,30 @@ const Main = () => {
                 </button>
             </div>
             
-            {/* 모달창 */}
+            {/* 리뷰 선택 모달창 */}
             {selectedReview && (
                 <div 
-                    className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50"
+                    className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
                     onClick={() => {
                         setSelectedReview(null);
                         setSelectedImageIndex(0);
                     }}
                 >
                     <div 
-                        className="bg-white w-[34%] sm:p-8 p-2 rounded shadow-lg relative"
+                        className="
+                            w-[88vw]
+                            md:w-[min(80vw,700px)]
+                            lg:w-[min(80vw,770px)]
+                            max-h-[90vh] overflow-y-auto
+                            sm:p-8 p-6 
+                            bg-white rounded shadow-lg relative"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             className="
                                 absolute 
-                                text-[clamp(12px,2.5vw,18px)]
-                                top-2 right-3 text-gray-500 hover:text-black"
+                                text-[clamp(15px,2.3467vw,18px)] md:text-[clamp(18px,2.052vw,21px)] lg:text-[21px]
+                                md:top-2 top-1 md:right-3 right-2 text-gray-500 hover:text-black"
                             onClick={() => {
                                 setSelectedReview(null);
                                 setSelectedImageIndex(0);
@@ -723,7 +729,7 @@ const Main = () => {
                         >
                             ✕
                         </button>
-                        <div className="w-full aspect-[508/384] flex items-center justify-center bg-black bg-opacity-5 roudned">
+                        <div className="w-full aspect-[508/384] flex items-center justify-center border-[1px] roudned">
                             <img 
                                 src={selectedReview.images?.[selectedImageIndex]}
                                 alt={`상세 이미지 ${selectedImageIndex}`}
@@ -742,8 +748,8 @@ const Main = () => {
                                     src={img}
                                     alt={`썸네일 ${idx}`}
                                     className={`
-                                        w-[clamp(24px,4.923vw,64px)]
-                                        h-[clamp(24px,4.923vw,64px)]
+                                        w-[clamp(48px,8.8652vw,68px)] md:w-[clamp(68px,7.42912vw,76px)] lg:w-[76px]
+                                        h-[clamp(48px,8.8652vw,68px)] md:h-[clamp(68px,7.42912vw,76px)] lg:h-[76px]
                                         object-cover border round cursor-pointer ${
                                         idx === selectedImageIndex ? 'sm:ring-2 ring-1 ring-black' : ''
                                     }`}
@@ -754,10 +760,10 @@ const Main = () => {
 
                         <h2 
                             className="
-                                text-[clamp(10px,2.5vw,20px)]
+                                text-[clamp(15.5px,2vw)] md:text-[clamp(18px,2.15vw,22px)] lg:text-[22px]
                                 font-bold sm:mt-2 mt-1">{selectedReview.title}</h2>
                         {/* 16 */}
-                        <div className="text-[clamp(7.5px,1.23vw,16px)]">
+                        <div className="text-[12.5px] md:text-[17px] lg:text-[19.5px]">
                             <p>
                                 {'★'.repeat(selectedReview.rating)}{'☆'.repeat(5 - selectedReview.rating)}
                             </p>
@@ -777,7 +783,7 @@ const Main = () => {
             {/* 회사 소개 및 디아섹이란 배너 (사진 배경형) */}
             <div
                 ref={aboutSectionRef}
-                className={`w-full aspect-[650/200] md:aspect-[1300/280] bg-cover bg-center relative flex items-center justify-center transition-all duration-700 ease-out ${
+                className={`w-full aspect-[600/200] md:aspect-[1300/280] bg-cover bg-center relative flex items-center justify-center transition-all duration-700 ease-out ${
                     visibleSections.about
                         ? 'opacity-100 translate-y-0'
                         : 'opacity-0 translate-y-10'
@@ -788,25 +794,25 @@ const Main = () => {
             >
                 <div className="absolute inset-0 bg-black bg-opacity-40" /> {/* 어두운 오버레이 */}
                 
-                <div className="flex flex-col items-center justify-center w-full z-10 text-center text-white md:gap-2 gap-[2px]">
+                <div className="flex flex-col items-center justify-center w-full z-10 text-center text-white md:gap-3 gap-[5px]">
                     <div>
                         <h2 className="
-                            md:text-3xl text-[clamp(16px,3.5vw,30px)]
+                            text-[clamp(18px,3.5vw,30px)] md:text-3xl 
                             font-bold tracking-tight">
                             디아섹에 대해 더 알고 싶으신가요?
                         </h2>
-                        <p className="text-white/80 text-sm md:text-base">
+                        <p className="text-white/80 text-[12.5px] md:text-[17px]">
                             디아섹의 제작 방식과 브랜드 스토리를 확인해보세요
                         </p>
                     </div>
 
-                    <div className="flex justify-center gap-3 mt-2">
+                    <div className="flex justify-center gap-3">
 
                         {/* 회사소개 */}
                         <button
                             // onClick={() => navigate('/about')}
                             className="
-                                md:text-base text-[clamp(13px,2.085vw,16px)]
+                                text-[clamp(12px,2.085vw,16px)] md:text-base
                                 lg:px-6 md:px-4 px-2
                                 lg:py-2 py-[2px]
                                 rounded-full
@@ -825,6 +831,7 @@ const Main = () => {
                         <button
                             onClick={() => navigate('/introduce')}
                             className="
+                            text-[clamp(12px,2.085vw,16px)] md:text-base
                                 lg:px-6 md:px-4 px-2
                                 lg:py-2 py-[2px]
                                 rounded-full

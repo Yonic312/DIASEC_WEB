@@ -536,65 +536,17 @@ const Main_Items = () => {
 
     return (
         <div>
-            {/* 상단 이미지 + 문구 (명화 제외) */}
-            {/* {pic !== "" &&(
-                (() => {
-                    const HERO_TEXT_MAP = {
-                        fengShui: [
-                            "벽에 걸린 그림이 단순한 장식이 아닌,",
-                            "집안 가득 행운과 풍요를 불러오는 힘이 되어줍니다",
-                        ],
-                        photoIllustration: [
-                            "사진은 기억을, 일러스트는 감성을",
-                            "담아내어 당신의 일상에 스며듭니다",
-                        ],
-                        authorCollection: [
-                            "작가의 손끝에서 태어난 영감이",
-                            "시간과 공간을 넘어 당신에게 닿습니다"
-                        ],
-                    };
-
-                    const heroLines = HERO_TEXT_MAP[type];
-
-                    return(
-                        <div className='w-full aspect-[1300/400] relative'>
-                            {heroLines && (
-                                <div 
-                                    className='
-                                        absolute top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center font-semibold 
-                                        lg:text-4xl md:text-[clamp(24px,3.519vw,36px)] text-[clamp(14px,3.128vw,24px)]'
-                                    style={{ textShadow: '3px 3px 8px rgba(0,0,0,0.8)' }}
-                                >    
-                                    <p className="lg:mb-[8px] md:mb-[clamp(2px,0.782vw,8px)] ">
-                                        디아섹 컬렉션
-                                    </p>
-                                    <div className="
-                                        space-y-0 leading-tight
-                                        lg:text-[22px] md:text-[clamp(16px,2.15vw,22px)] text-[clamp(9px,2.151vw,16.5px)]">
-                                        {heroLines.map((line, idx) => (
-                                            <p key={idx}>{line}</p>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            <img src={pic} alt="" />
-                        </div>
-                    );
-                })()
-            )} */}
-
-            {/* 페이지 제목 */}
+            {/* [공통] 페이지 제목 */}
             <div className="flex justify-center mt-[40px] text-[#cfab88]">
-                <span className="md:text-3xl text-xl font-bold">{selectedLabel ?  selectedLabel : title}</span>
+                <span className="md:text-3xl text-[clamp(24px,3.911vw,30px)] font-bold">{selectedLabel ?  selectedLabel : title}</span>
             </div>
 
-            {/* 메인 홈 (명화) */}
+            {/* [공통] 상단 미니 셀렉터 */}
             {!author && (
                 <>  
-                    {/* 상단 미니  (명화) */}
-                        <div className="mb:mt-[60px] md:mr-[4px]">
-                            <div className='flex items-end justify-between mb-2 pb-1 border-b-[1px]'>
-                                <div className="ml-1">
+                        <div className="mb:mt-[60px] md:mr-[4px] mt-3">
+                            <div className='flex items-end justify-between'>
+                                <div className="ml-1 text-[15px]">
                                     <span
                                         className={`cursor-pointer ${sortMode === 'popular' ? 'font-bold text-black' : 'text-gray-500'}`}
                                         onClick={() => setSortMode('popular')}
@@ -609,7 +561,7 @@ const Main_Items = () => {
                                     </span>
                                 </div>
                                 {type !== "fengShui" && type !== "photoIllustration" && (
-                                    <div className='mr-1 relative md:w-[240px]'>
+                                    <div className='mr-1 relative md:w-[240px] w-[clamp(170px,31.29vw,240px)]'>
                                         <input 
                                             type="text"
                                             placeholder="작가 이름을 검색하세요"
@@ -618,7 +570,7 @@ const Main_Items = () => {
                                             className='
                                                 w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
                                                 focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
-                                                md:text-sm text-[clamp(11px,1.8252vw,14px)]'
+                                                md:text-sm text-[clamp(12px,1.955vw,15px)]'
                                         />
                                         <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z"></path>
@@ -626,12 +578,12 @@ const Main_Items = () => {
                                     </div>
                                 )}
                             </div>
-                            {/* 시대 */}
+                            {/* [명화] 시대 */}
                             {type === "masterPiece" && (
                                 <div 
                                     className='
                                         sm:text-base text-[clamp(14px,2.503vw,16px)]
-                                        flex overflow-x-auto no-scrollbar whitespace-nowrap md:gap-5 gap-3 text-gray-600 ml-1 mb-1'>
+                                        flex overflow-x-auto no-scrollbar whitespace-nowrap md:gap-5 gap-3 text-gray-600 mt-1 ml-1 mb-1'>
                                     {[
                                         "전체", "르네상스", "베네치아파", "바로크", "로코코", "신고전주의", "낭만주의", "사실주의", "인상주의", "신인상주의", "후기인상주의", "근대미술"
                                     ].map((period, idx) => (
@@ -653,6 +605,7 @@ const Main_Items = () => {
                                 </div>
                             )}
 
+                            {/* [동양화] 시대 */}
                             {type === "koreanPainting" && (
                                 <div 
                                     className='
@@ -695,7 +648,7 @@ const Main_Items = () => {
                             className='
                                 lg:grid-cols-6 md:grid-cols-4 grid-cols-2
                                 text-[13px]
-                                mt-2 font-normal w-full grid border-t border-l border-black border-opacity-10
+                                font-normal w-full grid border-t border-l border-black border-opacity-10
                                 max-h-[121px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300'
                         >
                             {miniSortedLabels.map((item, index) => (
@@ -712,55 +665,66 @@ const Main_Items = () => {
                         </div>
                     )}
                 </>
-            )} {/* ------------- △ 상단 미니 셀렉터 ------------- */}
+            )} {/* [공통] 상단 미니 셀렉터 */}
 
+            {/* [공통 (상품)] 상단 상품 갯수 카운트*/}
             {!["masterPiece", "koreanPainting"].includes(type) && !author && (
-                <div className='flex md:justify-end justify-center mt-3'>
-                    <div className='relative md:w-[240px] md:mr-[4px]'>
-                        <input 
-                            type="text"
-                            placeholder="상품명을 검색하세요"
-                            value={titleSearch}
-                            onChange={(e) => setTitleSearch(e.target.value)}
-                            className='
-                                w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
-                                focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]'
-                        />
-                        <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
-                            fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" 
-                                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z">
-                            </path>
-                        </svg>
+                <div className="flex items-end justify-between mt-2 px-3"> 
+                    <div 
+                        className="
+                            text-[15px] text-[#CDC9C3]
+                        "
+                    > 
+                        상품 <span className="text-[#555555]">{totalCount}</span>개
+                    </div>
+                    
+                    <div className='flex md:justify-end justify-center'>
+                        <div className='relative md:w-[240px] w-[clamp(170px,31.29vw,240px)] md:mr-[4px]'>
+                            <input 
+                                type="text"
+                                placeholder="상품명을 검색하세요"
+                                value={titleSearch}
+                                onChange={(e) => setTitleSearch(e.target.value)}
+                                className='
+                                    w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
+                                    focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
+                                    md:text-sm text-[clamp(12px,1.955vw,15px)]'
+                            />
+                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
+                                fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" 
+                                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z">
+                                </path>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             )}
             
-            {/* 명화 메인홈 작가 목록 (여기수정)*/}
+            {/* [명화, 동양화] 메인 작가 목록*/}
             {(type === 'masterPiece' || type === 'koreanPainting') && !author && (
-                <div className="max-w-[1300px] mx-auto px-2 mt-6 grid xl:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-[20px]">
+                <div className="max-w-[1300px] mx-auto px-2 md:mt-5 mt-3 grid xl:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-[20px]">
                     {authorCards.map(item => (
                         <div
                             key={item.label}
                             onClick={() => navigate(item.link)}
                             className="flex flex-col items-center border border-gray-300 rounded-xl cursor-pointer overflow-hidden hover:opacity-80 hover:shadow-lg"
                         >
-                        <img 
-                            src={item.img}
-                            alt={item.label}
-                            className="w-full aspect-[220/220] object-cover border-b border-gray-200"
-                        />
-                        <div className="py-2 text-center font-bold text-[15px] text-[#b29476]">
-                            {item.label}
-                            <span className='text-gray-40 font-normal'>({item.count})</span>
-                        </div>
-                        
+                            <img 
+                                src={item.img}
+                                alt={item.label}
+                                className="w-full aspect-[220/220] object-cover border-b border-gray-200"
+                            />
+                            <div className="py-2 text-center font-bold text-[15px] text-[#b29476]">
+                                {item.label}
+                                <span className='text-gray-40 font-normal'>({item.count})</span>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
 
+            {/* [명화, 동양화] 메인 작가 목록 무한스크롤*/}
             {(type === 'masterPiece' || type === 'koreanPainting') && !author && (
                 <>
                     <div ref={labelLoadMoreRef} className="h-10" />
@@ -768,10 +732,10 @@ const Main_Items = () => {
                 </>
             )}
 
-            {/* 메인 클릭 리스트 */}
+            {/* [명화, 동양화] 상품 갯수, 검색창 */}
             {author && (
-                <>  
-                    <div className="flex gap-2">
+                <div className="px-3">  
+                    <div className="flex gap-2 mt-2 text-[15px]">
                         <span className="font-bold">인기순</span>
                         <button
                             onClick={() => {
@@ -783,15 +747,17 @@ const Main_Items = () => {
                         </button>
                     </div>
                     
-                    <div className="flex justify-between mt-1"> 
+                    <div className="flex justify-between items-end mt-1"> 
                         <div 
                             className="
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                text-[#CDC9C3]"> 상품 <span className="text-[#555555]">{totalCount}</span>개
+                                text-[15px] text-[#888]
+                            "
+                        > 
+                            상품 <span className="text-[#555555]">{totalCount}</span>개
                         </div>
                         
                         <div className='flex md:justify-end justify-center'>
-                            <div className='relative md:w-[240px] md:mr-[4px]'>
+                            <div className='relative md:w-[240px] w-[clamp(170px,31.29vw,240px)] md:mr-[4px]'>
                                 <input 
                                     type="text"
                                     placeholder="상품명을 검색하세요"
@@ -800,7 +766,7 @@ const Main_Items = () => {
                                     className='
                                         w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
                                         focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
-                                        md:text-sm text-[clamp(11px,1.8252vw,14px)]'
+                                        md:text-sm text-[clamp(12px,1.955vw,15px)]'
                                 />
                                 <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
                                     fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -811,13 +777,13 @@ const Main_Items = () => {
                             </div>
                         </div>
                     </div>
-                </>
+                </div>
             )}
 
-            {/* NO 명화홈 클릭 리스트 */}
+            {/* [사진/일러스트, 풍수그림] 메인 목록*/}
             {((type=='masterPiece' && author) || type!='masterPiece') && (
                 <>
-                    <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] mt-5 px-4">
+                    <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-y-10 md:gap-x-[0.1%] gap-x-[5%] md:mt-5 mt-3 md:px-4 px-3">
                         {displayProducts.map((product) => {
                             const isHoverd = hoveredPid === product.pid;
 
@@ -886,6 +852,7 @@ const Main_Items = () => {
                     )}
                 </>
             )}
+            {/* [사진/일러스트, 풍수그림] 메인 목록*/}
         </div>
     );
 };

@@ -90,6 +90,14 @@ import Footer from './components/Footer/Footer'
 import Insert_Product from './components/Admin/Insert_Product'
 import axios from 'axios';
 
+function ScrollToTop() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+    return null;
+}
+
 function Layout() {
     const location = useLocation();
     const path = location.pathname;
@@ -204,7 +212,7 @@ function Layout() {
             </div>
 
             <div className={`
-                xl:h-[210px] lg:h-[200px] md:h-[180px] h-[200px]
+                xl:h-[210px] lg:h-[200px] h-[190px]
                 w-full bg-white ${extraPb}`}>
                 <Footer />
             </div>
@@ -223,6 +231,7 @@ function App() {
 
     return (
         <MemberProvider>
+            <ScrollToTop />
             <Routes>
                 <Route element={<Layout />}>
                     <Route path="/" element={<Main />}/>

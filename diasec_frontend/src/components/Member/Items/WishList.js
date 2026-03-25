@@ -242,18 +242,27 @@ const WishList = () => {
     return (
         <div className="w-full flex flex-col">
             <span className="
-                md:text-xl text-[clamp(14px,2.607vw,20px)]
+                text-[clamp(14px,2.607vw,20px)] md:text-xl
                 font-bold pb-6">| 관심상품 조회</span>
 
-            <div className="w-full bg-white sm:px-8 px-2 sm:py-10 py-5 shadow-md border border-gray-200 space-y-4 mb-20">
-                <div className="flex items-center">
-                    <div className="flex gap-2">
+            <div className="
+                sm:px-8 px-2 sm:py-10 py-5 
+                w-full bg-white
+                shadow-md border border-gray-200 space-y-2 mb-20"
+            >
+                <div className="
+                    text-[clamp(14px,2.085vw,16px)] md:text-[16px]
+                    flex items-end justify-between text-gray-500"
+                >   
+                    <span>총 {items.length}개 / 선택 {checkedCount}개</span>
+                    <div className="
+                        text-[clamp(12px,1.824vw,14px)] md:text-[14px]
+                        flex gap-2">
                         <button
                             className="
-                                sm:text-sm text-[10px]
-                                sm:px-3 px-2
-                                sm:py-2 py-1
-                                border border-gray-400 rounded-xl hover:bg-gray-100"
+                                px-2
+                                py-1
+                                border border-gray-400 rounded-lg hover:bg-gray-100"
                             onClick={toggleAll}
                         >
                             {checkedCount === items.length && items.length > 0 ? "전체해제" : "전체선택"}
@@ -274,21 +283,14 @@ const WishList = () => {
 
                         <button
                             className="
-                                sm:text-sm text-[10px]
-                                sm:px-3 px-2
-                                sm:py-2 py-1 
-                                border border-red-300 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition"
+                                px-2
+                                py-1 
+                                border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
                             onClick={deleteSelected}
                         >
                             선택삭제
                         </button>
                     </div>
-                </div>
-
-                <div className="
-                    sm:text-sm  text-[11px]
-                    text-gray-500">
-                    총 {items.length}개 / 선택 {checkedCount}개
                 </div>
 
                 {items.length === 0 ? (
@@ -338,7 +340,7 @@ const WishList = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="h-[430px] overflow-y-scroll space-y-2">
+                    <div className="max-h-[430px] overflow-y-scroll space-y-2">
                     {currentItems.map((it, idx) => {
                         const key = it.wid ?? it.id ?? it.pid;
                         const isChecked = checked.has(key);
@@ -348,12 +350,12 @@ const WishList = () => {
                                 key={key ?? idx}
                                 className="
                                     w-full
-                                    flex items-center
+                                    flex items-stretch
                                     sm:gap-3 gap-2
                                     sm:p-3 p-2
-                                    border rounded-xl bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
-                                onClick={() => navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`)}
-                            >
+                                    border rounded-xl bg-white hover:bg-gray-100 transition cursor-pointer"
+                                onClick={() => toggleOne(key)}
+                            >   
                                 <input
                                     type="checkbox"
                                     checked={isChecked}
@@ -362,39 +364,50 @@ const WishList = () => {
                                         e.stopPropagation();
                                     }}
                                     className="
-                                        sm:w-4 w-3
-                                        sm:h-4 h-3
+                                        self-center
+                                        w-[clamp(14px,2.086vw,16px)] md:w-4 
+                                        h-[clamp(14px,2.086vw,16px)] md:h-4 
                                     "
                                 />
-
                                 <img
                                     src={it.thumbnail}
                                     alt={it.title}
                                     className="
-                                        sm:w-20 w-12
-                                        sm:h-20 h-12
+                                        w-[clamp(60px,11.4731vw,88px)] md:w-[clamp(88px,9.3841636vw,96px)] lg:w-24 
+                                        h-[clamp(60px,11.4731vw,88px)] md:h-[clamp(88px,9.3841636vw,96px)] lg:h-24
                                         object-cover rounded-lg border bg-white cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/none_custom_detail?pid=${it.pid}&category=${it.category}`);
+                                    }}
                                 />
                                 
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                        {/* 제목 */}
-                                        <p className="
-                                            sm:text-base text-[12.5px]
-                                            font-semibold 
-                                            text-gray-800 truncate">{it.title}</p>
-                                        {/* 내용 */}
-                                        <p className="
-                                            sm:text-sm text-[10.5px]
-                                            text-gray-500 mt-1">
-                                            {convertCategoryName(it.category || "")} {it.author ? `· ${it.author}` : ""}
-                                        </p>
+                                <div className="flex-1 min-w-0 h-full">
+                                    <div className="h-full flex items-center justify-between md:gap-2">
+                                        <div className="h-full flex flex-col justify-between min-w-0">
+                                            {/* 제목 */}
+                                            <p className="
+                                                text-[clamp(14px,1.9544vw,15px)] md:text-[clamp(15px,1.564vw,16px)] lg:text-[16px]
+                                                font-semibold 
+                                                text-gray-800 truncate">{it.title}</p>
+                                            {/* 내용 */}
+                                            <div>
+                                                <p className="
+                                                    text-[clamp(12px,1.694vw,13px)] md:text-[clamp(13px,1.368vw,14px)] lg:text-[14px]
+                                                    text-gray-500">
+                                                    {convertCategoryName(it.category || "")}
+                                                </p>
+                                                <p className="
+                                                    text-[clamp(12px,1.694vw,13px)] md:text-[clamp(13px,1.368vw,14px)] lg:text-[14px]
+                                                    mt-[-4px] text-gray-500">
+                                                    {it.author ? ` ${it.author}` : ""}
+                                                </p>
+                                            </div>
                                         </div>
                                         <button
                                             className="
                                                 shrink-0
-                                                sm:text-xs text-[10px]
+                                                text-[12.5px]
                                                 px-2 py-1 border border-red-300 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition"
                                             onClick={(e) => {
                                                 e.stopPropagation();
