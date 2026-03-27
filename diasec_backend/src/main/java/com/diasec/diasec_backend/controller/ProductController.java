@@ -281,7 +281,7 @@ public class ProductController {
     @GetMapping("/count/author")
     public ResponseEntity<Integer> countByCategoryAndAuthor(
         @RequestParam String category,
-        @RequestParam String author
+        @RequestParam(required = false) String author
     ) {
         return ResponseEntity.ok(productService.countProductsByCategoryAndAuthor(category, author));
     }

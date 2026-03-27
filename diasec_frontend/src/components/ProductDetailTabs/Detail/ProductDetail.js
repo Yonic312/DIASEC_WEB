@@ -48,117 +48,119 @@ const ProductDetail = ({ pid }) => {
     return (
         <div className="w-full flex flex-col items-center bg-white">            
             {/* 보정 */}
-            <div className="mb-[200px]">
-                <div className="text-center mb-3">
-                    <h2 className='
-                        md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
-                        font-bold text-gray-800'>보정 서비스 미리보기</h2>
-                </div>
-                <div>
-                    {/* 보정 비교 */}
-                    {/* xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)]  */}
-                    <div className='
-                        max-w-[380px] border
-                        aspect-[1024/1366] mx-auto bg-opacity-60 rounded-lg mt-5
-                        xl:p-6 lg:p-5 md:p-4 p-2
-                    '>
-                        <h3 className='
-                            text-[clamp(16px,1.759vw,18px)] lg:text-[18px]
-                            font-semibold text-center  text-[a67a3e]'>{current.title}</h3>
-                        
-                        <div className='relative w-full flex justify-center items-center'>
-                            <img src={
-                                showAfter ? current.after : current.before}
-                                alt="보정 비교" 
-                                className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[1024/1366] object-contain'
-                            />
-                            <div className='
-                                text-[clamp(14px,1.9544vw,15px)] md:text-[clamp(15px,1.564vw,16px)] lg:text-[16px]
-                                
-                                absolute bottom-2 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
-                                <button
-                                    className={`
-                                        px-4 py-1 rounded-full font-semibold transition ${
-                                        !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
-                                    onClick = {() => setShowAfter(false)}
-                                    onMouseEnter={() => setShowAfter(false)}
-                                >
-                                    원본사진
-                                </button>
-                                <button
-                                    className={`
-                                        px-4 py-1 rounded-full font-semibold transition ${
-                                        showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
-                                    }`}
-                                    onClick = {() => setShowAfter(true)}
-                                    onMouseEnter={() => setShowAfter(true)}
-                                >
-                                    보정사진
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* 페이지 네이션 */}
-                        <div className="mt-6 flex justify-center gap-2">
-                            {BEFORE_AFTER_DATA.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`
-                                        w-[clamp(15px,2.215vw,17px)] md:w-[clamp(17px,1.954vw,20px)] xl:w-5
-                                        h-[clamp(15px,2.215vw,17px)] md:h-[clamp(17px,1.954vw,20px)] xl:h-5
-                                        rounded-full transition ${
-                                        activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
-                                    }`}
-                                    onClick={() => {
-                                        setActiveIndex(idx);
-                                        setShowAfter(false);
-                                    }}
-                                />
-                            ))}
-                        </div>
-                        <span
-                            className="
-                                flex flex-col justify-center items-center
-                                mt-4
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                font-medium tracking-wide
-                                text-gray-600
-                                px-4
-                            "
-                        >
-                            원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
-                        </span>
+            {isCustomFrame && (
+                <div className="mb-[200px]">
+                    <div className="text-center mb-3">
+                        <h2 className='
+                            md:text-[30px] sm:text-[clamp(24px,3.911vw,30px)] text-[18px]
+                            font-bold text-gray-800'>보정 서비스 미리보기</h2>
+                    </div>
+                    <div>
                         {/* 보정 비교 */}
-                    </div>
-                </div>
-
-                <div className='
-                    md:mx-auto mx-4
-                    max-w-3xl bg-white border border-[#D0AC88] rounded-2xl shadow-md 
-                    md:p-6 p-[clamp(10px,3.128vw,24px)]
-                    mt-6 text-[15px] text-gray-700 leading-relaxed
-                    '>
-                    <div className='flex items-center mb-4'>
+                        {/* xl:w-[550px] lg:w-[clamp(380px,33.62vw,430px)] md:w-[clamp(250px,32.257vw,330px)] sm:w-[clamp(230px,32.59vw,250px)]  */}
                         <div className='
-                            w-6 h-6 flex items-center justify-center rounded-full bg-[#D0AC88] text-white text-sm font-bold mr-2'>i</div>
-                        <h3 
-                            className="
-                                md:text-lg text-base
-                                font-bold text-gray-800">보정 서비스 안내</h3>
+                            max-w-[380px] border
+                            aspect-[1024/1366] mx-auto bg-opacity-60 rounded-lg mt-5
+                            xl:p-6 lg:p-5 md:p-4 p-2
+                        '>
+                            <h3 className='
+                                text-[clamp(16px,1.759vw,18px)] lg:text-[18px]
+                                font-semibold text-center  text-[a67a3e]'>{current.title}</h3>
+                            
+                            <div className='relative w-full flex justify-center items-center'>
+                                <img src={
+                                    showAfter ? current.after : current.before}
+                                    alt="보정 비교" 
+                                    className='rounded-xl transition duration-500 shadow-lg max-w-full aspect-[1024/1366] object-contain'
+                                />
+                                <div className='
+                                    text-[clamp(14px,1.9544vw,15px)] md:text-[clamp(15px,1.564vw,16px)] lg:text-[16px]
+                                    
+                                    absolute bottom-2 flex gap-3 px-4 py-2'> {/* transform -translate-x-1/2 너비의 절반만큼 왼쪽으로 간다 */}
+                                    <button
+                                        className={`
+                                            px-4 py-1 rounded-full font-semibold transition ${
+                                            !showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'}`}
+                                        onClick = {() => setShowAfter(false)}
+                                        onMouseEnter={() => setShowAfter(false)}
+                                    >
+                                        원본사진
+                                    </button>
+                                    <button
+                                        className={`
+                                            px-4 py-1 rounded-full font-semibold transition ${
+                                            showAfter ? 'bg-[#cfab88] text-white' : 'bg-gray-200 text-gray-700'
+                                        }`}
+                                        onClick = {() => setShowAfter(true)}
+                                        onMouseEnter={() => setShowAfter(true)}
+                                    >
+                                        보정사진
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* 페이지 네이션 */}
+                            <div className="mt-6 flex justify-center gap-2">
+                                {BEFORE_AFTER_DATA.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        className={`
+                                            w-[clamp(15px,2.215vw,17px)] md:w-[clamp(17px,1.954vw,20px)] xl:w-5
+                                            h-[clamp(15px,2.215vw,17px)] md:h-[clamp(17px,1.954vw,20px)] xl:h-5
+                                            rounded-full transition ${
+                                            activeIndex === idx ? 'bg-[#cfab88]' : 'bg-gray-300'
+                                        }`}
+                                        onClick={() => {
+                                            setActiveIndex(idx);
+                                            setShowAfter(false);
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            <span
+                                className="
+                                    flex flex-col justify-center items-center
+                                    mt-4
+                                    md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                    font-medium tracking-wide
+                                    text-gray-600
+                                    px-4
+                                "
+                            >
+                                원본사진과 보정사진을 <div><span className="text-[#a67a3e] ml-1 font-semibold">클릭</span>해 비교해보세요!</div>
+                            </span>
+                            {/* 보정 비교 */}
+                        </div>
                     </div>
-                    <hr className='mb-4 border-[#f1e2d1]' />
-                    <ul 
-                        className='
-                            text-[clamp(13px,1.955vw,15px)] md:text-[15px]
-                            space-y-3 pl-4 list-disc break-keep
-                    '>
-                        {/* <li>예시 외 <span className='font-semibold text-gray-900'>난이도가 높은 보정 또는 작업 시간이 많이 소요되는 경우</span> 시간당 <span className='text-[#D0AC88] font-semibold'>5만원</span>입니다.</li> */}
-                        <li><span>원고 이미지가 지나치게 흐리거나 해상도가 낮은 경우, 화질 개선에 한계가 있을 수 있는 점 양해 부탁드립니다.</span></li>
-                        <li><span>작업 난이도가 높은 보정 작업은 추가 시간이 소요되며, 별도의 추가 비용이 발생할 수 있습니다.</span></li>
-                        <li><span>보정에 관한 궁금한 사항이 있으시면 문의 바랍니다.</span></li>                    
-                    </ul>
+
+                    <div className='
+                        md:mx-auto mx-4
+                        max-w-3xl bg-white border border-[#D0AC88] rounded-2xl shadow-md 
+                        md:p-6 p-[clamp(10px,3.128vw,24px)]
+                        mt-6 text-[15px] text-gray-700 leading-relaxed
+                        '>
+                        <div className='flex items-center mb-4'>
+                            <div className='
+                                w-6 h-6 flex items-center justify-center rounded-full bg-[#D0AC88] text-white text-sm font-bold mr-2'>i</div>
+                            <h3 
+                                className="
+                                    md:text-lg text-base
+                                    font-bold text-gray-800">보정 서비스 안내</h3>
+                        </div>
+                        <hr className='mb-4 border-[#f1e2d1]' />
+                        <ul 
+                            className='
+                                text-[clamp(13px,1.955vw,15px)] md:text-[15px]
+                                space-y-3 pl-4 list-disc break-keep
+                        '>
+                            {/* <li>예시 외 <span className='font-semibold text-gray-900'>난이도가 높은 보정 또는 작업 시간이 많이 소요되는 경우</span> 시간당 <span className='text-[#D0AC88] font-semibold'>5만원</span>입니다.</li> */}
+                            <li><span>원고 이미지가 지나치게 흐리거나 해상도가 낮은 경우, 화질 개선에 한계가 있을 수 있는 점 양해 부탁드립니다.</span></li>
+                            <li><span>작업 난이도가 높은 보정 작업은 추가 시간이 소요되며, 별도의 추가 비용이 발생할 수 있습니다.</span></li>
+                            <li><span>보정에 관한 궁금한 사항이 있으시면 문의 바랍니다.</span></li>                    
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            )}
             {/* /보정 */}
             
             {images && images.length > 0 ? (

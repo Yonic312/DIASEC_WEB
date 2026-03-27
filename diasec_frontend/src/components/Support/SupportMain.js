@@ -39,22 +39,6 @@ const SupportMain = () => {
         "기타" : "etc"
     };
 
-
-
-    // useEffect(() => {
-    //     const fetchTopFaqs = async () => {
-    //         try {
-    //             const res = await fetch(`${API}/faq/top5`);
-    //             const data = await res.json();
-    //             setTopFaqs(data);
-    //         } catch (err) {
-    //             console.error('FAQ TOP5 불러오기 실패', err);
-    //         }
-    //     };
-        
-    //     fetchTopFaqs();
-    // }, []);
-
     // 공지사항 불러오기
     const [latestNotices, setLatestNotices] = useState([]);
 
@@ -81,11 +65,14 @@ const SupportMain = () => {
     return (
         <div className="max-5xl mx-auto px-4 pt-16 mb-[200px] text-gray-800">
             <SupportHeader />
-            <div className="text-center mt-16">
+            <div className="text-center mt-12">
                 {/* 인삿말 */}
                 <h1 className="
-                    md:text-2xl text-[clamp(15px,3.128vw,24px)]
-                    font-bold mt-10 mb-4">무엇을 도와드릴까요?</h1>
+                    text-[21px]
+                    font-bold mt-10 mb-2"
+                >
+                    무엇을 도와드릴까요?
+                </h1>
 
                 {/* 검색창 */}
                 <div className="relative max-w-xl w-full mx-auto">
@@ -107,11 +94,13 @@ const SupportMain = () => {
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="
                             md:text-lg text-[clamp(16px,2.346vw,18px)] 
-                            font-semibold cursor-pointer" onClick={() => navigate('/faq')}>자주 묻는 질문</h2>
+                            font-bold cursor-pointer" onClick={() => navigate('/faq')}>자주 묻는 질문</h2>
                     </div>
                     <div className="
-                        grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 
-                        md:text-sm text-[clamp(12px,2vw,14px)]">
+                        grid grid-cols-2 lg:grid-cols-3 
+                        md:gap-4 gap-3
+                        text-[15px]"
+                    >
                         {faqs.map((faq, i) => (
                             <div key={`${faq.faq_id}-${i}`} 
                                 className="
@@ -132,26 +121,29 @@ const SupportMain = () => {
                 {/* 서비스 안내 */}
                 <div className="
                         grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 border-t pt-8 
-                        md:text-sm text-[clamp(12px,1.825vw,14px)]">
+                        text-[15px]">
                     {[
-                        { icon: <BsTelephone className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, title: '전화 상담', desc: '02-389-5879' },
-                        { icon: <BsChatDots className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, title: '채팅 상담', desc: '(카카오톡 채팅 상담 구현)' },
+                        { icon: <BsTelephone className="text-[24px] text-gray-600" />, title: '전화 상담', desc: '02-389-5879' },
+                        { icon: <BsChatDots className="text-[24px] text-gray-600" />, title: '채팅 상담', desc: '(구현 예정)' },
                         { 
-                            icon: <BsEnvelope className="md:text-2xl text-[clamp(20px,3.128vw,24px)] text-gray-600" />, 
+                            icon: <BsEnvelope className="text-[24px] text-gray-600" />, 
                             title: '1:1 문의', 
-                            desc: '개별 문의 남기기', 
                             action: () => { 
                                 navigate('/supportMyInquiryList');
                             }
                         },
                     ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-center gap-4 border rounded-md p-5 hover:shadow-sm bg-white transition">
+                        <div key={i} className="
+                            flex items-center justify-start md:justify-center 
+                            md:gap-4 gap-6
+                            border rounded-md p-5 hover:shadow-sm bg-white transition"
+                        >
                             {item.icon}
-                            <div>
+                            <div className="text-left md:text-center">
                                 <div className="font-semibold mb-1">{item.title}</div>
                                 <div className="text-gray-600">{item.desc}</div>
                                 {item.action && (
-                                    <button onClick={item.action} className="text-blue-500 text-xs mt-1 hover:underline">바로가기 →</button>
+                                    <button onClick={item.action} className="text-blue-500 text-[13px] mt-1 hover:underline">바로가기 →</button>
                                 )}
                             </div>
                         </div>
@@ -162,12 +154,15 @@ const SupportMain = () => {
                     <div className="flex items-center justify-between">
                         <h2 className="
                             md:text-lg text-[clamp(16px,2.346vw,18px)] 
-                            font-semibold mb-3">공지사항</h2>
-                        <button onClick={() => navigate('/noticeList')} className="md:text-sm text-[clamp(12px,1.825vw,14px)] text-gray-400 hover:underline">더보기 →</button>
+                            font-bold mb-3"
+                        >
+                            공지사항
+                        </h2>
+                        <button onClick={() => navigate('/noticeList')} className="text-[14px] text-gray-400 hover:underline">더보기 →</button>
                     </div>
                     <hr className='border-t-2 border-black'/>
                     
-                    <ul className="md:text-sm text-[clamp(12.5px,1.825vw,14px)] divide-y border-b">
+                    <ul className="text-[14px] divide-y border-b">
                         {latestNotices.map((notice, index) => (
                             <li key={notice.noticeId}>
                                 <div
@@ -178,7 +173,7 @@ const SupportMain = () => {
                                         {notice.title}
                                     </div>
                                     <div className="text-gray-400 text-xs shrink-0 ml-4">
-                                        {notice.createdAt?.replace('T', ' ').slice(0, 16)}
+                                        {notice.createdAt?.slice(2, 10).replaceAll('-', '.')}
                                     </div>
                                 </div>
 

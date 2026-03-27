@@ -102,7 +102,27 @@ const Modify = () => {
                 toast.error("일은 01~31 사이여야 합니다.");
                 return false;
             }
-        
+            
+            // 연도 범위 제한 (매년 자동 갱신)
+            const nowYear = new Date().getFullYear();
+            const minYear = nowYear - 120;
+            const maxYear = nowYear;
+
+            if (y < minYear || y > maxYear) {
+                toast.error(`생년은 ${minYear}~${maxYear} 사이여야 합니다.`);
+                return false;
+            }
+
+            // 실제 존재하는 날인지
+            const dt = new Date(y, m - 1, d);
+            const isRealDate = 
+                dt.getFullYear() === y && dt.getMonth() === (m - 1) && dt.getDate() === d;
+
+            if (!isRealDate) {
+                toast.error("유효한 생년월일이 아닙니다.");
+                return false;
+            }
+
             return true;
         };
         
@@ -540,11 +560,27 @@ const Modify = () => {
                                 className="
                                     sm:w-[60px] w-1/3 h-8 border border-gray-300 text-center"/>
                             <span className=" mx-[2px]">년</span>
-                            <input type="text" maxLength="2" inputMode="numeric" value={birthMonth} onChange={(e) => setBirthMonth(e.target.value)} 
+                            <input
+                                type="text" 
+                                maxLength="2" 
+                                inputMode="numeric" 
+                                value={birthMonth} 
+                                onChange={(e) => setBirthMonth(e.target.value)}
+                                onBlur={() => {
+                                    setBirthMonth((v) => (v ? v.padStart(2, '0') : v));
+                                }}
                                 className="
                                     sm:w-[50px] w-1/5 h-8 border border-gray-300 text-center"/>
                             <span className="sm:text-base text-[11px] mx-[2px]">월</span>
-                            <input type="text" maxLength="2" inputMode="numeric" value={birthDay} onChange={(e) => setBirthDay(e.target.value)} 
+                            <input 
+                                type="text" 
+                                maxLength="2" 
+                                inputMode="numeric" 
+                                value={birthDay} 
+                                onChange={(e) => setBirthDay(e.target.value)}
+                                onBlur={() => {
+                                    setBirthDay((v) => (v ? v.padStart(2, '0') : v));
+                                }}
                                 className="
                                     sm:w-[50px] w-1/5 h-8 border border-gray-300 text-center"/>
                             <span className="mx-[2px]">일</span>

@@ -122,10 +122,14 @@ const FaqMain = () => {
     return (
         <div className="max-5xl mx-auto px-4 pt-16 mb-[200px]">
             <SupportHeader />
-            <div className="text-center mt-16">
+            <div className="text-center mt-12">
                 <h2 className="
-                    md:text-2xl text-[clamp(15px,3.128vw,24px)] 
-                    font-bold mb-4">무엇을 도와드릴까요?</h2>
+                    text-[21px]
+                    font-bold mt-10 mb-2"
+                >
+                    무엇을 도와드릴까요?
+                </h2>
+
                 <div className='relative max-w-xl mx-auto'>
                     <input
                         type="text"
@@ -145,10 +149,12 @@ const FaqMain = () => {
             {/* 카테고리 필터 */}
             <div className="
                 flex justify-start overflow-x-auto whitespace-nowrap
+                [-webkit-overflow-scrolling:touch]
+                [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
                 md:gap-2 gap-1 
                 mt-4 mb-8
-                md:text-base text-[clamp(11px,2.085vw,16px)]
-                ">
+                text-[15px]"
+                >
                 {faqCategories.map((cat) => (
                     <button
                         key={cat.key}
@@ -170,18 +176,34 @@ const FaqMain = () => {
             {/* FAQ 목록 */}
             <div className="divide-y border-t">
                 {currentFaqs.map((faq) => (
-                    <div key={faq.faqId} className="py-5 cursor-pointer" onClick={() => handleToggle(faq.faqId)}>
+                    <div 
+                        key={faq.faqId} 
+                        className="py-5 cursor-pointer break-keep" 
+                        onClick={() => handleToggle(faq.faqId)}>
                         <div className="flex justify-between items-start">
-                            <div className='md:text-sm text-[clamp(13px,2.984vw,14px)] font-semibold'>
-                                <span className='text-gray-400 mr-2'>Q</span>
-                                {faq.question}
+                            <div className='
+                                text-[14px] md:text-[16px]
+                                font-semibold'
+                            >
+                                <div className="flex justify-between">
+                                    <span className='text-orange-500 font-bold mr-2'>Q</span>
+                                    {faq.question}
+                                </div>
                             </div>
-                            <span className="text-gray-400 text-xl">{expandedId === faq.faqId ? '▲' : '▼'}</span>
+                            <span className="text-gray-400">{expandedId === faq.faqId ? '▲' : '▼'}</span>
                         </div>
                         {expandedId === faq.faqId && (
-                            <div className="mt-3 bg-gray-50 p-4 text-sm text-gray-700 whitespace-pre-line">
-                                <span className="text-blue-700 font-medium mr-1">A</span>
-                                {faq.answer}
+                            <div className="
+                                text-[13px] md:text-[14px]   
+                                mt-3 bg-gray-50 p-4 text-gray-700 whitespace-pre-line">
+                                <div className="flex justify-between">
+                                    <div className="w-fit">
+                                        <span className="text-blue-700 font-medium mr-1">A</span>
+                                    </div>
+                                    <div className="w-full">
+                                        {faq.answer}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -190,57 +212,58 @@ const FaqMain = () => {
 
             <div className="
                 md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
-
-            {/* 처음으로 */}
-            <button 
-                onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
-                disabled={groupStart === 1}
-                className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
+                flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10"
             >
-                {'<<'}
-            </button>
 
-            {/* 이전 */}
-            <button 
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-            >
-                {'<'}
-            </button>
-
-            {/* 페이지 번호 */}
-            {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(pageNum => (
-                <button
-                key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
-                className={`
-                    sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center rounded-full ${
-                    currentPage === pageNum ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                {/* 처음으로 */}
+                <button 
+                    onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
+                    disabled={groupStart === 1}
+                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
                 >
-                {pageNum}
+                    {'<<'}
                 </button>
-            ))}
 
-            {/* 다음 */}
-            <button 
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-            >
-                {'>'}
-            </button>
+                {/* 이전 */}
+                <button 
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
+                >
+                    {'<'}
+                </button>
 
-            {/* 마지막으로 */}
-            <button 
-                onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
-                disabled={groupEnd === totalPages}
-                className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-            >
-                {'>>'}
-            </button>
+                {/* 페이지 번호 */}
+                {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(pageNum => (
+                    <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`
+                        sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center rounded-full ${
+                        currentPage === pageNum ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                    >
+                    {pageNum}
+                    </button>
+                ))}
+
+                {/* 다음 */}
+                <button 
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
+                >
+                    {'>'}
+                </button>
+
+                {/* 마지막으로 */}
+                <button 
+                    onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
+                    disabled={groupEnd === totalPages}
+                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
+                >
+                    {'>>'}
+                </button>
             </div>
         </div>
     )

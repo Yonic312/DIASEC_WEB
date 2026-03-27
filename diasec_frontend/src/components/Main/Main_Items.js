@@ -165,7 +165,10 @@ const Main_Items = () => {
         if (!["masterPiece", "koreanPainting"].includes(type)) return;
         if (author) return;
 
+        setLabels([]);
         setLabelPage(0);
+        setLabelHasMore(true);
+        setLabelLoading(false);
     }, [type, author]);
 
     const labelReqIdRef = useRef(0);
@@ -303,6 +306,23 @@ const Main_Items = () => {
             : (["masterPiece", "koreanPainting"].includes(type) ? [] : filteredHomeProducts);
     }, [author, type, filteredAuthorProducts, filteredHomeProducts]);
 
+    // 논커스텀 상세 진입 전 저장한 스크롤 위치 복원
+    useEffect(() => {
+        if (displayProducts.length === 0) return;
+
+        const key = `main_items_scroll:${location.search}`;
+        const saved = sessionStorage.getItem(key);
+        if (!saved) return;
+
+        const y = Number(saved);
+        if (Number.isFinite(y) && y >= 0) {
+            requestAnimationFrame(() => {
+                window.scrollTo(0, y);
+            });
+        }
+        sessionStorage.removeItem(key);
+    }, [displayProducts.length, location.search]);
+
     useEffect(() => {
         setTitleSearch('');
     }, [type]);
@@ -380,16 +400,12 @@ const Main_Items = () => {
     const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
-        if (!type || !author) return;
+        if (!type) return;
 
-        setLabels([]);
-            setLabelPage(0);
-            setLabelHasMore(true);
-            setLabelLoading(false);
+        const params = { category: type };
+        if (author) params.author = decodeURIComponent(author);
 
-        axios.get(`${API}/product/count/author`, {
-            params: { category: type, author: decodeURIComponent(author) }
-        })
+        axios.get(`${API}/product/count/author`, { params })
         .then(res => setTotalCount(res.data ?? 0))
         .catch(() => setTotalCount(0));
     }, [type, author]);
@@ -494,19 +510,6 @@ const Main_Items = () => {
                             const { width, height } = await loadImageSize(product.imageUrl);
                             const ratio = width / height;
                             const cfg = getMinFrameConfigByRatio(ratio);
-
-                            console.log('Main_Items 가격 계산', {
-                                pid: product.pid,
-                                title: product.title,
-                                imageUrl: product.imageUrl,
-                                naturalWidth: width,
-                                naturalHeight: height,
-                                ratio,
-                                minWidth: cfg.width,
-                                minHeight: cfg.height,
-                                price: cfg.price,
-                            });
-
                             return [product.pid, cfg.price];
                         } catch (e) {
                             console.error("Main_Items 가격 계산 실패:", product.pid, e);
@@ -790,7 +793,17 @@ const Main_Items = () => {
                             return (
                                 <div
                                     key={product.pid}
-                                    onClick={() => navigate(`${type == 'clock' ? '/clock_detail' : '/none_custom_detail'}?pid=${product.pid}&category=${product.category}`)}
+                                    onClick={() => {
+                                        const targetPath = '/none_custom_detail';
+
+                                        // 논 커스텀 상세로 이동할 때만 목록 스크롤 위치 저장
+                                        if (targetPath === '/none_custom_detail') {
+                                            const key = `main_items_scroll:${location.search}`;
+                                            sessionStorage.setItem(key, String(window.scrollY));
+                                        }
+
+                                        navigate(`${targetPath}?pid=${product.pid}&category=${product.category}`);
+                                    }}
                                     className="flex flex-col 
                                             lg:px-4 md:px-2 px-[2px]
                                             w-full/4

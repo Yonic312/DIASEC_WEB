@@ -7,6 +7,9 @@ import requestCardPayment from './PaymentMethods/CardPayment'
 import requestKakaoPay from './PaymentMethods/KakaoPay'
 import requestRealTimeTransfer from './PaymentMethods/RealTimeTransfer'
 import { toast } from 'react-toastify';
+import RetouchModal, {
+    CUSTOM_FRAME_RETOUCH_OPTION_LABELS,
+} from '../Modal/RetouchModal.js';
 
 const OrderForm = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -24,6 +27,10 @@ const OrderForm = () => {
             retouchNote: it.retouchNote ?? ""
         }))
     );
+
+    console.log("[OrderForm] location.state =", location.state);
+    console.log("[OrderForm] location.state.orderItems =", location.state?.orderItems);
+    console.log("[OrderForm] initialItems =", initialItems);
 
     const isGuest = location.state?.isGuest || !member;
     const [guestPwdMatch, setGuestPwdMatch] = useState(null);
@@ -222,9 +229,6 @@ const OrderForm = () => {
     // [결제 / 무통장입금]
     const [bankAccount, setBankAccount] = useState('');
     const [depositor, setDepositor] = useState('');
-    // const [receiptType, setReceiptType] = useState('');
-    // const [receiptInfo, setReceiptInfo] = useState(''); // 휴대폰번호 or 사업자 번호
-    // const [receiptMethod, setReceiptMethod] = useState('휴대폰번호'); // 선택된 방법 (개인일 경우)
     const orderStatus = paymentMethod === "무통장입금" ? "입금대기" : "결제완료";
 
     // 상세주소 검색
@@ -266,12 +270,6 @@ const OrderForm = () => {
     // 주문
     const handleOrder = async () => {
         if (!validateOrder()) return;
-
-        // 무통장 입금
-        // if (receiptType === "개인" && !receiptInfo) {
-        //     toast.error("현금영수증 정보를 입력해주세요.");
-        //     return;
-        // }
         submitOrder();
         return;
 
@@ -376,13 +374,7 @@ const OrderForm = () => {
             }))
         };
 
-        // submitOrder() 안, orderData 만든 다음에 추가 / 테스트
-        console.log("[ORDER SUBMIT] location.state.orderItems =", location.state?.orderItems);
-        console.log("[ORDER SUBMIT] items(state) =", items);
-        console.log("[ORDER SUBMIT] orderData.items(payload) =", orderData.items);
-
         try {
-            console.log("[ORDER SUBMIT] location.key =", location.key);
             const response = await axios.post(`${API}/order/insert`, orderData);
             if (response.data.success) {
                 // 장바구니 삭제
@@ -451,11 +443,6 @@ const OrderForm = () => {
 
     // 보정 모달
     const isCustomFrames = (item) => item.category === 'customFrames';
-    
-    // 모달 입력용 로컬 state
-    const [mRetouchEnabled, setMRetouchEnabled] = useState(0);
-    const [mRetouchTypes, setMRetouchTypes] = useState([]);
-    const [mRetouchNote, setMRetouchNote] = useState("");
 
     const retouchOptions = [
         "피부 보정", 
@@ -472,7 +459,7 @@ const OrderForm = () => {
     const [editingIndex, setEditingIndex] = useState(null);
 
     const [retouchDraft, setRetouchDraft] = useState({
-        enabled: false,
+        enabled: true,
         types: [],
         note: '',
     });
@@ -482,20 +469,52 @@ const OrderForm = () => {
 
         const enabled = (target.retouchEnabled ?? 0) === 1;
 
-        const typesArr =
+        const labelSet = new Set(CUSTOM_FRAME_RETOUCH_OPTION_LABELS);
+        const typesArr = (
             target.retouchTypes && typeof target.retouchTypes === 'string'
                 ? target.retouchTypes.split(',').map((s) => s.trim()).filter(Boolean)
                 : Array.isArray(target.retouchTypes)
                     ? target.retouchTypes
-                    : [];
+                    : []
+        ).filter((t) => labelSet.has(t));
 
         setRetouchTargetIndex(idx);
         setRetouchDraft({
-            enabled,
+            enabled: true,
             types: enabled ? typesArr : [],
             note: enabled ? (target.retouchNote ?? '') : '',
         });
         setRetouchModalOpen(true);
+    };
+
+    const cancelRetouchFromModal = () => {
+        if (retouchTargetIndex === null) return;
+
+        const target = items[retouchTargetIndex];
+        const hasRetouch =
+            Number(target?.retouchEnabled ?? 0) === 1 ||
+            (target?.retouchTypes ?? '').toString().trim().length > 0 ||
+            (target?.retouchNote ?? '').toString().trim().length > 0;
+        
+        // 저장된 보정 내용이 없으면 그냥 닫기
+        if (!hasRetouch) {
+            closeRetouchModal();
+            return;
+        }
+        setItems((prev) =>
+            prev.map((it, idx) => {
+                if (idx !== retouchTargetIndex) return it;
+                return {
+                    ...it,
+                    retouchEnabled: 0,
+                    retouchTypes: null,
+                    retouchNote: null,
+                };
+            })
+        );
+        setRetouchModalOpen(false);
+        setRetouchTargetIndex(null);
+        toast.success('보정 요청이 취소되었습니다.');
     };
 
     const closeRetouchModal = () => {
@@ -506,7 +525,7 @@ const OrderForm = () => {
     const saveRetouch = () => {
         if (retouchTargetIndex === null) return;
 
-        if (retouchDraft.enabled && retouchDraft.types.length === 0) {
+        if (retouchDraft.types.length === 0) {
             toast.warn('보정 항목을 하나 이상 선택해주세요.');
             return;
         }
@@ -515,9 +534,9 @@ const OrderForm = () => {
             prev.map((it, idx) => {
                 if (idx !== retouchTargetIndex) return it;
 
-                const enabledVal = retouchDraft.enabled ? 1 : 0;
-                const typesStr = retouchDraft.enabled ? retouchDraft.types.join(', ') : null;
-                const noteStr = retouchDraft.enabled ? (retouchDraft.note ?? '') : null;
+                const enabledVal = 1;
+                const typesStr = retouchDraft.types.join(', ');
+                const noteStr = retouchDraft.note ?? '';
 
                 return {
                     ...it,
@@ -530,32 +549,8 @@ const OrderForm = () => {
 
         setRetouchModalOpen(false);
         setRetouchTargetIndex(null);
-        toast.success('보정 요청이 저장되었습니다.');
-    }
-
-    const toggleRetouchType = (label) => {
-        setMRetouchTypes(prev => 
-            prev.includes(label) ? prev.filter(x => x !== label) : [...prev, label]
-        );
+        toast.success("요청사항이 접수되었습니다. 보정 완료 시 문자로 안내해 드리겠습니다.");
     };
-
-    const saveRetouchModal = () => {
-        if (editingIndex === null) return;
-
-        // enabled가 0이면 types/note 비우는 게 안전
-        const nextEnabled = Number(mRetouchEnabled);
-
-        const nextItem = {
-            ...orderItems[editingIndex],
-            retouchEnabled: nextEnabled,
-            retouchTypes: nextEnabled ? mRetouchTypes.join(',') : "",
-            retouchNote: nextEnabled ? (mRetouchNote ?? "") : ""
-        };
-
-        setOrderItems(prev => prev.map((it, idx) => (idx === editingIndex ? nextItem : it)));
-        setRetouchModalOpen(false);
-        setEditingIndex(null);
-    }
 
     return (
         <div className="flex flex-col w-full items-center mt-20">
@@ -635,7 +630,7 @@ const OrderForm = () => {
                         </div>
 
                         <div className="
-                            flex justify-center items-end w-[12%]
+                            flex justify-end items-end w-[12%]
                             md:text-xl text-[clamp(14px,2.607vw,20px)]"
                         >
                             <span className="font-medium">
@@ -643,7 +638,7 @@ const OrderForm = () => {
                             </span>
                         </div>
 
-                        <div className="flex justify-center items-end w-[30%] text-end flex-1">
+                        <div className="flex justify-end items-end w-[30%] text-end flex-1">
                             <div className="flex flex-col justify-between h-full">
                                 {/* 보정 확인 수정 버튼 */}
                                 {isCustomFrames(item) && (
@@ -703,7 +698,7 @@ const OrderForm = () => {
                         value={ordererName} 
                         onChange={(e) => setOrdererName(e.target.value)} 
                         className="
-                        text-[13px] md:text-base    
+                        text-[13px] md:text-base
                         md:w-[200px] w-full border-[1px] h-8 px-2"
                     />
                 </div>
@@ -768,8 +763,8 @@ const OrderForm = () => {
                             text-[13px] md:text-base"
                         >
                             <div className="flex flex-row items-end">
-                                <input t
-                                    ype="text" 
+                                <input 
+                                    type="text" 
                                     value={emailLocal} 
                                     onChange={(e) => setEmailLocal(e.target.value)} 
                                     className="
@@ -853,7 +848,7 @@ const OrderForm = () => {
                 )}
 
 
-                {/* 물건이 커스텀일 경우 (구분을 pid가 -1, -2인걸로 구분함) */}
+                {/* 물건이 커스텀일 경우 (구분을 pid가 -1, -2인걸로 구분함)
                 {items.some(item => item.category === 'wall' || item.category === 'table') && (
                     <div className="flex flex-row items-center mt-3 ml-3 mb-3">
                         <div className="w-[150px] text-sm">
@@ -865,7 +860,7 @@ const OrderForm = () => {
                             으로 이미지 파일을 보내주세요 (<span className="underline px-1 text-yellow-700">탁상용, 벽걸이 액자 주문시</span>)
                         </span>
                     </div>
-                )}
+                )} */}
                 <hr/>
             </div>
             <hr/>
@@ -938,7 +933,13 @@ const OrderForm = () => {
                         <div className="flex">
                             <input type="text"  value={postcode} readOnly placeholder="우편번호" 
                                 className="md:w-[200px] w-1/2 border-[1px] h-8 pl-2" />
-                            <button className="h-8 bg-black text-white rounded border-opacity-15 md:px-4 px-1 ml-3" onClick={openPostcodePopup}>주소검색</button>
+                            <button className="
+                                h-8 bg-black text-white rounded border-opacity-15 
+                                md:px-4 px-2 md:ml-3 ml-1" 
+                                onClick={openPostcodePopup}
+                            >
+                                주소검색
+                            </button>
                         </div>
                         <input type="text" value={address} readOnly placeholder="기본주소" className="border-[1px] md:w-[400px] w-full h-8 px-2" />
                         <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} placeholder="나머지 주소(선택 입력 가능)" className="border-[1px] h-8 px-2" />
@@ -1158,8 +1159,7 @@ const OrderForm = () => {
                 )}
                 
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
-                    <div className="w-[150px] 
-                        ">
+                    <div className="w-[150px]">
                         배송비
                     </div>
                     {/* <span> {deliveryFee.toLocaleString()} 원</span> */}
@@ -1167,16 +1167,13 @@ const OrderForm = () => {
                 </div>
                 <hr />
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3">
-                    <div className="w-[150px] 
-                        ">
+                    <div className="w-[150px]">
                         할인
                     </div>
                     <span> {usedCredit.toLocaleString()} 원</span>
                 </div>
                 <hr />
-                <div className="
-                    flex flex-row items-center justify-between mt-3 mx-3 mb-3 font-semibold 
-                    ">
+                <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3 font-semibold">
                     <div className="w-[150px]">
                         최종 결제 금액
                     </div>
@@ -1196,115 +1193,17 @@ const OrderForm = () => {
                     <button className="w-full h-[50px] bg-black text-white "> <span className='font-semibold'>{finalPrice.toLocaleString()}원</span> 결제하기 </button>
                 </div>
             </div>
-
-            {/* ✅ 보정 요청 모달 (Main_CustomFrames UI 그대로) */}
-            {retouchModalOpen && (
-            <div
-                className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center px-4"
-                onClick={closeRetouchModal}
-            >
-                <div
-                className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-5"
-                onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex items-start justify-between">
-                        <div>
-                        <h3 className="text-lg font-bold text-gray-800">보정 요청</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                            원하는 보정 항목을 선택하고 요청사항을 적어주세요.
-                        </p>
-                        </div>
-
-                        <button
-                        className="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600"
-                        onClick={closeRetouchModal}
-                        >
-                        ✕
-                        </button>
-                    </div>
-
-                    <div className="mt-4">
-                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                        <input
-                            type="checkbox"
-                            checked={retouchDraft.enabled}
-                            onChange={(e) =>
-                            setRetouchDraft((d) => ({
-                                ...d,
-                                enabled: e.target.checked,
-                                types: e.target.checked ? d.types : [],
-                                note: e.target.checked ? d.note : '',
-                            }))
-                            }
-                        />
-                        이 사진 보정 요청할게요
-                        </label>
-
-                        <div className={`mt-4 ${retouchDraft.enabled ? '' : 'opacity-50 pointer-events-none'}`}>
-                        <div className="text-sm font-semibold text-gray-700 mb-2">보정 항목 선택</div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {retouchOptions.map((opt) => {
-                            const checked = retouchDraft.types.includes(opt);
-                            return (
-                                <button
-                                key={opt}
-                                type="button"
-                                className={`text-sm px-3 py-2 rounded-xl border transition text-left
-                                    ${checked
-                                    ? 'border-[#D0AC88] bg-[#fffaf3] text-[#a67a3e]'
-                                    : 'border-gray-200 hover:bg-gray-50 text-gray-700'
-                                    }`}
-                                onClick={() => {
-                                    setRetouchDraft((d) => {
-                                    const on = d.types.includes(opt);
-                                    const next = on ? d.types.filter((t) => t !== opt) : [...d.types, opt];
-                                    return { ...d, types: next };
-                                    });
-                                }}
-                                >
-                                {opt}
-                                </button>
-                            );
-                            })}
-                        </div>
-
-                        <div className="mt-4">
-                            <div className="text-sm font-semibold text-gray-700 mb-2">요청사항</div>
-                            <textarea
-                            rows={4}
-                            value={retouchDraft.note}
-                            onChange={(e) => setRetouchDraft((d) => ({ ...d, note: e.target.value }))}
-                            placeholder="예) 잡티 제거, 피부톤 자연스럽게, 배경 흰색으로, 역광 완화 등"
-                            className="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-[#D0AC88]"
-                            />
-                            <p className="text-[11px] text-gray-500 mt-2">
-                            ※ 난이도가 높은 보정은 상담 후 추가 비용이 발생할 수 있습니다
-                            </p>
-                            <div className="text-[11px] text-red-600">
-                                결제 완료 후에는 보정 요청(항목/메모) 변경이 불가합니다.
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-
-                    <div className="mt-5 flex gap-2">
-                        <button
-                        className="flex-1 h-[46px] rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700"
-                        onClick={closeRetouchModal}
-                        >
-                        취소
-                        </button>
-                        <button
-                        className="flex-1 h-[46px] rounded-xl bg-[#D0AC88] text-white hover:opacity-90"
-                        onClick={saveRetouch}
-                        >
-                        저장
-                        </button>
-                    </div>
-                </div>
-            </div>
-            )}
+            <RetouchModal
+                open={retouchModalOpen}
+                onClose={closeRetouchModal}
+                draft={retouchDraft}
+                setDraft={setRetouchDraft}
+                onSave={saveRetouch}
+                secondaryFooter={{
+                    label: '보정 취소',
+                    onClick: cancelRetouchFromModal,
+                }}
+            />
         </div>
     )
 }

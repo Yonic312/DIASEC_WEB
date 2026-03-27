@@ -175,49 +175,43 @@ const Main_CompanyProfile = () => {
             title: "디아섹액자 개발",
             text: 
                 `아크릴 헤어핀 공장으로 출발해 자체 생산을 이어가던 당사는
-                차별화된 제품을 만들기 위해 아크릴판의 독창적인 무늬 개발에 
-                도전하게 되었습니다 수많은 실험과정을 거쳐 아크릴판과 
-                아크릴판 사이에 인쇄물을 넣어 합지하는 방식을 고안했고,
-                이를 통해 독특한 디자인의 헤어핀을 제작하여 큰 매출 향상을 
-                이루게 되었습니다 이 기술이 훗날 디아섹액자 개발의 단초가 
-                되었습니다 2004년부터 3년간 연구 끝에, 2007년 마침내 
-                디아섹액자 개발에 성공하였습니다`,
+                차별화된 제품을 만들기 위해 아크릴판의 독창적인 무늬 개발에 도전하게 되었습니다. 
+                수많은 실험과정을 거쳐 아크릴판과 아크릴판 사이에 인쇄물을 넣어 합지하는 방식을 고안했고,
+                이를 통해 독특한 디자인의 헤어핀을 제작하여 큰 매출 향상을 이루게 되었습니다. 
+                이 기술이 훗날 디아섹액자 개발의 단초가 되었으며,
+                2004년부터 3년간 연구 끝에, 2007년 마침내 디아섹액자 개발에 성공하였습니다`,
             img:p1
         },
         {
             year: "2008",
             title: "화학시험 성적서 인증",
             text: 
-                `디아섹 개발이 완료되던 시점, 지인의 소개로 GS홈쇼핑 
-                협력업체를 만나 홈쇼핑 판매 제안을 받게 되었습니다 
+                `디아섹 개발이 완료되던 시점, 지인의 소개로 GS홈쇼핑 협력업체를 만나 
+                홈쇼핑 판매 제안을 받게 되었습니다.
                 GS홈쇼핑 판매을 위해서는 제품 안전성 검증이 필수였기에 
-                국가공인 기관인 한국화학시험연구원에서 유해 성분 검출 여부, 
-                본드 성분의 안전성, 접합부 박리 강도 등 다양한 항목에 대한 
-                안전성에 대한 인증서를 취득하였습니다 이 과정을 통해 
-                GS홈쇼핑 담당자로부터 판매 승인을 받을 수 있었습니다`,
+                국가공인 기관인 한국화학시험연구원에서 유해 성분 검출 여부, 본드 성분의 안전성, 
+                접합부 박리 강도 등 다양한 항목에 대한 안전성에 대한 인증서를 취득하였습니다. 
+                이 과정을 통해 GS홈쇼핑 담당자로부터 판매 승인을 받을 수 있었습니다.`,
             img:p2
         },
         {
             year: "2009",
             title: "GS홈쇼핑 방송",
             text: 
-                `2009년 4월 19일 오후 8시, 수많은 우여곡절 끝에 GS홈쇼핑 
-                방송이 성사되었습니다 당시 디아섹액자는 대중에게 
-                매우 생소했지만, 마침 클림트 작품이 예술의 전당에서 
-                전시 중이었고 오리지널 원고를 사용한 제품이라는 점에서 
-                주목을 받았습니다 비교적 고가임에도 불구하고 
-                많은 판매 실적을 기록했습니다`,
+                `2009년 4월 19일 오후 8시, 수많은 우여곡절 끝에 GS홈쇼핑 방송이 성사되었습니다. 
+                당시 디아섹액자는 대중에게 매우 생소했지만, 
+                마침 클림트 작품이 예술의 전당에서 전시 중이었고 오리지널 원고를 사용한 제품이라는 점에서 주목을 받았습니다. 
+                비교적 고가임에도 불구하고 많은 판매 실적을 기록했습니다.`,
             video: "https://www.youtube.com/embed/DGXygPEZsf4"
         },
         {
             year:"2016",
             title:"삼송테크노밸리 아파트형 공장",
             text:
-                `오랜 기간 역촌동 지하에서 작업을 이어오던 당사는 2016년 6월 
-                고양 삼송테크노밸리 아파트형 공장(약 50평)으로 
-                이전하였습니다 첨단 설비와 쾌적한 환경을 갖춘 새 공간에서 
-                보다 안정적이고 고품질의 디아섹액자를 생산할 수 있게 
-                되었습니다`,
+                `오랜 기간 역촌동 지하에서 작업을 이어오던 당사는 
+                2016년 6월 고양 삼송테크노밸리 아파트형 공장(약 50평)으로 이전하였습니다. 
+                첨단 설비와 쾌적한 환경을 갖춘 새 공간에서 
+                보다 안정적이고 고품질의 디아섹액자를 생산할 수 있게 되었습니다.`,
             img:p5
         },
         {
@@ -225,20 +219,20 @@ const Main_CompanyProfile = () => {
             title:"대형 액자 프레임 개발 ",
             text:
                 `장기 보존성이 특징인 디아섹액자는 일정 크기 이상으로 커질 경우 
-                일반적인 프레임만으로는 장기적인 안정성을 확보하기 
-                어렵습니다 당사는 오랜 제작 경험을 바탕으로 대형 사이즈에서도 
-                안전하게 지탱할 수 있는 전용 대형프레임을 자체 개발하였으며, 
+                일반적인 프레임만으로는 장기적인 안정성을 확보하기 어렵습니다. 
+                당사는 오랜 제작 경험을 바탕으로 대형 사이즈에서도 안전하게 지탱할 수 있는 
+                전용 대형프레임을 자체 개발하였으며, 
                 이를 보호하기 위해 실용신안 출원을 추진하고 있습니다
                 이를 통해 초대형 작품도 뒤틀림이나 처짐 없이 오래도록 
                 견고하게 보존할 수 있습니다`,
             img:p6
         },
         {
-            year:"2025",
+            year:"2026",
             title:"쇼핑몰 개설",
             text:
                 `보다 많은 고객이 편리하게 디아섹액자를 만나볼 수 있도록 
-                2025년 자체 쇼핑몰을 오픈했습니다`,
+                2026년 자체 쇼핑몰을 오픈했습니다`,
             img:p7
         }
     ]
@@ -271,7 +265,7 @@ const Main_CompanyProfile = () => {
     ]
     
     return (
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full break-keep">
             
             {/* Hero 배너 */}
             <div className="w-full bg-gray-800 flex items-center justify-center relative">
@@ -285,10 +279,12 @@ const Main_CompanyProfile = () => {
             </span>
 
             <h2 className="
-                text-[clamp(24px,6.258vw,48px)] md:text-5xl
-                text-center text-[#b19376] mt-24 font-bold leading-tight px-4"
+                text-[clamp(26px,6.258vw,48px)] md:text-5xl
+                text-center text-[#b19376] 
+                mt-16 md:mt-24 
+                font-bold leading-tight px-4"
             >
-                <span>The Standard of Korea, </span>
+                <span>The Standard of Korea, </span><br className="md:hidden"/>
                 <span>DIASEC KOREA</span>
             </h2>
 
@@ -296,9 +292,16 @@ const Main_CompanyProfile = () => {
                 text-center text-gray-500  mt-5 break-keep
                 text-[clamp(13px,1.8vw,17px)] px-6
             ">
-                19년간 오직 디아섹 공법에만 집중해온 전문 제작 브랜드입니다<br/>
-                자체 생산 시스템과 축적된 기술력을 바탕으로 대한민국 디아섹 제작의 기준을 만들어가고 있습니다<br/>
+                19년간 오직 디아섹 공법에만<br className="md:hidden" /> 집중해온 전문 제작 브랜드입니다<br/>
+                자체 생산 시스템과 축적된 기술력을 바탕으로<br className="md:hidden" /> 대한민국 디아섹 제작의 기준을 만들어가고 있습니다<br/>
                 쇼핑몰 오픈과 함께 디아섹코리아의 브랜드를 소개합니다
+
+                {/* 문구 수정 컨펌 받기@@@@@@@@@@@@@@@@@@@@@@@ */}
+                {/* 19년간 오직 디아섹 공법에 집중해온 전문 제작 브랜드
+                디아섹코리아입니다.<br/>
+
+                자체 생산 시스템과 축적된 기술력을 바탕으로
+                대한민국 디아섹 제작의 기준을 만들어가고 있습니다. */}
             </p>
 
             <div className="w-full flex justify-center">
@@ -405,7 +408,7 @@ const Main_CompanyProfile = () => {
             </h2>
 
             {/* 연혁 타임라인 */}
-            <div className="max-w-6xl mx-auto pt-16 pb-16 px-6 space-y-16">
+            <div className="max-w-6xl mx-auto pt-8 md:pt-16 mb-8 md:pb-16 px-6 space-y-20 md:space-y-16">
                 {history.map((item, idx) => (
                     <div
                         key={idx}
@@ -444,14 +447,14 @@ const Main_CompanyProfile = () => {
                             {item.year}s
                         </span>
                         <h2 className="
-                            text-[clamp(20px,3.128vw,24px)] md:text-2xl 
-                            font-bold">
+                            text-[clamp(16px,3.128vw,24px)] md:text-2xl 
+                            mt-[-4px] font-bold"
+                        >
                                 {item.title}
                         </h2>
                         <p className="
-                            md:text-base text-[clamp(15px,2.085vw,16px)]
-                            
-                            mt-[-2px] text-gray-600 break-keep">{item.text}</p>
+                            md:text-base text-[clamp(14px,2.085vw,16px)]
+                            text-gray-600 break-keep">{item.text}</p>
                     </div>
                 </div>
             ))}
@@ -480,12 +483,12 @@ const Main_CompanyProfile = () => {
                         >
                             <div className="">{s.icon}</div>
                             <h3 className="
-                                md:text-xl text-[clamp(15px,2.085vw,20px)] 
+                                md:text-xl text-[clamp(16px,2.085vw,20px)] 
                                 font-semibold text-gray-800">
                                 {s.title}
                             </h3>
                             <p className="
-                                text-[clamp(12px,2.085vw,16.5px)] md:text-[16.5px]
+                                text-[clamp(14px,2.085vw,16.5px)] md:text-[16.5px]
                                 break-keep
                                 text-gray-600 whitespace-pre-line leading-relaxed">{s.desc}</p>
                         </div>
@@ -497,12 +500,12 @@ const Main_CompanyProfile = () => {
         {/* 미래 비전 */}
         <div className="py-20 text-[#c99561] text-center">
                 <h2 className="
-                    text-[clamp(17px,4.693vw,36px)] md:text-4xl
+                    text-[clamp(19px,4.693vw,36px)] md:text-4xl
                     font-bold break-keep">
                     오직 디아섹액자만을 위한 최선의 노력으로
                 </h2>
                 <h2 className="
-                    text-[clamp(17px,4.693vw,36px)] md:text-4xl 
+                    text-[clamp(19px,4.693vw,36px)] md:text-4xl 
                     break-keep md:mt-3 mt-[2px] text-3xl font-bold">
                         고객에 만족을 드리고자 합니다
                 </h2>
@@ -511,8 +514,9 @@ const Main_CompanyProfile = () => {
             {/* 지도 */}
             {/* 회사 위치 / 지도 */}
             <div className="max-w-6xl mx-auto w-full px-6">
-                <h2 className="text-left font-bold text-[#4b4b4b] text-[18px] mb-3">
-                    회사위치 / 주소 : 경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)
+                <h2 className="text-left font-bold text-[#4b4b4b] text-[16px] md:text-[18px] mb-3"
+                >
+                    회사주소 : 경기도 고양시 덕양구 통일로 140 삼송 테크노벨리 A동 355호 (10594)
                 </h2>
                 
                 {/* 지도 */}

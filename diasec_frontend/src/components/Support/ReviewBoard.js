@@ -72,9 +72,9 @@ const ReviewBoard = () => {
             <div className='flex justify-end mt-16 mb-4'>
                 <button onClick={handleWriteReview}
                     className="
-                        md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                        md:px-3 px-2 
-                        md:py-1.5 py-1 
+                        md:text-sm text-[13px]
+                        md:px-4 px-2 
+                        md:py-2 py-1
                         bg-[#D0AC88] text-white rounded hover:bg-gray-500 transition">
                     후기작성
                 </button>
@@ -94,19 +94,20 @@ const ReviewBoard = () => {
                             <img
                                 src={review.images?.[0]}
                                 alt="리뷰 이미지"
-                                className="w-full md:h-60 h-[clamp(128px,31.28vw,240px)] object-cover"
+                                className="w-full h-[clamp(140px,31.28vw,240px)] md:h-60 object-cover"
                             />
                             <div className="
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                p-3">
-                                <div className="text-orange-400 mb-1">
+                                text-[11.5px] md:text-[13px]
+                                p-2"
+                            >
+                                <div className="text-orange-400">
                                     {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                                 </div>
-                                <div className="font-semibold truncate mb-0.5">
+                                <div className="text-[14px] md:text-[16px] font-semibold truncate mb-0.5">
                                     {review.title}
                                 </div>
                                 <div className="
-                                    md:text-xs text-[clamp(9px,1.5645vw,12px)] 
+                                    text-[12px] md:text-[14px]
                                     text-gray-500 truncate">{review.content}</div>
                             </div>
                         </div>
@@ -124,7 +125,7 @@ const ReviewBoard = () => {
                                 md:text-sm text-[clamp(12px,1.825vw,14px)]
                                 flex items-center justify-between text-gray-400">
                                 <span>{review.id.slice(0, 2)}***님</span>
-                                <span>{review.createdAt?.slice(0, 10)}</span>
+                                <span>{review.createdAt?.slice(2, 10).replaceAll('-', '.')}</span>
                             </div>
                             <div className="
                                 md:text-[16px] text-[clamp(12px,2.085vw,16px)]
@@ -135,13 +136,14 @@ const ReviewBoard = () => {
                             </div>
 
                             <div className='
-                                md:text-lg text-[clamp(16px,2.346vw,18px)] font-semibold'>
+                                text-[14px] md:text-[16px]
+                                font-semibold'>
                                 {review.title}{' '}
                             </div>
                             
                             <div className='
-                                text-gray-500 mt-2
-                                md:text-base text-[clamp(11px,2.085vw,16px)]
+                                text-gray-500 mt-[2px]
+                                text-[12px] md:text-[14px]
                                 '>
                                 {review.content.length > 50
                                     ? `${review.content.slice(0, 50)}...`
@@ -167,70 +169,102 @@ const ReviewBoard = () => {
                 ))}
             </ul>
 
+            {/* 리뷰 선택 모달창 */}
             {selectedReview && (
-                <div 
-                    className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50"
+                <div
+                    className="fixed inset-0 bg-black/55 backdrop-blur-[2px] flex items-center justify-center px-4 py-6 z-[10000]"
                     onClick={() => {
                         setSelectedReview(null);
                         setSelectedImageIndex(0);
                     }}
                 >
-                    <div 
+                    <div
+                        role="dialog"
+                        aria-modal="true"
                         className="
-                            md:text-base text-[clamp(11px,2.085vw,16px)]
-                            bg-white w-[80%] md:p-8 p-3 rounded shadow-lg relative"
+                            relative w-full max-w-[620px]
+                            max-h-[88vh] overflow-y-auto
+                            rounded-2xl bg-white shadow-2xl
+                            border border-gray-100
+                        "
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button
-                            className="absolute top-2 right-3 text-gray-500 text-lg hover:text-black"
-                            onClick={() => {
-                                setSelectedReview(null);
-                                setSelectedImageIndex(0);
-                            }}
-                        >
-                            ✕
-                        </button>
-                        <div className="
-                            w-full 
-                            md:h-96 h-56
-                            flex items-center justify-center bg-black bg-opacity-5 roudned mb-4">
-                            <img 
-                                src={selectedReview.images?.[selectedImageIndex]}
-                                alt={`상세 이미지 ${selectedImageIndex}`}
-                                className="max-w-full max-h-full object-contain rounded"
-                            />
+                        {/* 헤더 */}
+                        <div className="sticky top-0 flex items-center justify-between px-3 md:px-5 py-2 bg-white/95 backdrop-blur border-gray-100">
+                            <p className="text-[14px] md:text-[16px] font-semibold text-gray-900">
+                                리뷰 상세보기
+                            </p>
+                            <button
+                                aria-label="모달 닫기"
+                                className="w-8 h-8 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition"
+                                onClick={() => {
+                                    setSelectedReview(null);
+                                    setSelectedImageIndex(0);
+                                }}
+                            >
+                                ✕
+                            </button>
                         </div>
 
-                        {/* 썸네일 */}
-                        <div className="flex gap-2 md:mt-2 mt-1 justify-center">
-                            {selectedReview.images?.map((img, idx) => (
-                                <img 
-                                    key={idx}
-                                    src={img}
-                                    alt={`썸네일 ${idx}`}
-                                    className={`
-                                        md:w-16 w-10
-                                        md:h-16 h-10
-                                        object-cover border round cursor-pointer ${
-                                        idx === selectedImageIndex ? 'ring-2 ring-black' : ''
-                                    }`}
-                                    onClick={() => setSelectedImageIndex(idx)}
+                        <div className="px-3 pb-3 md:px-5 md:pb-5">
+                            {/* 메인 이미지 */}
+                            <div className="w-full aspect-[4/3] rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                <img
+                                    src={selectedReview.images?.[selectedImageIndex]}
+                                    alt={`상세 이미지 ${selectedImageIndex + 1}`}
+                                    className="max-w-full max-h-full object-contain"
                                 />
-                            ))}
-                        </div>
+                            </div>
 
-                        <h2 className="
-                            md:text-xl text-[clamp(14px,2.607vw,20px)]
-                            font-bold mt-2">{selectedReview.title}</h2>
-                        <p>
-                            {'★'.repeat(selectedReview.rating)}{'☆'.repeat(5 - selectedReview.rating)}
-                        </p>
-                        <p>{selectedReview.content}</p>
-                        <div>
-                            <span>{selectedReview.id.slice(0, 2)}***</span>
-                        </div>
-                        <div>
-                            <span>{selectedReview.createdAt?.slice(0, 10)}</span>
+                            {/* 썸네일 */}
+                            <div className="mt-2 md:mt-3 flex flex-wrap justify-center gap-2">
+                                {selectedReview.images?.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        className={`
+                                            w-[58px] h-[58px] rounded-lg overflow-hidden border transition
+                                            ${idx === selectedImageIndex
+                                                ? "border-gray-900 ring-2 ring-gray-900/20"
+                                                : "border-gray-200 hover:border-gray-400"}
+                                        `}
+                                        onClick={() => setSelectedImageIndex(idx)}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`썸네일 ${idx + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* 텍스트 정보 */}
+                            <div className="mt-5">
+                                <h2 className="text-[18px] md:text-[20px] font-bold text-gray-900 leading-snug">
+                                    {selectedReview.title}
+                                </h2>
+
+                                <div className="flex flex-col items-start">
+                                    <span className="
+                                        inline-flex items-center rounded-full text-orange-400 py-1 mb-1
+                                        text-[12px] md:text-[14px] font-semibold"
+                                    >
+                                        {'★'.repeat(selectedReview.rating)}{'☆'.repeat(5 - selectedReview.rating)}
+                                    </span>
+                                </div>
+
+                                <p className=" text-[14px] md:text-[16px] text-gray-700 leading-relaxed whitespace-pre-line">
+                                    {selectedReview.content}
+                                </p>
+
+                                <div className="mt-4 pt-3 border-t border-gray-100 text-[12px] text-gray-500 flex justify-between">
+                                    작성자: {selectedReview.id?.slice(0, 2)}***
+                                    <span className="text-[12px] text-gray-500">
+                                        {selectedReview.createdAt?.slice(0, 10)}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -238,8 +272,9 @@ const ReviewBoard = () => {
 
             {/* 🔶 페이징 */}
             <div 
-                className="md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                            flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
+                className="
+                    md:text-sm text-[clamp(10px,1.8252vw,14px)]
+                    flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
 
                 {/* 처음으로 */}
                 <button

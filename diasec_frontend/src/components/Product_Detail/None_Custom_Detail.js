@@ -1050,7 +1050,7 @@ const None_Custom_Detail = () => {
             {showGuestChoice && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                 <div className="
-                    bg-white p-8 rounded-lg shadow-lg 
+                    bg-white p-8 rounded-lg shadow-lg
                     w-[90%] max-w-md sm:max-w-lg text-center
                 ">
                 <p className="
@@ -1077,7 +1077,7 @@ const None_Custom_Detail = () => {
                         price: it.price,
                         thumbnail: it.imageSrc,
                         size: toInchSize(it.width, it.height),
-                        category: `${category}_${frameType}`,
+                        category: `${category}`,
                         quantity: 1,
                         cid: null,
                         finishType: it.finishType ?? 'glossy',

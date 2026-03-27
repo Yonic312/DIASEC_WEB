@@ -75,7 +75,7 @@ const MyInquiryList = () => {
                     <div className="flex gap-2">
                         <button
                             className="
-                                md:text-sm text-[12px]
+                                md:text-sm text-[13px]
                                 md:px-4 px-2 
                                 md:py-2 py-1 
                                 bg-black text-white rounded hover:bg-gray-800"
@@ -176,7 +176,7 @@ const MyInquiryList = () => {
                         {/* 페이징 버튼 */}
                         <div 
                             className="md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                                        flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
+                                flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
 
                             {/* 처음으로 */}
                             <button

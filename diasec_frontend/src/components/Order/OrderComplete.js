@@ -8,13 +8,15 @@ const OrderComplete = () => {
     return (
         <div className="w-full min-h-[600px] flex flex-col items-center justify-center px-4 py-10">
         <div className="
-            md:text-4xl text-[clamp(18px,3.128vw,36px)] font-bold text-center md:mb-4 mb-1">
+            text-[clamp(18px,3.128vw,36px)] md:text-4xl
+            font-bold text-center md:mb-4 mb-1"
+        >
             주문이 완료되었습니다!
         </div>
 
         <div className="
             text-gray-600 
-            md:text-base text-[clamp(11px,2.085vw,16px)] 
+            text-[12px] md:text-[14px]
             text-center mb-6">
             주문해주셔서 감사합니다. <br/>
                 {guestPassword
@@ -37,10 +39,15 @@ const OrderComplete = () => {
 
                 <div className="text-right">
                     <p className="text-sm text-gray-500">결제금액</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="
+                        text-[14px] md:text-[16px]
+                        font-bold text-gray-900">
                         {finalPrice?.toLocaleString()}원
                     </p>
-                    <p className="mb-2">
+                    <p className="
+                        text-[12px] md:text-[14px]
+                        mb-2"
+                    >
                         결제수단: <span className="font-semibold">{paymentMethod}</span>
                     </p>
                 </div>
@@ -88,7 +95,9 @@ const OrderComplete = () => {
             {/* 배송지 */}
             <div className="mt-5 pt-4 border-t">
                 <p className="text-sm text-gray-500 mb-1">배송지</p>
-                <p className="text-sm font-medium text-gray-800 leading-relaxed">
+                <p className="
+                    text-[13px] md:text-base
+                    font-medium text-gray-800 leading-relaxed">
                     {address}
                 </p>
             </div>
@@ -110,7 +119,8 @@ const OrderComplete = () => {
 
         <div className="
             flex gap-4 mt-8
-            md:text-base text-[clamp(11px,2.085vw,16px)]">
+            text-[12px] md:text-[14px]"
+        >
             <button
             className="px-4 py-2 bg-black text-white rounded-md"
             onClick={() => navigate('/')}

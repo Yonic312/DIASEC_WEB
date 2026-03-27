@@ -59,7 +59,7 @@ const NoticeList = () => {
             <SupportHeader />
 
             <ul className="
-                md:text-base text-[clamp(11px,2.085vw,16px)]
+                text-[14px] md:text-[16px]
                 mt-16 divide-y border-b">
                 {currentNotices.map((notice, idx) => {
                     const globalIndex = (currentPage - 1) * indexOfFirstNotice + idx;
@@ -67,22 +67,31 @@ const NoticeList = () => {
                         <li key={`${notice.notice_id}-${idx}`}>
                             <div
                                 onClick={() => toggleNotice(globalIndex)}
-                                className="flex justify-between items-center py-4 px-4 hover:bg-gray-50 transition cursor-pointer"    
+                                className="
+                                    flex justify-between items-center 
+                                    px-3 md:px-4
+                                    py-3 md:py-4
+                                    hover:bg-gray-50 transition cursor-pointer"    
                             >
-                            <div className="truncate">
+                            <div className="
+                                text-[14px] md:text-[16px]
+                                truncate"
+                            >
                                 {notice.pinned && (
-                                    <span className="text-orange-500 font-semibold mr-2">[공지]</span>
+                                    <span className="text-orange-500 font-semibold mr-2">[고정]</span>
                                 )}
                                 {notice.title}
                             </div>
-                            <div className="text-gray-400 text-xs shrink-0 ml-4">
-                                {notice.createdAt?.replace('T', ' ').slice(0, 16)}
+                            <div className="
+                                text-[12px] md:text-[14px]
+                                text-gray-400 shrink-0 ml-4">
+                                {notice.createdAt?.slice(2, 10).replaceAll('-', '.')}
                             </div>
                         </div>
 
                         {openIndex === globalIndex && (
                             <div className='bg-gray-50 min-h-40 px-4 py-4 text-gray-700 whitespace-pre-wrap border-t'>
-                                {notice.imageUrl && (
+                                {notice?.imageUrl && (
                                     <img src={notice.imageUrl} alt="공지 이미지" className="max-w-full rounded-md border" />
                                 )}
                                 {notice.content}

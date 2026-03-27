@@ -595,6 +595,9 @@ const Main_CustomFrames = () => {
                 : it
             )
         );
+        if (retouchTargetId === itemId) {
+            closeRetouchModal();
+        }
     };
 
     const saveRetouch = () => {
@@ -1329,7 +1332,7 @@ const Main_CustomFrames = () => {
                     </button>
 
                     <button
-                        onClick={() => setShowGuestChoice(false)}
+                        onClick={() => clearRetouch(retouchTargetId)}
                         className="
                             md:text-sm text-[clamp(11px,1.8252vw,14px)]
                             mt-4 text-gray-500 hover:underline"
@@ -1416,9 +1419,9 @@ const Main_CustomFrames = () => {
                         <div className="mt-5 flex gap-2">
                             <button
                                 className="flex-1 h-[46px] rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700"
-                                onClick={closeRetouchModal}
+                                onClick={() => clearRetouch(retouchTargetId)}
                             >
-                                취소
+                                보정 취소
                             </button>
                             <button
                                 className="flex-1 h-[46px] rounded-xl bg-[#D0AC88] text-white hover:opacity-90"
