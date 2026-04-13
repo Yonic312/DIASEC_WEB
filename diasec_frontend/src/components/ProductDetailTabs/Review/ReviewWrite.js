@@ -145,18 +145,23 @@ const ReviewWrite = () => {
     const [isDragOverThumb, setIsDragOverThumb] = useState(false);
 
     return (
-        <div 
-            className="w-[60%] mx-auto px-2">
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >   
             <div 
                 className="
                     w-full
                     md:p-7 p-[clamp(0.5rem,3.65vw,1.75rem)]
                     md:space-y-6 space-y-[clamp(8px,7.49vw,24px)]
-                    border border-gray-200 shadow-md rounded-lg bg-white">
+                    border border-gray-200 shadow-md rounded-lg bg-white"
+            
+            >
                 <h2 
                     className="
                         md:text-xl text-[clamp(14px,3.128vw,24px)]
-                        font-bold text-center">상품 사용 후기</h2>
+                        font-bold text-center">
+                    상품 사용 후기
+                </h2>
 
                 { /* 상품 미리보기*/}
                 {selectedProduct && (
@@ -372,7 +377,13 @@ const ReviewWrite = () => {
                 )}
 
                 {/* 제출 버튼 */}
-                <div className="text-center">
+                <div className="flex gap-4 justify-end mt-8">
+                    <button 
+                        className="
+                            md:text-sm text-[clamp(11px,1.824vw,14px)]
+                            w-full px-4 py-2 border rounded" onClick={() => navigate(-1)}>
+                        돌아가기
+                    </button>
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}

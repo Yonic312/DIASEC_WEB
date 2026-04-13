@@ -5,6 +5,12 @@ import { MemberContext } from '../../context/MemberContext';
 import icon_x from '../../assets/button/icon_x.png';
 import ProductDetailTabs from '../ProductDetailTabs/ProductDetailTabs';
 import { toast } from 'react-toastify';
+import { getDiscountedUnitPrice } from '../../utils/siteDiscount';
+import {
+    SitePriceRow,
+    SitePriceTotal,
+    SITE_PRICE_TEXT,
+} from '../common/SitePriceDisplay';
 import bg from '../../assets/CustomFrames/p.png';
 import bg2 from '../../assets/CustomFrames/p2.png'; // 현재 배경
 import wide from '../../assets/images/width.jpg';
@@ -308,6 +314,11 @@ const None_Custom_Detail = () => {
     const totalPrice = totalPriceWithoutShipping >= FREE_SHIPPING_THRESHOLD
         ? totalPriceWithoutShipping
         : totalPriceWithoutShipping + SHIPPING_FEE;
+
+    const totalPriceWithoutShippingDiscounted = customItems.reduce(
+        (acc, item) => acc + getDiscountedUnitPrice(item.price),
+        0
+    );
 
     useEffect(() => {
         if (pid) {
@@ -888,7 +899,12 @@ const None_Custom_Detail = () => {
                                                     <p className='text-[12.5px] font-semibold text-gray-800'>
                                                         {Math.floor(item.width)} x {Math.floor(item.height)}cm
                                                     </p>
-                                                    <p className="mt-[-4px] mb-[4px] text-[14px]">{item.price.toLocaleString()}원</p>
+                                                    <p className="mt-[-4px] mb-[4px]">
+                                                        <SitePriceRow
+                                                            unitPrice={item.price}
+                                                            neutralClassName={`${SITE_PRICE_TEXT} text-gray-800`}
+                                                        />
+                                                    </p>
                                                 </div>
 
                                                 {/* 삭제 버튼 */}
@@ -988,7 +1004,14 @@ const None_Custom_Detail = () => {
                                 주문 후 평균 2~5일 내 수령
                             </div>
                             <span className="text-base font-semibold text-gray-700">
-                                총 결제금액 : <span className=" text-[#a57647]">{totalPriceWithoutShipping.toLocaleString()}원</span>
+                                총 결제금액 :{' '}
+                                <span className=" text-[#a57647]">
+                                <SitePriceTotal
+                                    original={totalPriceWithoutShipping}
+                                    discounted={totalPriceWithoutShippingDiscounted}
+                                    className={`${SITE_PRICE_TEXT} font-semibold text-[#a57647]`}
+                                />
+                                </span>
                             </span>
                         </div>
                         <div className="text-right">
@@ -1058,7 +1081,27 @@ const None_Custom_Detail = () => {
                     mb-6 font-bold">구매 방식을 선택해주세요</p>
 
                 <button
-                    onClick={() => navigate('/userLogin')}
+                    onClick={() => {
+                        const pendingOrderItems = customItems.map((it) => ({
+                            pid: parseInt(pid),
+                            title: product.title,
+                            author: product.author,
+                            price: it.price,
+                            thumbnail: it.imageSrc,
+                            size: toInchSize(it.width, it.height),
+                            category: `${category}`,
+                            quantity: 1,
+                            cid: null,
+                            finishType: it.finishType ?? 'glossy',
+                        }));
+
+                        navigate('/userLogin', {
+                            state: {
+                                pendingOrderItems,
+                                returnTo: `${location.pathname}${location.search}`,
+                            },
+                        });
+                    }}
                     className="
                         md:text-base text-[clamp(12px,2.085vw,16px)]
                         w-full py-3 mb-3 bg-[#D0AC88] text-white rounded-md"

@@ -46,6 +46,11 @@ const Insert_Product = () => {
             toast.success("등록이 완료되었습니다.");
 
             if (isFixed) {
+                const currentOrder = Number(sort_order);
+                const nextOrder = Number.isFinite(currentOrder) ? currentOrder + 1 : '';
+                
+                setTitle('');
+                setSort_Order(nextOrder === '' ? '' : String(nextOrder));
                 setThumbnails([]);
                 setDetailImages([]);
             } else {

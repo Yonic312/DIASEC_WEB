@@ -87,6 +87,9 @@ public class SecurityConfig {
                     "/api/order/cancel", "/api/order/guest-reset-password"
                 ).permitAll()
 
+                // 맞춤액자: 비회원도 이미지 tmp 업로드 후 URL만 주문에 실음
+                .requestMatchers(HttpMethod.POST, "/api/uploads/customFrames/tmp").permitAll()
+
                 // 5. 관리자
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/product/insert", "/api/order/delete", "/api/inquiry/answer", "/api/event/insert").hasRole("ADMIN")

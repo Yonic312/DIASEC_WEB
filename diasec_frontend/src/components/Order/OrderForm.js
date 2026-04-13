@@ -10,6 +10,12 @@ import { toast } from 'react-toastify';
 import RetouchModal, {
     CUSTOM_FRAME_RETOUCH_OPTION_LABELS,
 } from '../Modal/RetouchModal.js';
+import { getDiscountedUnitPrice } from '../../utils/siteDiscount';
+import {
+    SitePriceRow,
+    SitePriceTotal,
+    SITE_PRICE_TEXT,
+} from '../common/SitePriceDisplay';
 
 const OrderForm = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -138,6 +144,7 @@ const OrderForm = () => {
     const [postcode, setPostcode] = useState('');
     const [address, setAddress] = useState('');
     const [detailAddress, setDetailAddress] = useState('');
+    const [isSameAsOrderer, setIsSameAsOrderer] = useState(false);
 
     useEffect(() => {
         if (!selectedAddress) return;
@@ -153,6 +160,14 @@ const OrderForm = () => {
         setRecipientPhone2(p2 || '');
         setRecipientPhone3(p3 || '');
     }, [selectedAddress]);
+
+    useEffect(() => {
+        if (!isSameAsOrderer) return;
+        setRecipient(ordererName);
+        setRecipientPhone1(phone1);
+        setRecipientPhone2(phone2);
+        setRecipientPhone3(phone3);
+    }, [isSameAsOrderer, ordererName, phone1, phone2, phone3]);
 
     // 보증금 계산
     const totalDeposit = location.state?.totalDeposit || 0;
@@ -173,8 +188,16 @@ const OrderForm = () => {
         }))
     );
 
-    // 총합 계산 ( 최종 결제금액 )
-    const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // 총합 계산 ( 최종 결제금액 ) — 할인 적용 시 단가는 반올림 후 × 수량
+    const originalSubtotal = items.reduce(
+        (sum, item) => sum + Number(item.price) * Number(item.quantity),
+        0
+    );
+    const totalPrice = items.reduce(
+        (sum, item) =>
+            sum + getDiscountedUnitPrice(item.price) * Number(item.quantity),
+        0
+    );
     const deliveryFee = 0; // 배송비
     const finalPrice = Math.max(totalPrice - usedCredit + deliveryFee + deposit, 0);
     
@@ -359,7 +382,7 @@ const OrderForm = () => {
                 title: item.title,
                 author: item.author,
                 quantity: item.quantity,
-                price: item.price,
+                price: getDiscountedUnitPrice(item.price),
                 period: item.period,
                 size: item.size,
                 thumbnail: item.thumbnail,
@@ -659,12 +682,11 @@ const OrderForm = () => {
                                     </div>
                                 )}
 
-                                <span className="
-                                    font-bold
-                                    md:text-xl text-[clamp(14px,2.607vw,20px)]"
-                                > 
-                                    {(item.price * item.quantity).toLocaleString()}원
-                                </span>
+                                <SitePriceRow
+                                    unitPrice={item.price}
+                                    quantity={Number(item.quantity)}
+                                    neutralClassName={`${SITE_PRICE_TEXT} font-bold`}
+                                />
                             </div>
                         </div>
                     </div>
@@ -872,6 +894,7 @@ const OrderForm = () => {
             </div>
 
             <div className="w-full mx-auto mb-10">
+                <hr/>
                 {member ? (
                 <div className="
                     flex md:flex-row flex-col md:items-center items-start 
@@ -882,6 +905,7 @@ const OrderForm = () => {
                     <select className="md:w-[600px] w-full px-2 border-[1px] h-8 mt-1 text-[13px]"
                         onChange={(e) => {
                             const selected = addressList.find(addr => addr.cno === Number(e.target.value));
+                            setIsSameAsOrderer(false);
                             setSelectedAddress(selected);
                         }}
                         value={selectedAddress?.cno ?? (addressList.find(a => a.is_default)?.cno || '')}>
@@ -909,12 +933,27 @@ const OrderForm = () => {
                     text-[13px] md:text-base
                     mt-3 mx-3 mb-3">
                     <div className="
-                        w-[150px] 
+                        w-[150px]
+                        flex md:flex-col flex-row md:items-start items-center md:gap-1 gap-2
                         text-[13px] md:text-base"
                     >
-                        받는 사람
+                        <span>받는 사람</span>
+                        <label className="inline-flex items-center gap-1 cursor-pointer select-none text-[12px] text-gray-600 font-normal">
+                            <input
+                                type="checkbox"
+                                checked={isSameAsOrderer}
+                                onChange={(e) => {
+                                    setIsSameAsOrderer(e.target.checked);
+                                    if (e.target.checked) {
+                                        setSelectedAddress(null);
+                                    }
+                                }}
+                            />
+                            <span>주문자와 동일</span>
+                        </label>
                     </div>
-                    <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)} 
+                    <input type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)}
+                        disabled={isSameAsOrderer}
                         className="md:w-[200px] w-full border-[1px] h-8 px-2" />
                 </div>
 
@@ -962,6 +1001,7 @@ const OrderForm = () => {
                             className=" w-[100px] h-8 border border-gray-300 pl-2"
                             value={recipientPhone1}    
                             onChange={(e) => setRecipientPhone1(e.target.value)}
+                            disabled={isSameAsOrderer}
                         >
                                 <option>010</option>
                                 <option>011</option>
@@ -974,6 +1014,7 @@ const OrderForm = () => {
                             type="text" 
                             value={recipientPhone2}
                             onChange={(e) => setRecipientPhone2(e.target.value)}
+                            disabled={isSameAsOrderer}
                             maxLength="4" 
                             inputMode="numeric" 
                             className="w-[100px] h-8 border border-gray-300 pl-2"
@@ -982,6 +1023,7 @@ const OrderForm = () => {
                             type="text" 
                             value={recipientPhone3}
                             onChange={(e) => setRecipientPhone3(e.target.value)}
+                            disabled={isSameAsOrderer}
                             maxLength="4" 
                             inputMode="numeric" 
                             className="w-[100px] h-8 border border-gray-300 pl-2"/>
@@ -1143,7 +1185,15 @@ const OrderForm = () => {
                     <div className="w-[150px]">
                         주문 금액
                     </div>
-                    <span> {totalPrice.toLocaleString()} 원</span>
+                    <span>
+                        {' '}
+                        <SitePriceTotal
+                            original={originalSubtotal}
+                            discounted={totalPrice}
+                            className={SITE_PRICE_TEXT}
+                        />
+                        {' '}
+                    </span>
                 </div>
                 <hr />
                 {deposit > 0 && (
@@ -1170,14 +1220,14 @@ const OrderForm = () => {
                     <div className="w-[150px]">
                         할인
                     </div>
-                    <span> {usedCredit.toLocaleString()} 원</span>
+                    <span> {usedCredit.toLocaleString()}원</span>
                 </div>
                 <hr />
                 <div className="flex flex-row items-center justify-between mt-3 mx-3 mb-3 font-semibold">
                     <div className="w-[150px]">
                         최종 결제 금액
                     </div>
-                    <span> {finalPrice.toLocaleString()} 원</span>
+                    <span> {finalPrice.toLocaleString()}원</span>
                 </div>
                 <hr/>
 

@@ -15,7 +15,7 @@ const LeasePage = () => {
     const [labels, setLabels] = useState([]);
     const [products, setProducts] = useState([]);
     const [allProducts, setAllProducts] = useState([]);
-    const [category, setCategory] = useState('명화갤러리');
+    const [category, setCategory] = useState('명화');
     const [selectedProductId, setSelectedProductId] = useState(null);
 
 
@@ -48,10 +48,10 @@ const LeasePage = () => {
     // 마우스 호버 상태 저장(img)
     const [hoveredPid, setHoveredPid] = useState(null);
 
-    const categoryList = ['명화갤러리', '사진/일러스트', '풍수그림', '작가갤러리']
+    const categoryList = ['명화', '사진/일러스트', '풍수그림', '작가갤러리']
 
     const categoryMap = {
-        '명화갤러리' : 'masterPiece',
+        '명화' : 'masterPiece',
         '사진/일러스트' : 'photoIllustration',
         '풍수그림' : 'fengShui',
         '작가갤러리' : 'authorCollection'

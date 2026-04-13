@@ -1140,7 +1140,7 @@ const Order_Detail = () => {
                 </div>
             </div>
 
-            <div className="print-section">
+            {/* <div className="print-section">
                 <h3 className="print-section-title font-semibold text-lg">작업 확인란</h3>
 
                 <div className="print-check-row text-sm">
@@ -1164,7 +1164,7 @@ const Order_Detail = () => {
                         <div className="print-note-box"></div>
                     </div>
                 </div> 
-            </div>
+            </div> */}
 
             {/* 배송 페이지 모달창 */}
             {showModal && (

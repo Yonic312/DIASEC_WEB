@@ -57,6 +57,7 @@ import BizOrderBoard from './components/Biz/BizOrderBoard'
 import Biz_OrderWrite from './components/Biz/Biz_OrderWrite'
 import Main_CompanyProfile from './components/Main/Main_CompanyProfile'
 import MyRetouchList from './components/Member/Order/MyRetouchList'
+import MemberHome from './components/Member/MemberHome'
 // import LeasePage from './components/Lease/LeasePage'
 import AuthorRegisterIntro from './components/Author/AuthorRegisterIntro'
 import AuthorRegisterForm from './components/Author/AuthorRegisterForm'
@@ -89,12 +90,81 @@ import Footer from './components/Footer/Footer'
 // Admin
 import Insert_Product from './components/Admin/Insert_Product'
 import axios from 'axios';
+import {
+    consumeDocumentReloadOnce,
+    clearMainItemsScrollSession,
+    MAIN_ITEMS_SCROLL_PREFIX,
+} from './utils/navigationReload';
+
+const SEO_SITE_ORIGIN = 'https://diasec.co.kr';
+
+function SeoMetaManager() {
+    const location = useLocation();
+
+    useEffect(() => {
+        // 카테고리·맞춤액자는 각 화면의 Helmet(og·canonical 포함)에 맡김 — 여기서 덮어쓰면 충돌함
+        if (location.pathname === '/main_Items' || location.pathname === '/customFrames') {
+            return;
+        }
+
+        const origin = SEO_SITE_ORIGIN;
+        const currentUrl = `${origin}${location.pathname}${location.search}`;
+
+        const promoTitle = ' · 30% 오픈할인';
+        const seoDefaults = {
+            title: `디아섹코리아 | 30% 오픈할인`,
+            description: '디아섹 코리아에서 디아섹 액자와 맞춤 액자를 만나보세요. 작품과 사진에 맞춘 고급 액자 제작 서비스를 제공합니다.',
+            canonical: `${origin}/`,
+        };
+
+        let seo = { ...seoDefaults, canonical: currentUrl };
+
+        if (location.pathname === '/introduce') {
+            seo = {
+                title: `디아섹 액자 소개 | 디아섹코리아${promoTitle}`,
+                description: '디아섹 코리아의 디아섹 액자를 소개합니다. 선명한 발색과 고급스러운 마감의 아크릴 액자를 확인해보세요.',
+                canonical: `${origin}/introduce`,
+            };
+        }
+
+        document.title = seo.title;
+
+        let descriptionTag = document.querySelector('meta[name="description"]');
+        if (!descriptionTag) {
+            descriptionTag = document.createElement('meta');
+            descriptionTag.setAttribute('name', 'description');
+            document.head.appendChild(descriptionTag);
+        }
+        descriptionTag.setAttribute('content', seo.description);
+
+        let canonicalTag = document.querySelector('link[rel="canonical"]');
+        if (!canonicalTag) {
+            canonicalTag = document.createElement('link');
+            canonicalTag.setAttribute('rel', 'canonical');
+            document.head.appendChild(canonicalTag);
+        }
+        canonicalTag.setAttribute('href', seo.canonical);
+    }, [location.pathname, location.search]);
+
+    return null;
+}
 
 function ScrollToTop() {
-    const { pathname } = useLocation();
+    const location = useLocation();
     useEffect(() => {
+        const restoreKey = `${MAIN_ITEMS_SCROLL_PREFIX}${location.pathname}${location.search}`;
+
+        if (consumeDocumentReloadOnce()) {
+            clearMainItemsScrollSession();
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (location.pathname === "/main_Items" && sessionStorage.getItem(restoreKey) != null) {
+            return;
+        }
         window.scrollTo(0, 0);
-    }, [pathname]);
+    }, [location.pathname, location.search]);
     return null;
 }
 
@@ -121,7 +191,7 @@ function Layout() {
         const handler = async (e) => {
             // console.log("[GLOBAL message]", e.origin, e.data);
 
-            if (e.origin !== "https://diasec.co.kr") return;
+            if (e.origin !== window.location.origin) return;
 
             const { type, message } = e.data || {};
 
@@ -145,6 +215,7 @@ function Layout() {
 
                     const profile = await api.get(`/member/me`);
                     setMember(profile.data);
+                    toast.success("로그인되었습니다.");
                     navigate("/");
                 } catch (err) {
                     toast.error("로그인 정보를 불러오지 못했습니다.");
@@ -203,7 +274,9 @@ function Layout() {
                     </div>
                 ) : isMember ? (
                     <div className="flex flex-row mt-20">
-                        <Member_Sidebar />
+                        <div className="hidden md:block shrink-0">
+                            <Member_Sidebar />
+                        </div>
                         <Outlet />
                     </div>
                 ) : (
@@ -212,7 +285,7 @@ function Layout() {
             </div>
 
             <div className={`
-                xl:h-[210px] lg:h-[200px] h-[190px]
+                h-[240px] md:h-[220px] xl:h-[210px] 
                 w-full bg-white ${extraPb}`}>
                 <Footer />
             </div>
@@ -231,6 +304,7 @@ function App() {
 
     return (
         <MemberProvider>
+            <SeoMetaManager />
             <ScrollToTop />
             <Routes>
                 <Route element={<Layout />}>
@@ -284,6 +358,7 @@ function App() {
                     <Route path="/biz_OrderWrite" element={<Biz_OrderWrite />} />
                     <Route path="/main_CompanyProfile" element={<Main_CompanyProfile />} />
                     <Route path="/mypage/retouch" element={<MyRetouchList />} />
+                    <Route path="/mypage" element={<MemberHome />} />
                     {/* <Route path="/leasePage" element={<LeasePage />} /> */}
                     <Route path="/authorRegisterIntro" element={<AuthorRegisterIntro />} />
                     <Route path="/authorRegisterForm" element={<AuthorRegisterForm />} />

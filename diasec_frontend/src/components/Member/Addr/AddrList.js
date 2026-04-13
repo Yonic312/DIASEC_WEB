@@ -75,33 +75,39 @@ const AddrList = () => {
     }
 
     return (
-        <div className="flex flex-col w-full">
-            <span 
-                className="
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >
+            <div className="flex items-center justify-between">
+                <span className="
                     md:text-xl text-[clamp(14px,2.607vw,20px)]
-                    font-bold sm:pb-6 pb-2">| 배송 주소록 관리</span>
+                    font-bold pb-6">| 배달 주소록 관리
+                </span>
 
-            <div className="
-                md:text-base text-[clamp(11px,2.085vw,16px)]
-                flex items-center justify-between bg-[#555] h-[60px] 
-                xl:px-8 lg:px-6 md:px-4 pl-[3px]
-                text-center font-semibold text-white border-y border-gray-300">
-                <input type="checkbox" checked={isAllChecked} onChange={handleAllCheck} 
+                <button
+                    type="button"
+                    onClick={() => navigate('/mypage')}
                     className="
-                        md:w-[18px] w-[clamp(12px,2.345vw,18px)]
-                        md:h-[18px] h-[clamp(12px,2.345vw,18px)]" />
-                <span 
-                    className="
-                        w-[17%]">배송지명</span>
-                <span 
-                    className="
-                        w-[13%]">수령인</span>
-                <span 
-                    className="
-                        w-[17%]">휴대전화</span>
-                <span 
-                    className="
-                        w-[33%]">주소</span>
+                        md:hidden
+                        self-start flex items-center gap-1 mb-3
+                        text-[13px] text-gray-600 hover:text-gray-900
+                    "
+                >
+                    <span className="text-base leading-none">←</span>
+                    마이페이지
+                </button>
+            </div>
+
+            <div className="flex items-center justify-between bg-gray-50 border rounded-lg px-4 py-3 mb-3">
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                    <input 
+                        type="checkbox"
+                        checked={isAllChecked}
+                        className="w-4 h-4"
+                    />
+                    전체 선택
+                </label>
+                <span className="text-sm text-gray-500">총 {addresses.length}개</span>
             </div>
             
             {addresses.length === 0 ? (
@@ -113,54 +119,51 @@ const AddrList = () => {
                     <div 
                         key={addr.cno}
                         onClick={() => navigate(`/addrModify/${addr.cno}`)}
-                        className="
-                            md:text-xs text-[clamp(7px,1.5645vw,12px)]
-                            flex items-center justify-between bg-white h-[60px] 
-                            xl:px-8 lg:px-6 md:px-4 pl-[3px]
-                            text-center border-b border-gray-200 cursor-pointer hover:bg-gray-200">
-                        <input 
-                            type="checkbox"
-                            onClick={(e) => e.stopPropagation()} 
-                            checked={selectedCnos.includes(addr.cno)} 
-                            onChange={() => handleCheckboxChange(addr.cno)} 
-                            className="
-                                md:w-[18px] w-[clamp(12px,2.345vw,18px)]
-                                md:h-[18px] h-[clamp(12px,2.345vw,18px)]" />
-                        <span 
-                            className="
-                                w-[17%]">
-                            {addr.isDefault == true && (
-                                <span 
-                                    className="
-                                        md:text-xs text-[clamp(7px,1.5645vw,12px)]
-                                        text-red-500 ml-2"> [기본] </span>
-                            )}
-                            {addr.label}
-                        </span>
-                        <span 
-                            className="
-                                w-[13%]">{addr.recipient}</span>
-                        <span 
-                            className="
-                                w-[15%]">{addr.phone}</span>
-                        <span 
-                            className="
-                                w-[35%]">({addr.postcode}) <br /> {addr.address} {addr.detailAddress}</span>
+                        className="border rounded-xl bg-white p-4 mb-3 shadow-sm cursor-pointer hover:bg-gray-50"
+                    >
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[15px] font-semibold text-gray-800 truncate">{addr.label}</span>
+                                    {addr.isDefault === true && (
+                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">
+                                            기본
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-1 text-[13px] text-gray-600">
+                                    {addr.recipient} · {addr.phone}
+                                </div>
+                            </div>
+                            <input 
+                                type="checkbox"
+                                onClick={(e) => e.stopPropagation()}
+                                checked={selectedCnos.includes(addr.cno)}
+                                onChange={() => handleCheckboxChange(addr.cno)}
+                                className="
+                                    w-5 h-5 
+                                    mt-1"
+                            />
+                        </div>
+
+                        <div className="mt-3 text-[13px] text-gray-700 break-words">
+                            ({addr.postcode}) {addr.address} {addr.detailAddress}
+                        </div>
                     </div>
                 ))
             )}
 
             <div 
                 className="
-                    md:text-xs text-[clamp(7px,1.5645vw,12px)]
+                    text-[12px]
                     flex items-center justify-center mt-5 gap-4">
                 <button 
                     className="
-                        flex sm:px-8 px-2 sm:py-3 py-1
+                        flex sm:px-3 sm:py-2 px-2 py-2
                         rounded-[4px] border-[1px] border-black" onClick={handleDeleteSelected}> 선택 주소록 삭제 </button>
                 <button 
                     className="
-                        flex sm:px-8 px-2 sm:py-3 py-1 text-white bg-black
+                        flex sm:px-3 sm:py-2 px-2 py-2 text-white bg-black
                         rounded-[4px] border-[1px] border-black" onClick={() => navigate('/addrRegister')}> 배송지등록 </button>
             </div>
         </div>

@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import axios from "axios"
 import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
+import { SitePriceRow } from '../common/SitePriceDisplay';
 
 const CATS = [
-    { key: "masterPiece", label: "명화갤러리" },
+    { key: "masterPiece", label: "명화" },
     { key: "koreanPainting", label: "동양화" },
     { key: "photoIllustration", label: "사진/일러스트" },
     { key: "fengShui", label: "풍수그림" },
@@ -197,8 +198,16 @@ const Main_SearchResults = () => {
                                 {p.author}
                             </span>
 
-                            <span className="text-[15px] font-semibold text-[#a67a3e] mt-[2px]">
-                                {priceMap[p.pid] ? `${priceMap[p.pid].toLocaleString()}원~` : ''}
+                            <span className="mt-[2px] font-semibold text-[#a67a3e]">
+                                {priceMap[p.pid] != null ? (
+                                    <SitePriceRow
+                                        unitPrice={priceMap[p.pid]}
+                                        quantity={1}
+                                        suffix="~"
+                                    />
+                                ) : (
+                                    ''
+                                )}
                             </span>
 
                             <hr className="my-1" />

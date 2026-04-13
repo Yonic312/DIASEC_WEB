@@ -45,8 +45,6 @@ const MyRetouchList = () => {
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImg, setPreviewImg] = useState("");
 
-    const [rejectTypes, setRejectTypes] = useState([]);
-
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailRow, setDetailRow] = useState(null);
 
@@ -58,7 +56,7 @@ const MyRetouchList = () => {
     const retouchOptions = [
         '피부 보정',
         '얼굴 디테일 보정',
-        '얼굴 라인·피부 결 리터칭',
+        '얼굴 라인·몸매 보정',
         '이미지 역광 및 색감보정',
         '불필요한 배경 삭제 및 변경',
         '업스케일링 (흐릿한 사진 선명보정)',
@@ -79,8 +77,11 @@ const MyRetouchList = () => {
     const [loading, setLoading] = useState(false);
 
     const canEditRequest = (row) => {
-        return !row.previewStatus || row.previewStatus === "REJECTED";
+        return !row.previewStatus;
     };
+
+    const getEditButtonLabel = (row) => 
+        row?.previewStatus === "REJECTED" ? "반려 요청 수정" : "요청 수정";
 
     const parseTypes = (v) => {
         if (!v) return [];
@@ -95,10 +96,6 @@ const MyRetouchList = () => {
             note: row.retouchNote ?? '',
         });
         setEditOpen(true);
-    }
-
-    const toggleRejectType = (t) => {
-        setRejectTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
     }
 
     const formatDatetime = (dateStr) => {
@@ -155,7 +152,7 @@ const MyRetouchList = () => {
     };
 
     // 기본적인 저장
-    const submitDecision = async ({ itemId, decision, feedback, types }) => {
+    const submitDecision = async ({ itemId, decision, feedback }) => {
         if (!itemId) return;
 
         setActing(true);
@@ -168,7 +165,8 @@ const MyRetouchList = () => {
                 body = {};
             } else if (decision === "REJECTED") {
                 url = `${API}/order/retouch/${itemId}/reject`;
-                body = { feedback: feedback || "", types: types || [] }
+
+                body = { feedback: (feedback || "").trim()};
             } else {
                 throw new Error("잘못된 decision");
             }
@@ -230,19 +228,17 @@ const MyRetouchList = () => {
     };
 
     const onOpenReject = (row) => {
-        setRejectTypes(parseTypes(row.retouchTypes));
-
         setRejectItemId(row.itemId);
         setRejectMsg("");
         setRejectOpen(true);
     };
 
     const onRejectSubmit = () => {
-        if (!rejectMsg.trim().length < 5) {
+        if (rejectMsg.trim().length < 5) {
             toast.error("반려 사유를 5자 이상 입력해주세요.");
             return;
         }
-        submitDecision({ itemId: rejectItemId, decision: "REJECTED", feedback: rejectMsg.trim(), types: rejectTypes });
+        submitDecision({ itemId: rejectItemId, decision: "REJECTED", feedback: rejectMsg.trim() });
         setRejectOpen(false);
     }
 
@@ -281,176 +277,64 @@ const MyRetouchList = () => {
     }, [list, startDate, endDate]);
 
     return (
-        <div className="w-full">
-            <div className="flex items-end justify-between gap-3 mb-4">
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >
+            <div className="flex items-end justify-between mb-4">
                 <div>
-                    <span className="md:text-xl text-[clamp(14px,2.607vw,20px)] font-bold pb-6">| 보정내역 조회</span>
+                    <span className="
+                        md:text-lg text-[clamp(16px,2.346vw,18px)]
+                        font-bold pb-6"
+                    >
+                        | 보정내역 조회
+                    </span>
                     <p className="text-sm text-gray-500">보정 요청한 맞춤액자 주문만 표시됩니다.</p>
                 </div>
-            </div>
 
-            <div className="
-                flex flex-wrap items-center gap-2 mb-4
-                md:text-sm text-[clamp(11px,2.085vw,16px)]
-            ">
-                <div className="flex items-center gap-2">
-                <span className="text-gray-600">기간</span>
-                <input
-                    type="date"
+                <button
+                    type="button"
+                    onClick={() => navigate('/mypage')}
                     className="
-                        md:text-base text-[clamp(11px,2.085vw,16px)]
-                        border rounded-md px-2 py-1
-                        sm:w-[140px] w-[100px] 
-                        sm:h-[40px] h-[30px]
+                        md:hidden
+                        self-start flex items-center gap-1 mb-3
+                        text-[13px] text-gray-600 hover:text-gray-900
                     "
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                />
-                <span className="text-gray-400">~</span>
-                <input
-                    type="date"
-                    className="
-                        md:text-base text-[clamp(11px,2.085vw,16px)]
-                        border rounded-md px-2 py-1
-                        sm:w-[140px] w-[100px] 
-                        sm:h-[40px] h-[30px]"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                />
+                >
+                    <span className="text-base leading-none">←</span>
+                    마이페이지
+                </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mb-2 md:mb-4">
+                <div className="flex items-center gap-2">
+                    {/* <span className="text-gray-600">기간</span> */}
+                    <input
+                        type="date"
+                        className="
+                            md:text-[14px] text-[clamp(11px,1.824vw,14px)]
+                            border rounded-md px-2 py-1
+                            sm:w-[140px] w-[100px] 
+                            sm:h-[40px] h-[30px]
+                        "
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                    <span className="text-gray-400">~</span>
+                    <input
+                        type="date"
+                        className="
+                            md:text-[14px] text-[clamp(11px,1.824vw,14px)]
+                            border rounded-md px-2 py-1
+                            sm:w-[140px] w-[100px] 
+                            sm:h-[40px] h-[30px]"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                    />
                 </div>
             </div>
 
-            {/* 데스크톱(기존 표) */}
-            <div className="hidden md:block">
-                <div className="w-full border rounded-lg overflow-hidden">
-                    <div className="flex flex-row w-full bg-gray-50 text-sm text-center font-medium px-3 py-2">
-                        <div className="w-[10%]">주문번호</div>
-                        <div className="w-[10%]">주문상태</div>
-                        <div className="w-[12%]">보정상태</div>
-                        <div className="w-[38%]">요청내용</div>
-                        <div className="w-[15%]">업로드/보관</div>
-                        <div className="w-[7%]">보정 이미지</div>
-                        <div className="w-[8%]">처리</div>
-                    </div>
-
-                    {loading ? (
-                        <div className="p-4 text-gray-500">불러오는 중...</div>
-                    ) : filtered.length === 0 ? (
-                        <div className="p-6 text-gray-500">조회된 보정 내역이 없습니다.</div>
-                    ) : (
-                        filtered.map((row) => (
-                            <div key={row.itemId} className="flex px-3 py-3 border-t text-sm items-center text-center" >
-                                <div className="w-[10%]">{row.oid}</div>
-                                <div className="w-[10%]">{row.orderStatus}</div>
-                                
-                                {/* 상태 안내 문장 */}
-                                <div className="w-[12%] text-center">
-                                    {statusBadge(row.previewStatus)}
-
-                                    {/* 보정상태 안내 문장 */}
-                                    {/* <div className="mt-1 text-[11px] text-gray-500">
-                                        {row.previewStatus === "WAITING_CUSTOMER" && "승인 또는 반려를 선택해주세요."}
-                                        {row.previewStatus === "APPROVED" && "승인 완료."}
-                                        {row.previewStatus === "REJECTED" && "반려됨"}
-                                        {!row.previewStatus && "프리뷰가 업로드 전"}
-                                    </div> */}
-                                </div>
-
-                                {/* 요청내용: 타입 + 요청사항 + (반려사유는 여기에 같이) */}
-                                <div className="w-[38%] text-left">
-                                    <div className="text-[12px] text-gray-700">
-                                        {/* 반려 사유 */}
-                                        <TypeChips value={row.retouchTypes} />
-                                    </div>
-
-                                    {row.retouchNote ? (
-                                        <div className="mt-2 text-xs text-gray-700 bg-gray-50 border rounded px-2 py-1 text-left">
-                                            요청사항 : {row.retouchNote}
-                                        </div>
-                                    ) : (
-                                        <div className="mt-1 text-[11px] text-gray-400">요청사항 : -</div>
-                                    )}
-
-                                    {row.previewStatus === "REJECTED" && row.customerFeedback ? (
-                                        <div className="mt-1 text-[11px] text-red-600 line-clamp-2">
-                                            반려사유: {row.customerFeedback}
-                                        </div>
-                                    ) : null}
-
-                                    <div className="mt-2 flex justify-end">
-                                        {canEditRequest(row) ? (
-                                            <button 
-                                                className="px-2 py-1 text-[11px] rounded border hover:bg-gray-50 disabled:opacity-50"
-                                                onClick={() => openEdit(row)}
-                                                disabled={acting}
-                                            >
-                                                요청 수정
-                                            </button>
-                                        ) : (
-                                            <span className="text-[11px] text-gray-400">
-                                                {row.previewStatus === "WAITING_CUSTOMER" ? "승인/반려로 진행" : "수정 불가"}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                    
-                                {/* 업로드/보관 */}
-                                <div className="w-[15%] text-center">
-                                    {/* 삭제 예정 안내: 승인완료 + deleteScheduledAt 있을때 */}
-                                    <div className="text-[11px] text-gray-500">
-                                        업로드 : {row.previewCreatedAt ? formatDateOnly(row.previewCreatedAt) : "-"}
-                                    </div>
-                                    <div className="mt-1 text-[11px] text-gray-500">
-                                        보관일 : {row.deleteScheduledAt ? `${formatDateOnly(row.deleteScheduledAt)} ` : "-"}
-                                    </div>
-                                </div>
-
-                                    {/* 보정 이미지 */}
-                                <div className="w-[7%]">
-                                    {row.previewUrl ? (
-                                        <button type="button" onClick={() => openPreview(row.previewUrl)}>
-                                            <img 
-                                                src={row.previewUrl}
-                                                alt="preview" 
-                                                className="w-14 h-14 object-cover rounded border hover:opacity-90" 
-                                            />
-                                        </button>
-                                    ) : (
-                                        <span className="text-gray-400">없음</span>
-                                    )}
-                                </div>
-
-                                {/* 처리 버튼 */}
-                                <div className="w-[8%] gap-2">
-                                    {row.previewStatus === "WAITING_CUSTOMER" ? (
-                                        <>
-                                            <button
-                                                className="px-2 py-1 text-xs rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
-                                                onClick={() => onApprove(row.itemId)}
-                                                disabled={acting}
-                                            >
-                                                {acting ? "처리중..." : "승인"}
-                                            </button>
-                                            <button
-                                                className="px-2 py-1 ml-1 text-xs rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
-                                                onClick={() => onOpenReject(row)}
-                                                disabled={acting}
-                                            >
-                                                {acting ? "처리중..." : "반려"}
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <span className="text-xs text-gray-400">-</span>
-                                    )}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-
-            {/* 모바일(카드형) */}
-            <div className="md:hidden">
+            {/* 카드 목록 (모바일·PC 공통) */}
+            <div className="w-full">
                 {loading ? (
                     <div className="p-4 text-gray-500">불러오는 중...</div>
                 ) : filtered.length === 0 ? (
@@ -461,49 +345,121 @@ const MyRetouchList = () => {
                             ? row.retouchTypes
                             : String(row.retouchTypes || '')
                                 .split(',')
-                                .map(s => s.trim())
+                                .map((s) => s.trim())
                                 .filter(Boolean);
-                        
-                        const topTypes = typesArr.slice(0, 2);
-                        const restCount = Math.max(0, typesArr.length - topTypes.length);
 
                         return (
-                            <div key={row.itemId} className="border rounded-lg p-3 mb-3 bg-white">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <div className="text-[13px] font-semibold text-gray-800">
-                                            주문번호 {row.oid}
-                                        </div>
-                                        <div className="text-[11px] text-gray-500 mt-1">
-                                            {row.orderStatus}
-                                        </div>
+                            <div
+                                key={row.itemId}
+                                className="border rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 bg-white shadow-sm"
+                            >
+                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-5">
+                                    {/* 썸네일(보정 시안) */}
+                                    <div className="shrink-0 flex justify-center sm:justify-start">
+                                        {row.previewUrl ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => openPreview(row.previewUrl)}
+                                                className="rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-[#D0AC88]/40"
+                                            >
+                                                <img
+                                                    src={row.previewUrl}
+                                                    alt="보정 시안"
+                                                    className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] object-cover"
+                                                />
+                                            </button>
+                                        ) : (
+                                            <div
+                                                className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[11px] text-gray-400 text-center px-1"
+                                            >
+                                                시안 없음
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="shrink-0">
-                                        {statusBadge(row.previewStatus)}
-                                    </div>
-                                </div>
-
-                                <div className="mt-2">
-                                    <div className="text-[11px] font-semibold text-gray-700">대표 보정</div>
-                                    <div className="mt-1">
-                                        <TypeChips value={topTypes} />
-                                    </div>
-                                    {restCount > 0 && (
-                                        <div className="mt-1 text-[11px] text-gray-400">
-                                            +{restCount}개
+                                    <div className="min-w-0 flex-1 flex flex-col gap-2">
+                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <span className="text-[14px] md:text-[15px] font-semibold text-gray-800">
+                                                        주문번호 {row.oid}
+                                                    </span>
+                                                    {statusBadge(row.previewStatus)}
+                                                </div>
+                                                <div className="text-[13px] text-gray-500 mt-1">
+                                                    {row.orderStatus}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2 top-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                                                {canEditRequest(row) && (
+                                                    <button
+                                                        type="button"
+                                                        className="px-3 py-1.5 text-[11px] md:text-xs rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                                                        onClick={() => openEdit(row)}
+                                                        disabled={acting}
+                                                    >
+                                                        요청 수정
+                                                    </button>
+                                                )}
+                                                {row.previewStatus === "WAITING_CUSTOMER" ? (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            className="px-3 py-1.5 text-[11px] md:text-xs text-blue-600 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 disabled:opacity-50"
+                                                            onClick={() => onApprove(row.itemId)}
+                                                            disabled={acting}
+                                                        >
+                                                            {acting ? "처리중..." : "승인"}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="px-3 py-1.5 text-[11px] md:text-xs text-red-600 rounded-lg border border-red-200 bg-white hover:bg-red-50 disabled:opacity-50"
+                                                            onClick={() => onOpenReject(row)}
+                                                            disabled={acting}
+                                                        >
+                                                            {acting ? "처리중..." : "반려"}
+                                                        </button>
+                                                    </>
+                                                ) : null}
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="mt-3 flex justify-end">
-                                    <button
-                                        type="button"
-                                        className="px-3 py-2 text-[12px] rounded border bg-white hover:bg-gray-50"
-                                        onClick={() => openDetail(row)}
-                                    >
-                                        상세보기
-                                    </button>
+                                        <div>
+                                            <div className="text-[12px] font-semibold text-gray-700">보정 항목</div>
+                                            <div className="mt-1">
+                                                <TypeChips value={typesArr} />
+                                            </div>
+                                        </div>
+
+                                        {row.retouchNote ? (
+                                            <div className="text-xs text-gray-700 bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-2 line-clamp-3">
+                                                요청사항: {row.retouchNote}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] text-gray-400">요청사항: -</div>
+                                        )}
+
+                                        {row.previewStatus === "REJECTED" && row.customerFeedback ? (
+                                            <div className="text-[11px] text-red-600 line-clamp-2">
+                                                반려사유: {row.customerFeedback}
+                                            </div>
+                                        ) : null}
+
+                                        <div className="text-[11px] text-gray-500 flex flex-wrap gap-x-4 gap-y-1">
+                                            <span>
+                                                업로드:{" "}
+                                                {row.previewCreatedAt
+                                                    ? formatDateOnly(row.previewCreatedAt)
+                                                    : "-"}
+                                            </span>
+                                            <span>
+                                                보관:{" "}
+                                                {row.deleteScheduledAt
+                                                    ? formatDateOnly(row.deleteScheduledAt)
+                                                    : "-"}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -511,163 +467,19 @@ const MyRetouchList = () => {
                 )}
             </div>
 
-            {detailOpen && detailRow && (
-            <div
-                className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
-                onClick={() => setDetailOpen(false)}
-            >
-                <div
-                className="bg-white rounded-xl shadow-xl w-full max-w-[520px] overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-                >
-                <div className="flex items-center justify-between px-5 py-4 border-b">
-                    <div className="font-bold text-gray-800">요청 상세</div>
-                    <button
-                    type="button"
-                    className="text-gray-500 hover:text-black"
-                    onClick={() => setDetailOpen(false)}
-                    >
-                    ✕
-                    </button>
-                </div>
-                <div className="px-5 py-4">
-                    <div className="text-[12px] text-gray-600 mb-2">
-                    주문번호 {detailRow.oid} / {detailRow.orderStatus}
-                    </div>
-                    <div className="mb-3">
-                    <div className="text-[12px] font-semibold text-gray-700">전체 보정 옵션</div>
-                    <div className="mt-1">
-                        <TypeChips value={detailRow.retouchTypes} />
-                    </div>
-                    </div>
-                    <div className="mb-3">
-                    <div className="text-[12px] font-semibold text-gray-700">요청사항 전체</div>
-                    {detailRow.retouchNote ? (
-                        <div className="mt-1 text-xs text-gray-700 bg-gray-50 border rounded px-3 py-2 break-words">
-                        {detailRow.retouchNote}
-                        </div>
-                    ) : (
-                        <div className="mt-1 text-[11px] text-gray-400">-</div>
-                    )}
-                    {detailRow.previewStatus === "REJECTED" && detailRow.customerFeedback && (
-                        <div className="mt-2 text-[11px] text-red-600">
-                        반려사유: {detailRow.customerFeedback}
-                        </div>
-                    )}
-                    </div>
-                    <div className="mb-3">
-                    <div className="text-[12px] font-semibold text-gray-700">업로드/보관</div>
-                    <div className="mt-1 text-[11px] text-gray-600">
-                        업로드 : {detailRow.previewCreatedAt ? formatDateOnly(detailRow.previewCreatedAt) : "-"}
-                    </div>
-                    <div className="text-[11px] text-gray-600">
-                        보관일 : {detailRow.deleteScheduledAt ? `${formatDateOnly(detailRow.deleteScheduledAt)} ` : "-"}
-                    </div>
-                    </div>
-                    <div className="mb-4">
-                    <div className="text-[12px] font-semibold text-gray-700">보정 이미지</div>
-                    {detailRow.previewUrl ? (
-                        <div className="mt-2">
-                        <button
-                            type="button"
-                            className="px-3 py-2 text-[12px] rounded border bg-white hover:bg-gray-50"
-                            onClick={() => openPreview(detailRow.previewUrl)}
-                        >
-                            이미지 보기
-                        </button>
-                        </div>
-                    ) : (
-                        <div className="mt-2 text-[11px] text-gray-400">없음</div>
-                    )}
-                    </div>
-                    {/* 처리 버튼 영역(데스크톱 로직 그대로 가져오기) */}
-                    <div className="flex gap-2">
-                    {canEditRequest(detailRow) ? (
-                        <button
-                        className="flex-1 px-3 py-2 text-[12px] rounded border hover:bg-gray-50 disabled:opacity-50"
-                        onClick={() => {
-                            setDetailOpen(false);
-                            openEdit(detailRow);
-                        }}
-                        disabled={acting}
-                        >
-                        요청 수정
-                        </button>
-                    ) : (
-                        <div className="flex-1 px-3 py-2 text-[12px] rounded border text-gray-400 text-center">
-                        {detailRow.previewStatus === "WAITING_CUSTOMER" ? "승인/반려로 진행" : "수정 불가"}
-                        </div>
-                    )}
-                    {detailRow.previewStatus === "WAITING_CUSTOMER" && (
-                        <>
-                        <button
-                            className="px-3 py-2 text-[12px] rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
-                            onClick={() => {
-                            setDetailOpen(false);
-                            onApprove(detailRow.itemId);
-                            }}
-                            disabled={acting}
-                        >
-                            {acting ? "처리중..." : "승인"}
-                        </button>
-                        <button
-                            className="px-3 py-2 text-[12px] rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
-                            onClick={() => {
-                            setDetailOpen(false);
-                            onOpenReject(detailRow);
-                            }}
-                            disabled={acting}
-                        >
-                            {acting ? "처리중..." : "반려"}
-                        </button>
-                        </>
-                    )}
-                    </div>
-                </div>
-                </div>
-            </div>
-            )}
-
             {rejectOpen && (
                 <div 
                     className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
                     onClick={() => { if (!acting) setRejectOpen(false); }}
                 >
-                    <div className="bg-white w-[420px] rounded-lg shadow-lg p-5 relative">
+                    <div 
+                        className="bg-white w-[420px] rounded-lg shadow-lg p-5 relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                     <h3 className="text-lg font-bold mb-2">반려 사유 입력</h3>
                     <p className="text-sm text-gray-500 mb-3">
                         어떤 부분을 수정하면 되는지 구체적으로 적어주세요.
                     </p>
-
-                    {/* 6항목 */}
-                    <div className="mt-3">
-                        <div className="text-sm font-semibold text-gray-700 mb-2">수정이 필요한 항목</div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {retouchOptions.map((opt) => {
-                                const checked = rejectTypes.includes(opt);
-                                return (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        className={`text-sm px-3 py-2 rounded-xl border transition text-left
-                                            ${checked
-                                                ? "border-[#D0AC88] bg-[#fffaf3] text-[#a67a3e]"
-                                                : "border-gray-200 hover:bg-gray-50 text-gray-700"
-                                            }`}
-                                        onClick={() => toggleRejectType(opt)}
-                                        disabled={acting}
-                                    >   
-                                        {opt}
-                                    </button>   
-                                )
-                            })}
-                        </div>
-
-                        <div className="mt-2 text-[11px] text-gray-500">
-                             선택은 선택사항이고, 아래에 상세 사유는 꼭 적어주세요.
-                        </div>
-                    </div>
 
                     <textarea
                         className="mt-3 w-full border rounded-md px-3 py-2 text-sm"
@@ -694,9 +506,10 @@ const MyRetouchList = () => {
                         </button>
                     </div>
                         <button
+                            type="button"
                             className="absolute top-3 right-3 text-gray-400 hover:text-black disabled:opacity-50"
                             onClick={() => setRejectOpen(false)}
-                            disabled
+                            disabled={acting}
                         >
                             ✕
                         </button>
@@ -706,10 +519,10 @@ const MyRetouchList = () => {
 
             {/* 미리보기 모달 */}
             {previewOpen && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setPreviewOpen(false)}>
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000]" onClick={() => setPreviewOpen(false)}>
                     <div className="bg-white rounded-lg p-3 max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-2">
-                            <div className="text-sm font-medium">보정 시안 미리보기</div>
+                            <div className="text-[14px] font-medium">보정 시안 미리보기</div>
                             <button className="text-gray-500 hover:text-black" onClick={() => setPreviewOpen(false)}>✕</button>
                         </div>
                         <img src={previewImg} alt="preview-large" className="max-w-[70vw] max-h-[80vh] object-contain rounded" />
@@ -720,9 +533,9 @@ const MyRetouchList = () => {
             {editOpen && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setEditOpen(false)}>
                     <div className="bg-white w-[520px] max-w-[92vw] rounded-lg shadow-lg p-5 relative" onClick={(e) => e.stopPropagation()}>
-                    <h3 className="text-lg font-bold mb-2">보정 요청 수정</h3>
+                    <h3 className="text-lg font-bold mb-2">보정 요청</h3>
                     <p className="text-sm text-gray-500 mb-3">
-                        프리뷰 업로드 전(또는 반려 상태)에서만 수정 가능합니다.
+                    원하는 보정 항목을 선택하고 요청사항을 적어주세요.
                     </p>
 
                     <div className="text-sm font-semibold text-gray-700 mb-2">보정 항목 선택</div>
@@ -758,17 +571,20 @@ const MyRetouchList = () => {
                         onChange={(e) => setEditDraft(d => ({ ...d, note: e.target.value }))}
                         placeholder="예) 잡티 제거, 피부톤 자연스럽게, 배경 흰색으로, 역광 완화 등"
                     />
+                    <p className="text-xs text-gray-500 mt-2">
+                        ※ 난이도가 높은 보정은 상담 후 추가 비용이 발생할 수 있습니다
+                    </p>
 
                     <div className="flex gap-2 mt-4">
                         <button
-                        className="flex-1 py-2 rounded border hover:bg-gray-50 disabled:opacity-50"
+                        className="flex-1 py-2 rounded-xl border hover:bg-gray-50 disabled:opacity-50"
                         onClick={() => setEditOpen(false)}
                         disabled={acting}
                         >
                         취소
                         </button>
                         <button
-                        className="flex-1 py-2 rounded bg-black text-white hover:bg-gray-800 disabled:opacity-50"
+                        className="flex-1 py-2 rounded-xl bg-[#D0AC88] text-white hover:bg-gray-800 disabled:opacity-50"
                         onClick={saveRequestEdit}
                         disabled={acting}
                         >

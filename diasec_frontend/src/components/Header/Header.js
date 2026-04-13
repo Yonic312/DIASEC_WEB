@@ -2,6 +2,7 @@ import { useContext, useEffect, useState, useMemo, useRef, useCallback } from 'r
 import { MemberContext } from '../../context/MemberContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { ChevronDown, X, Menu as MenuIcon } from 'lucide-react';
 import diasec1 from '../../assets/dropDownMenu/diasec/1.jpg'; import diasec2 from '../../assets/dropDownMenu/diasec/2.jpg';
 import logo from '../../assets/images/logo.png'
@@ -147,10 +148,12 @@ const Header = () => {
             axios.post(`${API}/member/logout`, { withCredentials: true})
                 .then(() => {
                     setMember(null);
+                    toast.success('로그아웃되었습니다.');
                     navigate('/');
                 })
                 .catch((err) => {
                     console.error("로그아웃 실패", err);
+                    toast.error('로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.');
             });
         }
     };
@@ -486,7 +489,7 @@ const Header = () => {
                             )}
                             <li>
                                 <button
-                                onClick={() => { navigate('/orderList'); setDrawerOpen(false); }}
+                                onClick={() => { navigate('/mypage'); setDrawerOpen(false); }}
                                 className="flex items-center gap-2 w-full px-4 py-3 text-[14px] text-gray-700 hover:bg-gray-100 transition"
                                 >
                                 <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24">

@@ -210,60 +210,81 @@ const FaqMain = () => {
                 ))}
             </div>
 
-            <div className="
-                md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10"
-            >
+            {/* 페이징 (InquiryList와 동일 패턴) */}
+            <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
+                {(() => {
+                    const maxVisible = 5;
+                    let startPage = Math.max(currentPage - 2, 1);
+                    let endPage = Math.min(startPage + maxVisible - 1, totalPages);
 
-                {/* 처음으로 */}
-                <button 
-                    onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
-                    disabled={groupStart === 1}
-                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<<'}
-                </button>
+                    if (endPage - startPage < maxVisible - 1) {
+                        startPage = Math.max(endPage - maxVisible + 1, 1);
+                    }
 
-                {/* 이전 */}
-                <button 
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<'}
-                </button>
+                    const pageNumbers = Array.from(
+                        { length: endPage - startPage + 1 },
+                        (_, i) => startPage + i
+                    );
 
-                {/* 페이지 번호 */}
-                {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(pageNum => (
-                    <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`
-                        sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center rounded-full ${
-                        currentPage === pageNum ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                    >
-                    {pageNum}
-                    </button>
-                ))}
+                    return (
+                        <div className="flex justify-center gap-1 text-sm font-medium">  
+                            {/* 맨 처음 */}
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<<'}
+                            </button>
+                            {/* 이전 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev -1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<'}
+                            </button>
 
-                {/* 다음 */}
-                <button 
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>'}
-                </button>
+                            {/* 숫자 */}
+                            {pageNumbers.map((pageNum) => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`w-8 h-8 rounded-full border flex items-center justify-center
+                                        ${currentPage === pageNum 
+                                            ? 'bg-black text-white border-black' 
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}>
+                                    <span>{pageNum}</span>
+                                </button>
+                            ))}
 
-                {/* 마지막으로 */}
-                <button 
-                    onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
-                    disabled={groupEnd === totalPages}
-                    className="sm:w-8 w-6 sm:h-8 h-6 flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>>'}
-                </button>
+                            {/* 다음 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                disabled={currentPage >= totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>'}
+                            </button>
+                            {/* 마지막 */}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>>'}
+                            </button>
+                        </div>
+                    )
+                })()}
             </div>
         </div>
     )

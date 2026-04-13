@@ -14,11 +14,13 @@ const ReviewList = ({ pid }) => {
     const [expandedMap, setExpandedMap] = useState({});
 
     useEffect(() => {
-        fetch(`${API}/review/list?pid=${pid}`)
+        // fetch(`${API}/review/list?pid=${pid}`) 상품([pid]별 리뷰 * 추후 사용)
+        fetch(`${API}/review/all`)
             .then(res => res.json())
             .then(data => setReviews(data))
             .catch(err => console.error("리뷰 불러오기 실패", err));
-    }, [pid]);
+    // }, [pid]);
+    }, []);
 
     // 리뷰 작성
     const handleWriteReview = () => {
@@ -129,148 +131,159 @@ const ReviewList = ({ pid }) => {
                 <hr />
             </div>
 
-
-            {currentReviews.map(review => (
-                <div key={review.rid} className="border-b pb-6">
-                    
-                    {/* 기본 정보 영역 */}
-                    <div className="flex justify-between items-center mb-1">
-                        <div className='md:text-xl text-[clamp(17px,2.606vw,20px)] font-semibold text-gray-900'>{review.title}</div>
-                        <span className='md:text-[18px] text-[clamp(14px,2.346vw,18px)] text-gray-400'>{review.createdAt?.slice(0, 10)}</span>
-                    </div>
-
-                    <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                        <div 
-                            className="
-                                text-yellow-400 
-                                md:text-xl text-[clamp(16px,2.607vw,20px)]">
-                            {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
-                        </div>
-                        <div className="text-sm text-gray-400 italic">
-                            {maskedId(review.id)} 님의 리뷰
-                        </div>
-                    </div>
-
-                    {/* 본문 + 이미지 토글 포함 */}
-                    {expandedMap[review.rid] && (
-                        <>
-                            {/* 본문 */}
-                            <p className="
-                                md:text-[20px] text-[clamp(18px,2.606vw,20px)] 
-                                border-t-[1px] pt-2 text-gray-800 mb-4 whitespace-pre-line">
-                                {review.content}
-                            </p>
-
-                            {review.images?.length > 0 && (
-                                <div>
-                                    <div className="flex gap-2 overflow-x-auto mb-3">
-                                        {review.images.map((imgUrl, idx) => (
-                                            <img key={idx} 
-                                                src={imgUrl} 
-                                                alt="리뷰 이미지" 
-                                                className="
-                                                    md:w-24 w-[clamp(64px,12.516vw,96px)]
-                                                    md:h-24 h-[clamp(64px,12.516vw,96px)]
-                                                    rounded object-cover border"
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // 리뷰 펼침 방지
-                                                    setModalImages(review.images); // 클릭한 이미지 저장
-                                                    setModalIndex(idx);
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {/* 토글 버튼 */}
-                    {(review.content || review.images?.length > 0) && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                toggleExpanded(review.rid);
-                            }}
-                            className="text-base text-gray-600 hover:text-black font-medium transition"
-                        >
-                            {expandedMap[review.rid] ? '▲ 리뷰 닫기' : ( 
-                                <> 
-                                    ▼ 리뷰 보기 
-                                    {review.images?.length > 0 && (
-                                        <img src={images_icon} alt="이미지 포함 아이콘" className="inline w-[13px] h-[13px] ml-1" /> )}</>)}
-                        </button>
-                    )}
-                </div>
-            ))}
-            {/* 페이징 버튼 */}
-            <div className="flex justify-center gap-2 mt-8 text-sm">
-                {(() => {
-                    const totalPages = Math.max(1, Math.ceil(reviews.length / reviewsPerPage));
-                    const maxVisible = 5;
-                    let startPage = Math.max(currentPage - 2, 1);
-                    let endPage = Math.min(startPage + maxVisible - 1, totalPages);
-
-                    // 다시 앞부분 정렬 보정
-                    if (endPage - startPage < maxVisible - 1) {
-                        startPage = Math.max(endPage - maxVisible + 1, 1);
-                    }
-
-                    const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-
-                    return (
-                        <div className="flex justify-center gap-1 mt-10 text-sm font-medium">  
-                            {/* 맨 처음 */}
-                            <button
-                                onClick={() => setCurrentPage(1)}
-                                disabled={currentPage === 1}
-                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
-                                    ${currentPage === 1 ? 'text-gray-300 border-gray-200' : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
-                                {'<<'}
-                            </button>
-                            {/* 이전 버튼 */}
-                            <button
-                                onClick={() => setCurrentPage(prev => prev -1)}
-                                disabled={currentPage === 1}
-                                className={`w-8 h-8 border rounded-full flex items-center justify-center ${currentPage === 1 ? 'text-gray-300 border-gray-200' : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
-                                {'<'}
-                            </button>
+            <div>
+                {currentReviews.map(review => (
+                    <div key={review.rid} className="border-b pb-6">
                         
+                        {/* 기본 정보 영역 */}
+                        <div className="flex justify-between items-center mb-1">
+                            <div className='md:text-xl text-[clamp(17px,2.606vw,20px)] font-semibold text-gray-900'>{review.title}</div>
+                            <span className='md:text-[18px] text-[clamp(14px,2.346vw,18px)] text-gray-400'>{review.createdAt?.slice(0, 10)}</span>
+                        </div>
 
-                            {/* 페이지 숫자들 */}
-                            {pageNumbers.map((pageNum) => (
+                        <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                            <div 
+                                className="
+                                    text-yellow-400 
+                                    md:text-xl text-[clamp(16px,2.607vw,20px)]">
+                                {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                            </div>
+                            <div className="text-sm text-gray-400 italic">
+                                {maskedId(review.id)} 님의 리뷰
+                            </div>
+                        </div>
+
+                        {/* 본문 + 이미지 토글 포함 */}
+                        {expandedMap[review.rid] && (
+                            <>
+                                {/* 본문 */}
+                                <p className="
+                                    md:text-[20px] text-[clamp(18px,2.606vw,20px)] 
+                                    border-t-[1px] pt-2 text-gray-800 mb-4 whitespace-pre-line">
+                                    {review.content}
+                                </p>
+
+                                {review.images?.length > 0 && (
+                                    <div>
+                                        <div className="flex gap-2 overflow-x-auto mb-3">
+                                            {review.images.map((imgUrl, idx) => (
+                                                <img key={idx} 
+                                                    src={imgUrl} 
+                                                    alt="리뷰 이미지" 
+                                                    className="
+                                                        md:w-24 w-[clamp(64px,12.516vw,96px)]
+                                                        md:h-24 h-[clamp(64px,12.516vw,96px)]
+                                                        rounded object-cover border"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // 리뷰 펼침 방지
+                                                        setModalImages(review.images); // 클릭한 이미지 저장
+                                                        setModalIndex(idx);
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* 토글 버튼 */}
+                        {(review.content || review.images?.length > 0) && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleExpanded(review.rid);
+                                }}
+                                className="text-base text-gray-600 hover:text-black font-medium transition"
+                            >
+                                {expandedMap[review.rid] ? '▲ 리뷰 닫기' : ( 
+                                    <> 
+                                        ▼ 리뷰 보기 
+                                        {review.images?.length > 0 && (
+                                            <img src={images_icon} alt="이미지 포함 아이콘" className="inline w-[13px] h-[13px] ml-1" /> )}</>)}
+                            </button>
+                        )}
+                    </div>
+                ))}
+                {/* 페이징 버튼 */}
+                {/* const totalPages = Math.max(1, Math.ceil(reviews.length / reviewsPerPage)); */}
+                <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
+                    {(() => {
+                        const totalPages = Math.max(1, Math.ceil(reviews.length / 5)); // 10개씩
+                        const maxVisible = 5;
+                        let startPage = Math.max(currentPage - 2, 1);
+                        let endPage = Math.min(startPage + maxVisible - 1, totalPages);
+
+                        if (endPage - startPage < maxVisible - 1) {
+                            startPage = Math.max(endPage - maxVisible + 1, 1);
+                        }
+
+                        const pageNumbers = Array.from(
+                            { length: endPage - startPage + 1 },
+                            (_, i) => startPage + i
+                        );
+
+                        return (
+                            <div className="flex justify-center gap-1 text-sm font-medium">
+                                {/* 맨 처음 */}
                                 <button
-                                    key={pageNum}
-                                    onClick={() => setCurrentPage(pageNum)}
-                                    className={`w-8 h-8 rounded-full border flex items-center justify-center
-                                        ${currentPage === pageNum 
-                                            ? 'bg-black text-white border-black' 
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
-                                >
-                                    <span>{pageNum}</span>
+                                    onClick={() => setCurrentPage(1)}
+                                    disabled={currentPage === 1}
+                                    className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                        ${currentPage === 1 
+                                            ? 'text-gray-300 border-gray-200' 
+                                            : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                    {'<<'}
                                 </button>
-                            ))}
+                                {/* 이전 */}
+                                <button
+                                    onClick={() => setCurrentPage(prev => prev -1)}
+                                    disabled={currentPage === 1}
+                                    className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                        ${currentPage === 1 
+                                            ? 'text-gray-300 border-gray-200' 
+                                            : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                    {'<'}
+                                </button>
 
-                            {/* 다음 버튼 */}
-                            <button
-                                onClick={() => setCurrentPage(prev => prev + 1)}
-                                disabled={currentPage >= totalPages}
-                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
-                                    ${currentPage === totalPages ? 'text-gray-300 border-gray-200' : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
-                                {'>'}
-                            </button>
-                            {/* 맨 마지막 */}
-                            <button
-                                onClick={() => setCurrentPage(totalPages)}
-                                disabled={currentPage === totalPages}
-                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
-                                    ${currentPage === totalPages ? 'text-gray-300 border-gray-200' : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
-                                {'>>'}
-                            </button>
-                        </ div>
-                    )
-                })()}
-            </div>
+                                {/* 숫자 */}
+                                {pageNumbers.map((pageNum) => (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={`w-8 h-8 rounded-full border flex items-center justify-center
+                                            ${currentPage === pageNum 
+                                                ? 'bg-black text-white border-black' 
+                                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}>
+                                        <span>{pageNum}</span>
+                                    </button>
+                                ))}
+
+                                {/* 다음 */}
+                                <button
+                                    onClick={() => setCurrentPage(prev => prev + 1)}
+                                    disabled={currentPage >= totalPages}
+                                    className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                        ${currentPage === totalPages 
+                                            ? 'text-gray-300 border-gray-200' 
+                                            : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                    {'>'}
+                                </button>
+                                {/* 마지막 */}
+                                <button
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                    className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                        ${currentPage === totalPages 
+                                            ? 'text-gray-300 border-gray-200' 
+                                            : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                    {'>>'}
+                                </button>
+                            </div>
+                        )
+                    })()}
+                </div>
+            </div>                        
             {/* 모달창으로 이미지 띄우기 */}
             {modalImages.length > 0 && (
                 <ImageModal 

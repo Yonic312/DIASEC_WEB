@@ -1,6 +1,7 @@
 package com.diasec.diasec_backend.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,13 @@ public class SmsController {
             }
 
             return ResponseEntity.badRequest().body(Map.of("ok", false, "msg", "type은 send 또는 verify 여야 합니다."));
+        } catch (SolapiService.SmsRateLimitException e) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of(
+                    "ok", false,
+                    "msg", e.getMessage(),
+                    "retryAfterSec", e.getRetryAfterSec()
+                ));
         } catch ( Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("ok", false, "msg", e.getMessage()));

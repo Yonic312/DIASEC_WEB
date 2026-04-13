@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useMember } from '../../context/MemberContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -18,6 +18,7 @@ const Login = () => {
     }), [API]);
     
     const navigate = useNavigate();
+    const location = useLocation();
     const { member,setMember } = useMember();
 
     const [id, setId] = useState('');
@@ -27,12 +28,38 @@ const Login = () => {
     const idRef = useRef(null);
     const pwRef = useRef(null);
 
+    const redirectAfterLogin = useCallback((profileLike) => {
+        const pendingOrderItems = Array.isArray(location.state?.pendingOrderItems)
+            ? location.state.pendingOrderItems
+            : null;
+
+        if (pendingOrderItems && pendingOrderItems.length > 0) {
+            const enrichedOrderItems = pendingOrderItems.map((item) => ({
+                ...item,
+                id: item.id ?? profileLike?.id,
+            }));
+            navigate('/orderForm', {
+                state: { orderItems: enrichedOrderItems, isGuest: false },
+                replace: true,
+            });
+            return;
+        }
+
+        const returnTo = location.state?.returnTo;
+        if (typeof returnTo === 'string' && returnTo.trim()) {
+            navigate(returnTo, { replace: true });
+            return;
+        }
+
+        navigate('/');
+    }, [location.state, navigate]);
+
     // 자동 로그인 차단 (url로 로그인 접근 : 이미 로그인)
     useEffect(() => {
         if (member?.id) {
-            navigate('/');
+            redirectAfterLogin(member);
         }
-    }, [member?.id, navigate]);
+    }, [member?.id, member, redirectAfterLogin]);
 
     const [loading, setLoading] = useState(false);
 
@@ -67,7 +94,8 @@ const Login = () => {
             // 로그인 후 사용자 정보 불러오기
             const profile = await api.get(`/member/me`);
             setMember(profile.data);
-            navigate('/');
+            toast.success('로그인되었습니다.');
+            redirectAfterLogin(profile.data);
         } catch (error) {
             toast.error('아이디 또는 비밀번호를 다시 확인해 주세요');
             console.error(error);
@@ -87,39 +115,40 @@ const Login = () => {
         window.open(url, "_blank", `width=500,height=600,top=${top},left=${left}`);
     }
 
-    useEffect(() => {
-        const handler = async (e) => {
-            if (e.origin !== "http://localhost:3001") return;
+    // useEffect(() => {
+    //     const handler = async (e) => {
+    //         if (e.origin !== window.location.origin) return;
 
-            const { type, message } = e.data || {};
+    //         const { type, message } = e.data || {};
 
-            if (type === "LINK_REQUIRED") {
-                // 연결 화면으로 이동
-                navigate("/link-social");
-                return;
-            }
+    //         if (type === "LINK_REQUIRED") {
+    //             // 연결 화면으로 이동
+    //             navigate("/link-social");
+    //             return;
+    //         }
 
-            if (type === "OAUTH_FAIL") {
-                toast.error("소셜 로그인에 실패했습니다. 다시 시도해주세요.");
-                console.error("OAUTH_FAIL:", message);
-                return;
-            }
+    //         if (type === "OAUTH_FAIL") {
+    //             toast.error("소셜 로그인에 실패했습니다. 다시 시도해주세요.");
+    //             console.error("OAUTH_FAIL:", message);
+    //             return;
+    //         }
 
-            if (type === "OAUTH_SUCCESS") {
-                try {
-                    const profile = await api.get(`/member/me`);
-                    setMember(profile.data);
-                    navigate("/");
-                } catch (err) {
-                    toast.error("로그인 정보를 불러오지 못했습니다.");
-                    console.error(err);
-                }
-            }
-        };
+    //         if (type === "OAUTH_SUCCESS") {
+    //             try {
+    //                 const profile = await api.get(`/member/me`);
+    //                 setMember(profile.data);
+    //                 toast.success('로그인되었습니다.');
+    //                 navigate("/");
+    //             } catch (err) {
+    //                 toast.error("로그인 정보를 불러오지 못했습니다.");
+    //                 console.error(err);
+    //             }
+    //         }
+    //     };
 
-        window.addEventListener("message", handler);
-        return () => window.removeEventListener("message", handler);
-    }, [api, navigate, setMember]);
+    //     window.addEventListener("message", handler);
+    //     return () => window.removeEventListener("message", handler);
+    // }, [api, navigate, setMember]);
 
     return (
         <div className="flex items-center justify-center">

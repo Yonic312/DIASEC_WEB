@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { MemberContext } from "../../../context/MemberContext";
+import { getDiscountedUnitPrice } from "../../../utils/siteDiscount";
+import {
+    SitePriceRow,
+    SitePriceTotal,
+    SITE_PRICE_TEXT,
+} from "../../common/SitePriceDisplay";
 
 const Cart = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -192,11 +198,18 @@ const Cart = () => {
         navigate("/orderForm", { state: { orderItems: orderData } });
     };
 
-    const totalPrice = useMemo(() => {
+    const originalCartTotal = useMemo(() => {
         return items.reduce(
-        (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1),
-        0
+            (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1),
+            0
         );
+    }, [items]);
+
+    const totalPrice = useMemo(() => {
+        return items.reduce((sum, it) => {
+            const unit = getDiscountedUnitPrice(it.price);
+            return sum + unit * (Number(it.quantity) || 1);
+        }, 0);
     }, [items]);
 
     if (loading) return <div className="text-center py-20 text-gray-500">로딩 중...</div>;
@@ -272,7 +285,7 @@ const Cart = () => {
                             onClick={() => navigate("/main_Items?type=masterPiece")}
                             className="px-4 py-2 border rounded-xl hover:bg-gray-100"    
                         >
-                            명화갤러리
+                            명화
                         </button>
 
                         <button 
@@ -413,10 +426,12 @@ const Cart = () => {
                                                     </button>
                                                 </div>
 
-                                                <div className="
-                                                    text-[clamp(14px,2.085vw,16px)] md:text-[16px] 
-                                                    text-gray-700 font-semibold">
-                                                    {(Number(it.price || 0) * (Number(it.quantity) || 1)).toLocaleString()}원
+                                                <div className="text-gray-700 font-semibold">
+                                                    <SitePriceRow
+                                                        unitPrice={it.price}
+                                                        quantity={Number(it.quantity) || 1}
+                                                        neutralClassName={`${SITE_PRICE_TEXT} text-gray-700 font-semibold`}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -429,11 +444,11 @@ const Cart = () => {
                     <div className="flex items-center justify-end mt-2 pt-4 border-t">
                         <div className="text-right">
                             <div className="text-sm text-gray-500">총 결제금액</div>
-                            <div className="
-                                text-[clamp(16px,2.6064vw,20px)] md:text-xl
-                                font-bold"
-                            >
-                                {totalPrice.toLocaleString()}원
+                            <div className={`${SITE_PRICE_TEXT} font-bold`}>
+                                <SitePriceTotal
+                                    original={originalCartTotal}
+                                    discounted={totalPrice}
+                                />
                             </div>
                         </div>
                     </div>

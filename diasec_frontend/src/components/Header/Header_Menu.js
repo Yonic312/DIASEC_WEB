@@ -114,7 +114,7 @@ const Header_Menu = () => {
     // 메뉴 정의 (상단 탭)
     const mainMenus =  useMemo(() => ([
         { key : 'diasec',            label: 'ONLY 디아섹',       link:'/main_CompanyProfile'},
-        { key : 'masterPiece',       label: '명화갤러리',         link:'/main_Items?type=masterPiece' },
+        { key : 'masterPiece',       label: '명화',         link:'/main_Items?type=masterPiece' },
         { key : 'koreanPainting',       label: '동양화',         link:'/main_Items?type=koreanPainting' },
         { key : 'photoIllustration', label: '사진 / 일러스트',     link:'/main_Items?type=photoIllustration' },
         { key : 'fengShui',          label: '풍수그림',           link:'/main_Items?type=fengShui'},
@@ -286,7 +286,22 @@ const Header_Menu = () => {
                 img: x.imageUrl,
                 link: `/main_Items?type=${key}&author=${encodeURIComponent(x.label)}`
             }));
-            
+
+            warmImageCacheBatch(mapped.map(v => v.img));
+
+            setDropdown(prev => ({
+                ...prev,
+                [key]: [...(prev[key] || []), ...mapped]
+            }));
+
+            setPage(prev => ({
+                ...prev,
+                [key]: {
+                    offset: p.offset + mapped.length,
+                    loading: false,
+                    hasMore: mapped.length === PAGE_SIZE
+                }
+            }));
         } catch (e) {
             console.error('드롭다운 로드 실패', key, e);
             setPage(prev => ({
@@ -725,7 +740,7 @@ const SearchModal = ({
                         ) : (
                             <div className="rounded-2xl border border-gray-100 bg-white">
                                 <div className="px-4">
-                                    <CardRow title="명화갤러리" catKey="masterPiece" items={master} />
+                                    <CardRow title="명화" catKey="masterPiece" items={master} />
                                     <CardRow title="동양화" catKey="koreanPainting" items={korean} />
                                     <CardRow title="사진/일러스트" catKey="photoIllustration" items={photo} />
                                     <CardRow title="풍수그림" catKey="fengShui" items={feng} />
@@ -738,7 +753,7 @@ const SearchModal = ({
                 <div className="mt-3 text-center text-[11px] text-white/80">
                     ESC로 닫기 · Enter로 검색 
                 </div>
-            </div>
+            </div> 
         </div>
     )
 }

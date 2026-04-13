@@ -7,12 +7,11 @@ const Main_Event = () => {
 
     useEffect(() => {
         fetch(`${API}/event?status=${activeTab}`)
-        .then((res) => res.json())
-        .then((data) => setEvents(data))
-        .catch((err) => console.error("이벤트 불러오기 실패", err));
+            .then((res) => res.json())
+            .then((data) => setEvents(data))
+            .catch((err) => console.error("이벤트 불러오기 실패", err));
     }, [activeTab]);
 
-    // 페이징 관련 상태
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -22,38 +21,31 @@ const Main_Event = () => {
         currentPage * itemsPerPage
     );
 
-    // ✅ OrderList 기준 반영
-    const [pageGroupSize, setPageGroupSize] = useState(
-        window.innerWidth < 640 ? 5 : 10
-    );
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab]);
 
     useEffect(() => {
-    const handleResize = () => {
-        setPageGroupSize(window.innerWidth < 640 ? 5 : 10);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-    }, []);
+        setCurrentPage((p) => Math.min(p, totalPages));
+    }, [totalPages]);
 
-    const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
-    const groupStart = currentGroup * pageGroupSize + 1;
-    const groupEnd = Math.min(groupStart + pageGroupSize - 1, totalPages);
-
-    return(
+    return (
         <div className="max-full mx-auto px-4 py-20">
             {/* 탭 */}
-            <div 
+            <div
                 className="
                     flex justify-center gap-4 border-b border-gray-200 mb-6
                     md:text-base text-[clamp(11px,2.085vw,16px)]
-                    ">
+                    "
+            >
                 <button
                     onClick={() => setActiveTab("ongoing")}
                     className={`pb-2 px-4 font-semibold ${
                         activeTab === "ongoing"
-                            ? "border-b-2 border-black text-black" 
+                            ? "border-b-2 border-black text-black"
                             : "text-gray-400"
                     }`}
+
                 >
                     진행중인 이벤트
                 </button>
@@ -61,7 +53,7 @@ const Main_Event = () => {
                     onClick={() => setActiveTab("ended")}
                     className={`pb-2 px-4 font-semibold ${
                         activeTab === "ended"
-                            ? "border-b-2 border-black text-black" 
+                            ? "border-b-2 border-black text-black"
                             : "text-gray-400"
                     }`}
                 >
@@ -70,20 +62,19 @@ const Main_Event = () => {
             </div>
 
             {/* 이벤트 카드 */}
-            <div 
+            <div
                 className="
                     justify-center grid md:grid-cols-2 gap-12
                     md:text-base text-[clamp(11px,2.085vw,16px)]
-                    ">
+                    "
+            >
                 {currentPosts.map((event, index) => (
                     <div
                         key={`${event.eventId}-${index}`}
-                        onClick={() => window.location.href = `/mainEventDetail/${event.eventId}`}
+                        onClick={() => (window.location.href = `/mainEventDetail/${event.eventId}`)}
                         className="max-w-[582px] cursor-pointer rounded-b-xl hover:shadow-xl"
                     >
-                        <div
-                            className="w-full max-h-[291px] rounded-lg overflow-hidden shadow border border-gray-100 cursor-pointer"
-                        >   
+                        <div className="w-full max-h-[291px] rounded-lg overflow-hidden shadow border border-gray-100 cursor-pointer">
                             <img
                                 src={event.thumbnailUrl}
                                 alt={event.title}
@@ -91,75 +82,95 @@ const Main_Event = () => {
                             />
                         </div>
                         <div className="p-4">
-                                <h3 className="font-semibold text-gray-800">{event.title}</h3>
-                                <p className="text-sm text-gray-500 mt-1">{event.period}</p>
+                            <h3 className="font-semibold text-gray-800">{event.title}</h3>
+                            <p className="text-sm text-gray-500 mt-1">{event.period}</p>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* 페이징 UI */}
-            <div 
-                className="
-                    md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                    flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
-                <button 
-                    onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
-                    disabled={groupStart === 1}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6     
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<<'}
-                </button>
+            {/* 페이징 (InquiryList와 동일 패턴) */}
+            <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
+                {(() => {
+                    const maxVisible = 5;
+                    let startPage = Math.max(currentPage - 2, 1);
+                    let endPage = Math.min(startPage + maxVisible - 1, totalPages);
 
-                <button 
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<'}
-                </button>
+                    if (endPage - startPage < maxVisible - 1) {
+                        startPage = Math.max(endPage - maxVisible + 1, 1);
+                    }
 
-                {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(page => (
-                    <button key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`
-                                sm:w-8 w-6
-                                sm:h-8 h-6
-                                flex items-center justify-center rounded-full ${
-                            currentPage === page ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
-                            }`}>
-                    {page}
-                    </button>
-                ))}
+                    const pageNumbers = Array.from(
+                        { length: endPage - startPage + 1 },
+                        (_, i) => startPage + i
+                    );
 
-                <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>'}
-                </button>
+                    return (
+                        <div className="flex justify-center gap-1 text-sm font-medium">  
+                            {/* 맨 처음 */}
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<<'}
+                            </button>
+                            {/* 이전 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev -1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<'}
+                            </button>
 
-                <button onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
-                    disabled={groupEnd === totalPages}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>>'}
-                </button>
+                            {/* 숫자 */}
+                            {pageNumbers.map((pageNum) => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`w-8 h-8 rounded-full border flex items-center justify-center
+                                        ${currentPage === pageNum 
+                                            ? 'bg-black text-white border-black' 
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}>
+                                    <span>{pageNum}</span>
+                                </button>
+                            ))}
+
+                            {/* 다음 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                disabled={currentPage >= totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>'}
+                            </button>
+                            {/* 마지막 */}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>>'}
+                            </button>
+                        </div>
+                    )
+                })()}
             </div>
         </div>
-    )
-}
+    );
+
+};
+
+
 
 export default Main_Event;
+

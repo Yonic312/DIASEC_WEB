@@ -403,13 +403,41 @@ public class MemberController {
         target.setName(source.getName());
         target.setEmail(source.getEmail());
         target.setPhone(source.getPhone());
-        target.setGender(source.getGender());
+        target.setGender(normalizeGender(source.getGender()));
         target.setBirth(source.getBirth());
         target.setRegion(source.getRegion());
         target.setSmsAgree(source.isSmsAgree());
         target.setEmailAgree(source.isEmailAgree());
         target.setRole(source.getRole());
         target.setCredit(source.getCredit());
+    }
+
+    /**
+     * DB gender 컬럼과 맞게 값 정규화 (M/F 또는 NULL).
+     */
+    private String normalizeGender(String raw) {
+        if (raw == null) return null;
+
+        String v = raw.trim();
+        if (v.isEmpty()) return null;
+
+        if ("M".equalsIgnoreCase(v)
+            || "male".equalsIgnoreCase(v)
+            || "man".equalsIgnoreCase(v)
+            || "남".equals(v)
+            || "남자".equals(v)) {
+            return "M";
+        }
+
+        if ("F".equalsIgnoreCase(v)
+            || "female".equalsIgnoreCase(v)
+            || "woman".equalsIgnoreCase(v)
+            || "여".equals(v)
+            || "여자".equals(v)) {
+            return "F";
+        }
+
+        return null;
     }
 
     // email & phone 찾기

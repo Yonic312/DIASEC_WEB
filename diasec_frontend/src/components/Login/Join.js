@@ -101,7 +101,14 @@ const Join = () => {
             toast.success("인증번호를 발송했습니다.");
         } catch (e) {
             logAxiosError("SMS SEND FAIL", e);
-            toast.error("인증번호 발송 실패");
+            if (e?.response?.status === 429) {
+                const retryAfterSec = Number(e?.response?.data?.retryAfterSec || 0);
+                const msg = e?.response?.data?.msg || '요청이 너무 많습니다.';
+                const secText = retryAfterSec > 0 ? ` (${retryAfterSec}초 후 재시도)` : '';
+                toast.error(`${msg}${secText}`);
+            } else {
+                toast.error("인증번호 발송 실패");
+            }
         }
     };
 
@@ -593,7 +600,7 @@ const Join = () => {
                                 <button
                                     type="button"
                                     onClick={handleSendSms}
-                                    disabled={smsVerified || remainSec > 0}
+                                    disabled={smsVerified}
                                     className="ml-1 px-2 py-1 border bg-black text-white text-[12px]"
                                 >
                                     {smsSent ? "재전송" : "인증번호 받기"}

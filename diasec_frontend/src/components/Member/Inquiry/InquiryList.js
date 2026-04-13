@@ -134,11 +134,28 @@ const InquiryList = () => {
     }
 
     return (
-        <div className="flex flex-col w-full mb-20">
-            <span className="
-                md:text-xl text-[clamp(14px,2.607vw,20px)]
-                font-bold 
-                mb-4">| 문의 내역</span>
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >   
+            <div className="flex items-center justify-between">
+                <span className="
+                    md:text-lg text-[clamp(16px,2.346vw,18px)]
+                    font-bold pb-2 md:pb-6">
+                        | 문의 내역
+                </span>
+                <button
+                    type="button"
+                    onClick={() => navigate('/mypage')}
+                    className="
+                        md:hidden
+                        self-start flex items-center gap-1 mb-3
+                        text-[13px] text-gray-600 hover:text-gray-900
+                    "
+                >
+                    <span className="text-base leading-none">←</span>
+                    마이페이지
+                </button>
+            </div>
             <div className="flex flex-col md:flex-row
                 text-sm
             ">
@@ -148,7 +165,7 @@ const InquiryList = () => {
                                 flex items-center justify-center cursor-pointer
                                 md:w-[260px] w-[clamp(100px,33.898vw,260px)]
                                 md:h-[52px] h-[clamp(35px,6.779vw,52px)]
-                                md:text-base text-[clamp(11px,2.09vw,16px)]
+                                md:text-base text-[clamp(14px,2.09vw,16px)]
                             ${activeTab === 'personal' ? 'bg-[#555555] text-[#fbf7f0]' : 'bg-white text-black'}`}>
                         1:1 문의
                     </div>
@@ -158,7 +175,7 @@ const InquiryList = () => {
                                 flex items-center justify-center cursor-pointer
                                 md:w-[260px] w-[clamp(100px,33.898vw,260px)]
                                 md:h-[52px] h-[clamp(35px,6.779vw,52px)]
-                                md:text-base text-[11px]
+                                md:text-base text-[clamp(14px,2.09vw,16px)]
                             ${activeTab === 'product' ? 'bg-[#555555] text-[#fbf7f0]' : 'bg-white text-black'}`}>
                         상품 문의
                     </div>
@@ -170,7 +187,7 @@ const InquiryList = () => {
                 xl:flex-row flex-col
                 ">
                 <div className="
-                    md:text-base text-[clamp(11px,2.085vw,16px)]
+                    md:text-base text-[clamp(13px,2.085vw,16px)]
                     flex sm:flex-row flex-col">
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} 
                         className="
@@ -205,16 +222,16 @@ const InquiryList = () => {
                                 border-[1px] bg-white" onClick={() => handleRangeClick(6)}>6개월</button>
                     </div>
                 </div>
-                <div className="md:text-base text-[clamp(11px,2.085vw,16px)]">
+                <div className="md:text-base text-[clamp(13px,2.085vw,16px)]">
                     <input type="date" 
                         className="
-                            sm:w-[140px] w-[90px] 
+                            sm:w-[140px] w-[110px] 
                             sm:h-[40px] h-[30px]
                             border-[1px] border-opacity-15 text-center" value={startDate} onChange={(e) => setStartDate(e.target.value)}></input>
                     <span className="mx-2">~</span>
                     <input type="date" 
                         className="
-                            sm:w-[140px] w-[90px] 
+                            sm:w-[140px] w-[110px] 
                             sm:h-[40px] h-[30px]
                             border-[1px] border-opacity-15 text-center mr-2" value={endDate} onChange={(e) => setEndDate(e.target.value)}></input>
                 </div>
@@ -230,7 +247,7 @@ const InquiryList = () => {
                                 md:px-4 px-[clamp(0.5rem,2.085vw,1rem)]
                                 md:py-2 py-[clamp(0.25rem,1.043vw,0.5rem)]
                                 md:mt-0 mt-[clamp(0rem,1.0429vw,0.5rem)]
-                                md:text-base text-[clamp(12px,2.085vw,16px)]
+                                md:text-base text-[clamp(13px,2.085vw,16px)]
                                 bg-black text-white font-bold rounded hover:bg-gray-800'>
                             문의하기
                         </button>
@@ -248,7 +265,7 @@ const InquiryList = () => {
                     <div>
                         {activeTab === 'product' ? (
                             <div className="
-                                sm:text-[16px] text-[12px]
+                                text-[13px] sm:text-[16px]
                                 grid grid-cols-4 text-center px-4 py-2 bg-white text-black 
                                 border-y-2 font-semibold">
                                 <div>상품명</div>
@@ -258,7 +275,7 @@ const InquiryList = () => {
                             </div>
                         ) : (
                             <div className="
-                                sm:text-[16px] text-[11px]
+                                text-[13px] sm:text-[16px]
                                 grid grid-cols-4 text-center px-4 py-2 bg-white text-black
                                 border-y-2 font-semibold">
                                 <div>카테고리</div>
@@ -269,11 +286,12 @@ const InquiryList = () => {
                         )}
 
                         {currentItems.map((inq, idx) => (
-                            <div key={inq.iid}>
+                            <div key={inq.iid}
+                                className="text-[13px] sm:text-[16px]"
+                            >
                                 <div
                                     onClick={() => handleToggle(idx)}
                                     className="
-                                        md:text-sm text-[clamp(10px,1.8252vw,14px)]
                                         grid grid-cols-4 
                                         sm:p-4 p-1
                                         border-b text-center items-center  
@@ -291,8 +309,7 @@ const InquiryList = () => {
                                     <div className="text-gray-500">{inq.createdAt?.slice(0, 10)}</div>
                                     {/* 문의상태 */}
                                     <div>
-                                        <span className={` 
-                                            md:text-xs text-[clamp(10px,1.564vw,12px)]
+                                        <span className={`
                                             inline-block px-[2px] py-1 rounded-full 
                                         ${inq.status === '답변완료' 
                                             ? 'bg-green-100 text-green-700' 
@@ -307,26 +324,25 @@ const InquiryList = () => {
                                         md:p-6 p-[clamp(0.5rem,4.999vw,1.25rem)]
                                         bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 mt-2 shadow-sm">
                                         
-                                        <div className="mb-6">
+                                        <div className="
+                                            md:text-base text-[clamp(13px,2.085vw,16px)]
+                                            mb-6"
+                                        >
                                             <div className="mb-2">
                                                     <span 
                                                         className="
-                                                            md:text-base text-[clamp(11px,2.085vw,16px)]
                                                             font-semibold text-gray-700 block mb-1">문의 제목</span>
                                                     <p 
                                                         className="
-                                                            md:text-sm text-[clamp(11px,1.8252vw,14px)]
                                                             font-medium text-black">{inq.title}</p>
                                             </div>
                                             <div className="mt-4">
                                                 <span 
                                                     className="
-                                                        md:text-base text-[clamp(11px,2.085vw,16px)]
                                                         font-semibold text-gray-700 block mb-1">문의 내용</span>
-                                                <p 
-                                                    className="
-                                                        md:text-sm text-[clamp(11px,1.8252vw,14px)]
-                                                        whitespace-pre-line leading-relaxed text-gray-700">{inq.content}</p>
+                                                <p className="whitespace-pre-line leading-relaxed text-gray-700">
+                                                    {inq.content}
+                                                </p>
                                             </div>
                                         </div>
 
@@ -338,8 +354,8 @@ const InquiryList = () => {
                                                         src={encodeURI(url.trim())}
                                                         alt={`inquiry-${inq.iid}-${i}`}
                                                         className="
-                                                            md:w-28 w-14
-                                                            md:h-28 h-14
+                                                            md:w-20 w-[70px]
+                                                            md:h-20 h-[70px]
                                                             object-cover border rounded shadow-sm cursor-pointer hover:opacity-90"
                                                         onClick={() => {
                                                             setSelectedImage(url.trim());
@@ -373,7 +389,7 @@ const InquiryList = () => {
                                         
                                         <div 
                                             className='
-                                                md:text-base text-[clamp(11px,2.08vw,16px)]
+                                                md:text-base text-[clamp(13px,2.08vw,16px)]
                                                 md:mt-6 mt-1
                                                 bg-blue-50 border border-blue-200 rounded-md p-4'>
                                             <div className="
@@ -399,64 +415,81 @@ const InquiryList = () => {
                 )}
             </div>
 
-            <div 
-                className="
-                    md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                    flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
-                <button 
-                    onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
-                    disabled={groupStart === 1}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6     
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<<'}
-                </button>
+            {/* 페이징 (InquiryList와 동일 패턴) */}
+            <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
+                {(() => {
+                    const maxVisible = 5;
+                    let startPage = Math.max(currentPage - 2, 1);
+                    let endPage = Math.min(startPage + maxVisible - 1, totalPages);
 
-                <button 
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<'}
-                </button>
+                    if (endPage - startPage < maxVisible - 1) {
+                        startPage = Math.max(endPage - maxVisible + 1, 1);
+                    }
 
-                {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(page => (
-                    <button key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`
-                                sm:w-8 w-6
-                                sm:h-8 h-6
-                                flex items-center justify-center rounded-full ${
-                            currentPage === page ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
-                            }`}>
-                    {page}
-                    </button>
-                ))}
+                    const pageNumbers = Array.from(
+                        { length: endPage - startPage + 1 },
+                        (_, i) => startPage + i
+                    );
 
-                <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>'}
-                </button>
+                    return (
+                        <div className="flex justify-center gap-1 text-sm font-medium">  
+                            {/* 맨 처음 */}
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<<'}
+                            </button>
+                            {/* 이전 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev -1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<'}
+                            </button>
 
-                <button onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
-                    disabled={groupEnd === totalPages}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>>'}
-                </button>
+                            {/* 숫자 */}
+                            {pageNumbers.map((pageNum) => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`w-8 h-8 rounded-full border flex items-center justify-center
+                                        ${currentPage === pageNum 
+                                            ? 'bg-black text-white border-black' 
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}>
+                                    <span>{pageNum}</span>
+                                </button>
+                            ))}
+
+                            {/* 다음 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                disabled={currentPage >= totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>'}
+                            </button>
+                            {/* 마지막 */}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>>'}
+                            </button>
+                        </div>
+                    )
+                })()}
             </div>
 
             {showImageModal && (

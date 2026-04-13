@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 
 import com.diasec.diasec_backend.dao.CollectionMapper;
 import com.diasec.diasec_backend.dao.ProductMapper;
+import com.diasec.diasec_backend.util.ImageUtil;
 import com.diasec.diasec_backend.vo.CollectionItemVo;
 import com.diasec.diasec_backend.vo.CollectionVo;
+import com.diasec.diasec_backend.vo.ProductVo;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 public class CollectionService {
     private final CollectionMapper mapper;
     private final ProductMapper productMapper;
+    private final ProductService productService;
+    private final ImageUtil imageUtil;
 
     public List<CollectionVo> getAllCollections() {
         return mapper.getAllCollections();
@@ -67,8 +71,28 @@ public class CollectionService {
         mapper.insertItem(vo);
     }
 
-    public void deleteItem(int id) {
+    public boolean deleteItem(int id) {
+        CollectionItemVo item = mapper.selectItemById(id);
+        if (item == null) {
+            return false;
+        }
+
+        CollectionVo collection = mapper.selectCollectionById(item.getCollectionId());
+        if (collection != null && item.getLabel() != null && !item.getLabel().isBlank()) {
+            List<ProductVo> products = productMapper.selectProductsByCategoryAndAuthor(
+                collection.getName(),
+                item.getLabel()
+            );
+            for (ProductVo p : products) {
+                productService.deleteProduct(p.getPid());
+            }
+        }
+
+        if (item.getImageUrl() != null && item.getImageUrl().contains("/uploads/CollectionLabel")) {
+            imageUtil.deleteImage(item.getImageUrl());
+        }
         mapper.deleteItem(id);
+        return true;
     }
 
     public CollectionItemVo getItemById(int id) {

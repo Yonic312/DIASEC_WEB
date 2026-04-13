@@ -45,7 +45,7 @@ const OrderTracking = () => {
         const wCm = Math.round(wInch * 2.54);
         const hCm = Math.round(hInch * 2.54);
 
-        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
+        return `${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)})`;
     }
 
     const convertCategoryName = (category) => {
@@ -73,7 +73,7 @@ const OrderTracking = () => {
                 flex flex-col w-full h-fit bg-white mx-4 shadow-md border border-gray-200">
             <button 
                 className="
-                    md:text-[11px] sm:text-[clamp(9px,1.433vw,11px)] text-[clamp(7px,1.407vw,9px)]     
+                    md:text-[12px] text-[10px]     
                     ml-auto w-fit px-2 py-1 
                     font-medium border bg-black text-white border-gray-500 rounded-xl hover:text-gray-300  transition" 
                 onClick={() => navigate(-1)}> 
@@ -82,43 +82,50 @@ const OrderTracking = () => {
             {/* 상품 정보 */}
             <div key={item.items[0].itemId} 
                 className="
-                    md:p-6 p-2
-                    flex sm:gap-6 gap-[6px] items-start border rounded-lg">
-                <img src={item.items[0].title == '맞춤 액자' ? thumbCustom : item.items[0].thumbnail} alt={item.items[0].title} 
+                    flex sm:gap-6 gap-[6px] items-start border rounded-lg
+                        md:p-6 p-2
+                        bg-gray-50 transition-transform"
+            >
+                <img
+                    src={
+                        item.items[0].category === 'customFrames'
+                            ? item.items[0].thumbnail || thumbCustom
+                            : item.items[0].thumbnail
+                    }
+                    alt={item.title}
                     className="
-                        md:w-28 sm:w-[clamp(5rem,10.95vw,7rem)] w-[clamp(3rem,12.52vw,5rem)]
-                        md:h-28 sm:h-[clamp(5rem,10.95vw,7rem)] h-[clamp(3rem,12.52vw,5rem)]
-                        object-cover rounded border" />
-                <div 
-                    className="
-                        flex flex-col 
-                        md:h-28 sm:h-[clamp(5rem,10.948vw,7rem)]
-                        md:justify-between 
-                        flex-1">
-                    <div 
-                        className="
-                            lg:text-lg md:text-[clamp(14px,1.759vw,18px)] text-[clamp(9px,1.8252vw,14px)]
-                            flex sm:flex-row flex-col sm:justify-between
-                            font-semibold mb-2">
-                        <span className="line-clamp-1">{item.items[0].title}</span>
+                        md:w-24 sm:w-[clamp(5rem,10.95vw,6rem)] w-[clamp(72px,12.52vw,5rem)]
+                        md:h-24 sm:h-[clamp(5rem,10.95vw,6rem)] h-[clamp(72px,12.52vw,5rem)]
+                        object-cover rounded border" 
+                />
+                <div className="
+                    flex flex-col
+                    md:h-24 sm:h-[clamp(5rem,10.948vw,6rem)]
+                    text-[14px] md:text-[16px]
+                    flex-1 justify-between"
+                >
+                    <div className="flex justify-between flex-row font-semibold">
+                        <span className="min-w-0 flex-1 truncate pr-2">{item.items[0].title}</span>
                         <span>{item.items[0].orderStatus}</span>
                     </div>
                     <div>
                         <div className="flex sm:justify-between sm:flex-row flex-col">
                             <div>
-                                <div 
-                                    className="
-                                        md:text-sm md:text-[clamp(11px,1.368vw,14px)] text-[clamp(9px,1.433vw,11px)]
-                                        text-gray-500 mb-1">
+                                <div className="
+                                    flex flex-col
+                                    md:text-[14px] text-[clamp(12px,1.8252vw,14px)]
+                                    text-gray-500"
+                                >
                                     카테고리: {convertCategoryName(item.items[0].category)} ({item.items[0].finishType === 'matte' ? '무광' : '유광'}) <br />
-                                    사이즈: {convertInchToCm(item.items[0].size)} ({item.items[0].quantity}개)
+                                    <span>수량: {item.items[0].quantity}개</span>
+                                    사이즈: {convertInchToCm(item.items[0].size)}
                                 </div>
                             </div>
                             <div 
                                 className="
+                                    text-[14px] md:text-[16px]
                                     flex sm:items-end justify-end
-                                        lg:text-base md:text-[clamp(13px,1.564vw,16px)] text-[clamp(10px,1.694vw,13px)]
-                                        font-bold text-right mt-[2px]">
+                                    font-bold text-right mt-[2px]">
                                 {(item.items[0].price)?.toLocaleString()}원</div>
                         </div>
                     </div>
@@ -229,7 +236,7 @@ const OrderTracking = () => {
                                         mx-auto rounded-full ${idx <= currentStepIndex ? 'bg-black' : 'bg-gray-300'} z-10 relative`}></div>
                                 <div 
                                     className={`
-                                        md:text-xs text-[clamp(7px,1.5645vw,12px)]
+                                        md:text-[14px] text-[12px]
                                         mt-2 ${idx <= currentStepIndex ? 'font-bold text-black' : 'text-gray-400'}`}>{step}</div>
                                 {idx < steps.length - 1 && (
                                     <div className={`absolute top-2 left-1/2 w-full h-[2px] ${idx < currentStepIndex ? 'bg-black' : 'bg-gray-300'}`}></div>
@@ -242,13 +249,13 @@ const OrderTracking = () => {
                     {item.items[0].trackingNumber && (
                         <div 
                             className="
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                md:text-lg sm:text-[clamp(16px,2.346vw,18px)] text-[clamp(14px,2.503vw,16px)]
                                 mt-6 border rounded-lg p-4 bg-gray-50 text-gray-800">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="font-semibold text-gray-700">운송장 정보</span>
-                                <a href={`https://st.sweettracker.co.kr/#/`}
+                                <a href={`https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillSch.do?mCode=MN038`}
                                     className="
-                                        md:text-xs text-[clamp(8px,1.5645vw,12px)]
+                                        md:text-sm text-[clamp(11px,1.8252vw,14px)]
                                     text-blue-600 hover:underline"
                                 >
                                     배송조회 바로가기 
@@ -262,7 +269,7 @@ const OrderTracking = () => {
                             </div>
                             <div 
                                 className="
-                                    md:text-xs text-[clamp(8px,1.5645vw,12px)]
+                                    md:text-base text-[clamp(12px,2.085vw,16px)]
                                     text-gray-500 mt-1">
                                 ※ 택배사 : {item.items[0].trackingCompany}
                             </div>
@@ -271,7 +278,7 @@ const OrderTracking = () => {
                     {item.items[0].orderStatus === '입금대기' && (
                         <div 
                             className="
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                md:text-base text-[clamp(12px,2.085vw,16px)]
                                 mt-6 p-4 border rounded bg-yellow-50 text-yellow-700 font-medium">
                             <>
                                 주문이 정상적으로 접수되었으며, 고객의 입금을 기다리고 있습니다. <br />
@@ -283,12 +290,10 @@ const OrderTracking = () => {
                     {item.items[0].orderStatus === '결제완료' && (item.items[0].category === 'wall' || item.items[0].category === 'table') && (
                         <div 
                             className="
-                                md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                md:text-base text-[clamp(12px,2.085vw,16px)]
                                 mt-6 p-4 border rounded bg-yellow-50 text-yellow-700 font-medium">
                             <>
-                                고객님의 입금이 확인되었습니다. <br />
-                                {item.items[0].category === 'wall' ? 
-                                    '벽걸이 액자' : '탁상용 액자'}에 들어갈 원하는 이미지를 <span className="text-blue-500">d2one@naver.com</span>으로 보내주세요.
+                                입금이 확인되었습니다. 상품 준비 후 빠르게 발송해드리겠습니다.
                             </>
                         </div>
                     )}

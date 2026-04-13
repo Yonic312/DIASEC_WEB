@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { MemberContext } from '../../../context/MemberContext';
 
 const CreditHistory = () => {
     const API = process.env.REACT_APP_API_BASE;
+    const navigate = useNavigate();
     const { member } = useContext(MemberContext);
     const [history, setHistory] = useState([]);
 
@@ -38,6 +40,21 @@ const CreditHistory = () => {
         currentPage * itemsPerPage
     );
 
+    const formatShortDate = (dateStr) => {
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) return "-";
+        const yy = String(d.getFullYear()).slice(2);
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yy}.${mm}.${dd}`;
+    };
+
+    const renderRelatedOrderText = (item) => {
+        if (!item?.oid) return "-";
+        if ((item.totalCount ?? 0) > 1) return `${item.title} 외 ${item.totalCount - 1}건`;
+        return `${item.title} (${item.oid})`;
+    };
+
     // 삭제/변경으로 페이지 초과 방지
     useEffect(() => {
         if (currentPage > totalPages) {
@@ -57,21 +74,37 @@ const CreditHistory = () => {
     }, [member?.id]);
 
     return (
-        <div 
-            className="
-                md:px-10 px-[clamp(0.25rem,5.215vw,2.5rem)]
-                w-full ">
-            <h2 
-                className="
-                    md:text-xl text-[clamp(14px,2.607vw,20px)]
-                    md:mb-4 mb-[clamp(0.25rem,1.92vw,1rem)]
-                    font-bold
-                    ">적립금 내역</h2>
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >
+            <div className="flex items-center justify-between">
+                <h2 
+                    className="
+                        md:text-lg text-[clamp(16px,2.346vw,18px)]
+                        font-bold pb-2 md:pb-6"
+                >
+                    | 적립금 내역
+                </h2>
+
+                <button
+                    type="button"
+                    onClick={() => navigate('/mypage')}
+                    className="
+                        md:hidden
+                        self-start flex items-center gap-1 mb-3
+                        text-[13px] text-gray-600 hover:text-gray-900
+                    "
+                >
+                    <span className="text-base leading-none">←</span>
+                    마이페이지
+                </button>
+            </div>
 
             <div 
                 className="
                     md:mb-4 mb-1
-                    md:text-sm text-[clamp(9px,1.825vw,14px)]">
+                    text-[12px] md:text-[14px]"
+            >
                 <span className="font-medium">현재 보유 적립금: </span>
                 <span className="font-bold">{history[0]?.credit?.toLocaleString()}원</span>
             </div>
@@ -79,120 +112,113 @@ const CreditHistory = () => {
             {history.length === 0 ? (
                 <div className="text-gray-500">적립금 내역이 없습니다.</div>
             ) : (
-                <table 
-                    className="
-                        md:text-sm text-[clamp(8px,1.825vw,14px)]
-                        w-full border">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            <th className="md:py-2 py-1 border">날짜</th>
-                            <th className="md:py-2 py-1 border">금액</th>
-                            <th className="md:py-2 py-1 border">설명</th>
-                            <th className="md:py-2 py-1 border">관련 주문</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentHistory.map(item => (
-                            <tr key={item.cid} className="text-center">
-                                <td className="md:py-2 py-1 border">{new Date(item.createdAt).toLocaleDateString()}</td>
-                                <td className={`md:p-2 py-1 border font-semibold ${item.type === '사용' ? 'text-red-500' : 'text-green-600'}`}>
-                                    {item.type === '사용' ? '-' : '+'}{item.amount.toLocaleString()}원
-                                </td>
-                                <td className="md:py-2 py-1 border">{item.description}</td>
-                                <td className="md:py-2 py-1 border">
-                                    {item.oid
-                                        ? (item.totalCount > 1
-                                            ? `${item.title} 외 ${item.totalCount - 1}건`
-                                            : `${item.title} (${item.oid})`
-                                            )
-                                        : '-'
-                                    }
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <>
+                    {/* 카드 (모바일 UI를 PC에도 적용) */}
+                    <div className="space-y-2 md:space-y-3">
+                        {currentHistory.map((item) => {
+                            const isUse = item.type === "사용";
+                            return (
+                                <div key={item.cid} className="border rounded-lg bg-white p-3 md:p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="text-[14px] text-gray-500 whitespace-nowrap">
+                                            {formatShortDate(item.createdAt)}
+                                        </div>
+                                        <div className={`text-[15px] font-bold whitespace-nowrap ${isUse ? "text-red-500" : "text-green-600"}`}>
+                                            {isUse ? "-" : "+"}{item.amount.toLocaleString()}원
+                                        </div>
+                                    </div>
+
+                                    <div className="text-[14px] text-gray-800 break-words">
+                                        {item.description}
+                                    </div>
+
+                                    <div className="text-[13px] text-gray-500 break-words">
+                                        {renderRelatedOrderText(item)}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
             )}
 
             {/* 페이징 */}
-            {history.length > 0 && (
-                <div
-                    className="
-                        md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                        flex justify-center items-center sm:gap-2 gap-[1px]
-                        mt-6 mb-10"
-                >
-                    <button
-                        onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
-                        disabled={groupStart === 1}
-                        className="
-                            sm:w-8 w-6
-                            sm:h-8 h-6
-                            flex items-center justify-center
-                            text-gray-500 hover:text-black disabled:opacity-30"
-                    >
-                        {"<<"}
-                    </button>
+            {/* 페이징 (InquiryList와 동일 패턴) */}
+            <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
+                {(() => {
+                    const maxVisible = 5;
+                    let startPage = Math.max(currentPage - 2, 1);
+                    let endPage = Math.min(startPage + maxVisible - 1, totalPages);
 
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className="
-                            sm:w-8 w-6
-                            sm:h-8 h-6
-                            flex items-center justify-center
-                            text-gray-500 hover:text-black disabled:opacity-30"
-                    >
-                        {"<"}
-                    </button>
+                    if (endPage - startPage < maxVisible - 1) {
+                        startPage = Math.max(endPage - maxVisible + 1, 1);
+                    }
 
-                    {Array.from(
-                        { length: groupEnd - groupStart + 1 },
-                        (_, i) => groupStart + i
-                    ).map(page => (
-                        <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`
-                                sm:w-8 w-6
-                                sm:h-8 h-6
-                                flex items-center justify-center rounded-full
-                                ${
-                                    currentPage === page
-                                        ? "bg-black text-white"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                }
-                            `}
-                        >
-                            {page}
-                        </button>
-                    ))}
+                    const pageNumbers = Array.from(
+                        { length: endPage - startPage + 1 },
+                        (_, i) => startPage + i
+                    );
 
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                        className="
-                            sm:w-8 w-6
-                            sm:h-8 h-6
-                            flex items-center justify-center
-                            text-gray-500 hover:text-black disabled:opacity-30"
-                    >
-                        {">"}
-                    </button>
+                    return (
+                        <div className="flex justify-center gap-1 text-sm font-medium">  
+                            {/* 맨 처음 */}
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<<'}
+                            </button>
+                            {/* 이전 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev -1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<'}
+                            </button>
 
-                    <button
-                        onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
-                        disabled={groupEnd === totalPages}
-                        className="
-                            sm:w-8 w-6
-                            sm:h-8 h-6
-                            flex items-center justify-center
-                            text-gray-500 hover:text-black disabled:opacity-30"
-                    >
-                        {">>"}
-                    </button>
-                </div>
-            )}
+                            {/* 숫자 */}
+                            {pageNumbers.map((pageNum) => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`w-8 h-8 rounded-full border flex items-center justify-center
+                                        ${currentPage === pageNum 
+                                            ? 'bg-black text-white border-black' 
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}>
+                                    <span>{pageNum}</span>
+                                </button>
+                            ))}
+
+                            {/* 다음 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                disabled={currentPage >= totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>'}
+                            </button>
+                            {/* 마지막 */}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>>'}
+                            </button>
+                        </div>
+                    )
+                })()}
+            </div>
         </div>
     );
 };

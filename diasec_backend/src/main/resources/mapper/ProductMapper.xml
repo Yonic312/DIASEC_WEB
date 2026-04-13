@@ -4,6 +4,22 @@
 
   <mapper namespace="com.diasec.diasec_backend.dao.ProductMapper">
 
+    <!--
+      정렬 원리 (MySQL 8+):
+      1) REGEXP_REPLACE(p.title, '[0-9]+$', '')
+         → 문자열 끝에 붙은 "연속 숫자" 한 덩어리를 빈 문자열로 바꿉니다. (= 제목에서 접두어만 남김)
+         예: 나무10 → 나무, 대나무2 → 대나무, 제목12호 → 제목
+         '$' 는 "문자열 끝"이라서 가운데 숫자는 건드리지 않습니다.
+      2) 같은 접두어 안에서는 REGEXP_SUBSTR(..., '[0-9]+$') 를 숫자로 변환해 1,2,…,10 순(자연 정렬).
+      3) 그래도 같으면 p.title 전체 문자열로 최종 정렬.
+    -->
+    <sql id="productListOrderBy">
+      ORDER BY (p.sort_order = 0) ASC, p.sort_order ASC, p.sales DESC,
+        REGEXP_REPLACE(p.title, '[0-9]+$', '') ASC,
+        CAST(COALESCE(REGEXP_SUBSTR(p.title, '[0-9]+$'), '0') AS UNSIGNED) ASC,
+        p.title ASC
+    </sql>
+
     <insert id="insertProduct" parameterType="com.diasec.diasec_backend.vo.ProductVo" useGeneratedKeys="true" keyProperty="pid">
       INSERT INTO product (title, price, category, author, sort_order)
       VALUES (#{title}, #{price}, #{category}, #{author}, #{sortOrder})
@@ -24,9 +40,7 @@
           category = #{category}
         </if>
       </where>
-      ORDER BY 
-        CASE WHEN p.sort_order = 0 THEN 9999 ELSE p.sort_order END ASC, 
-        p.created_at DESC
+      <include refid="productListOrderBy"/>
     </select>
 
     <!-- 메인 상품 리스트에 이미지 가져오기 -->
@@ -40,9 +54,7 @@
           category = #{category}
         </if>
       </where>
-      ORDER BY 
-        CASE WHEN p.sort_order = 0 THEN 9999 ELSE p.sort_order END ASC, 
-        p.created_at DESC
+      <include refid="productListOrderBy"/>
         LIMIT #{size}
         OFFSET #{offset}
     </select>
@@ -61,9 +73,7 @@
                 AND author = #{author}
             </if>
         </where>
-        ORDER BY 
-          CASE WHEN p.sort_order = 0 THEN 9999 ELSE p.sort_order END ASC, 
-          p.created_at DESC
+        <include refid="productListOrderBy"/>
     </select> 
 
     <!-- 메인 상품 리스트 라벨 필터용 -->
@@ -80,9 +90,7 @@
                 AND author = #{author}
             </if>
         </where>
-        ORDER BY 
-          CASE WHEN p.sort_order = 0 THEN 9999 ELSE p.sort_order END ASC, 
-          p.created_at DESC
+        <include refid="productListOrderBy"/>
           LIMIT #{size}
           OFFSET #{offset}
     </select> 

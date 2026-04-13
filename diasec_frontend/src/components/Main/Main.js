@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from 'axios';
 import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
+import { SitePriceRow, SITE_PRICE_TEXT } from '../common/SitePriceDisplay';
+import MainEventPopup from './MainEventPopup';
 
 // 배너
 import customFrame from '../../assets/banner/customFrame.png';
@@ -479,11 +481,17 @@ const Main = () => {
                                         {item.author}
                                 </span>
 
-                                <span className="
-                                    text-[15px]
-                                    font-semibold text-[#d0ac88] mt-[2px]">
-                                    {bestPriceMap[item.pid] ? `${bestPriceMap[item.pid].toLocaleString()}원~` : ''}
-
+                                <span className="mt-[2px] font-semibold text-[#d0ac88]">
+                                    {bestPriceMap[item.pid] != null ? (
+                                        <SitePriceRow
+                                            unitPrice={bestPriceMap[item.pid]}
+                                            quantity={1}
+                                            suffix="~"
+                                            neutralClassName={`${SITE_PRICE_TEXT} font-semibold text-[#d0ac88]`}
+                                        />
+                                    ) : (
+                                        ''
+                                    )}
                                 </span>
                                 <hr className="my-1" />
                             </div>
@@ -587,10 +595,17 @@ const Main = () => {
                                     {item.author}
                                 </span>
 
-                                <span className="
-                                    text-[15px]
-                                    font-semibold text-[#d0ac88] mt-[2px]">
-                                    {newPriceMap[item.pid] ? `${newPriceMap[item.pid].toLocaleString()}원~` : ''}
+                                <span className="mt-[2px] font-semibold text-[#d0ac88]">
+                                    {newPriceMap[item.pid] != null ? (
+                                        <SitePriceRow
+                                            unitPrice={newPriceMap[item.pid]}
+                                            quantity={1}
+                                            suffix="~"
+                                            neutralClassName={`${SITE_PRICE_TEXT} font-semibold text-[#d0ac88]`}
+                                        />
+                                    ) : (
+                                        ''
+                                    )}
                                 </span>
 
                                 <hr className="my-1" />
@@ -711,15 +726,15 @@ const Main = () => {
                         role="dialog"
                         aria-modal="true"
                         className="
-                            relative w-full max-w-[620px]
-                            max-h-[88vh] overflow-y-auto
+                            relative flex flex-col w-full max-w-[620px]
+                            max-h-[88vh] overflow-hidden
                             rounded-2xl bg-white shadow-2xl
                             border border-gray-100
                         "
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* 헤더 */}
-                        <div className="sticky top-0 flex items-center justify-between px-3 md:px-2 md:py-2 bg-white/95 backdrop-blur border-gray-100">
+                        <div className="flex shrink-0 items-center justify-between px-3 md:px-2 md:py-2 bg-white/95 backdrop-blur border-gray-100">
                             <p className="text-[14px] md:text-[16px] font-semibold text-gray-900">
                                 리뷰 상세보기
                             </p>
@@ -735,7 +750,7 @@ const Main = () => {
                             </button>
                         </div>
 
-                        <div className="px-3 pb-3 md:px-5 md:pb-5">
+                        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 md:px-5 md:pb-5">
                             {/* 메인 이미지 */}
                             <div className="w-full aspect-[4/3] rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
                                 <img
@@ -870,6 +885,9 @@ const Main = () => {
                 </div>
             </div>
             {/* /회사 소개, 디아섹이란 */}
+
+            {/* 이벤트 팝업창 */}
+            <MainEventPopup events={events} />
         </div>
     );
 };

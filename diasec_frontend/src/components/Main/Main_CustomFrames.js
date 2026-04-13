@@ -1,5 +1,6 @@
-import { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { MemberContext } from '../../context/MemberContext';
 import { toast } from 'react-toastify';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +12,12 @@ import icon_kakao from '../../assets/button/icon_kakao.png';
 import icon_naver from '../../assets/button/icon_naver.png';
 import mainPage from '../../assets/CustomFrames/상세페이지.jpg';
 import ProductDetailTabs from '../ProductDetailTabs/ProductDetailTabs.js';
+import { getDiscountedUnitPrice } from '../../utils/siteDiscount';
+import {
+    SitePriceRow,
+    SitePriceTotal,
+    SITE_PRICE_TEXT,
+} from '../common/SitePriceDisplay';
 
 // 드롭메뉴 사진
 import c1 from '../../assets/dropDownMenu/customFrame/c1.jpg';
@@ -49,6 +56,47 @@ const presetImageMap = {
     anime: c8,
     sight: c9,
 }
+
+const SITE_ORIGIN = 'https://diasec.co.kr';
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/icon.png`;
+const CUSTOM_FRAME_PRESET_SEO = {
+    wedding: {
+        title: '웨딩사진 맞춤 디아섹 액자 | 디아섹코리아',
+        desc: '웨딩 스냅·본식 사진을 프리미엄 디아섹 액자로 제작합니다. 사이즈·마감 맞춤 주문이 가능합니다.',
+    },
+    family: {
+        title: '가족사진 맞춤 디아섹 액자 | 디아섹코리아',
+        desc: '가족 단체사진·기념 촬영을 고광택·무광 디아섹 액자로 오래 보존하세요.',
+    },
+    pet: {
+        title: '반려동물 사진 디아섹 액자 | 디아섹코리아',
+        desc: '반려동물 프로필·스튜디오 컷을 선명한 디아섹 액자로 맞춤 제작합니다.',
+    },
+    baby: {
+        title: '아기 성장사진 디아섹 액자 | 디아섹코리아',
+        desc: '백일·돌·성장 기록 사진을 아크릴 디아섹 액자로 인테리어용으로 제작합니다.',
+    },
+    profile: {
+        title: '프로필·증명사진 맞춤 액자 | 디아섹코리아',
+        desc: '프로필·증명 촬영 이미지를 깔끔한 디아섹 액자로 완성합니다.',
+    },
+    store: {
+        title: '매장·사무실 인테리어용 디아섹 액자 | 디아섹코리아',
+        desc: '매장·카페·사무실 벽면용 대형 디아섹 액자 맞춤 제작.',
+    },
+    game: {
+        title: '게임·굿즈 일러스트 디아섹 액자 | 디아섹코리아',
+        desc: '게임 일러스트·굿즈 아트를 컬렉션용 디아섹 액자로 제작합니다.',
+    },
+    anime: {
+        title: '애니·일러스트 디아섹 액자 | 디아섹코리아',
+        desc: '애니메이션·팬아트를 선명한 색감의 디아섹 액자로 보관·전시하세요.',
+    },
+    sight: {
+        title: '풍경·여행사진 디아섹 액자 | 디아섹코리아',
+        desc: '여행·야경·자연 풍경 사진을 거실용 디아섹 액자로 맞춤 제작합니다.',
+    },
+};
 
 const Main_CustomFrames = () => {
     const API = process.env.REACT_APP_API_BASE;
@@ -500,6 +548,11 @@ const Main_CustomFrames = () => {
         ? totalPriceWithoutShipping
         : totalPriceWithoutShipping + SHIPPING_FEE;
     
+    const totalPriceWithoutShippingDiscounted = customItems.reduce(
+        (acc, item) => acc + getDiscountedUnitPrice(item.price),
+        0
+    );
+    
     // 바로구매 (결제)
     const handleBuyNow = () => {
         if (customItems.length === 0) {
@@ -528,7 +581,7 @@ const Main_CustomFrames = () => {
             id: member.id,
             pid: '-3',
             title: '맞춤 액자',
-            price: item.price, // 배송비 제외
+            price: item.price,
             thumbnail: item.imageSrc,
             size: toInchSize(item.width, item.height),
             category:'customFrames',
@@ -684,8 +737,34 @@ const Main_CustomFrames = () => {
         )
     }
 
+    const customFramesSeo = useMemo(() => {
+        const base = {
+            title: '맞춤 디아섹 액자 · 사진보정 | 디아섹코리아',
+            desc: '사진·일러스트 업로드 후 사이즈와 마감을 고르는 맞춤 디아섹 액자 주문. 전문 사진보정 옵션으로 완성도를 높여 보세요.',
+            canonical: `${SITE_ORIGIN}/customFrames`,
+        };
+        const preset = presetKey && CUSTOM_FRAME_PRESET_SEO[presetKey];
+        if (!preset) return base;
+        return {
+            title: preset.title,
+            desc: preset.desc,
+            canonical: `${SITE_ORIGIN}/customFrames?preset=${encodeURIComponent(presetKey)}`,
+        };
+    }, [presetKey]);
+
     return (
         <div className="flex flex-col w-full h-full">
+            <Helmet>
+                <title>{customFramesSeo.title}</title>
+                <meta name="description" content={customFramesSeo.desc} />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={customFramesSeo.title} />
+                <meta property="og:description" content={customFramesSeo.desc} />
+                <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+                <meta property="og:url" content={customFramesSeo.canonical} />
+                <meta property="og:locale" content="ko_KR" />
+                <link rel="canonical" href={customFramesSeo.canonical} />
+            </Helmet>
             <div className="hidden md:block">
                 <div className='flex justify-center mt-12 items-start'>
                     <div className="flex flex-col items-center w-[80px]">
@@ -1081,12 +1160,17 @@ const Main_CustomFrames = () => {
 
                                             {/* 우측 영역 */}
                                             <div className='flex-1 min-w-0'>
-                                                <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-start justify-between md:gap-0 gap-2">
                                                     <div className="min-w-0">
                                                         <p className='text-[12.5px] font-semibold text-gray-800'>
                                                             {Math.floor(item.width)} x {Math.floor(item.height)}cm
                                                         </p>
-                                                        <p className="mt-[-4px] mb-[4px] text-[14px]">{item.price.toLocaleString()}원</p>
+                                                        <p className="mt-[-4px] mb-[4px]">
+                                                            <SitePriceRow
+                                                                unitPrice={item.price}
+                                                                neutralClassName={`${SITE_PRICE_TEXT} text-gray-800`}
+                                                            />
+                                                        </p>
                                                     </div>
 
                                                     {/* 삭제 버튼 */}
@@ -1227,7 +1311,14 @@ const Main_CustomFrames = () => {
                                 주문 후 평균 2~5일 내 수령
                             </div>
                             <span className="text-base font-semibold text-gray-700">
-                                총 결제금액 : <span className=" text-[#a57647]">{totalPriceWithoutShipping.toLocaleString()}원</span>
+                                총 결제금액 :{' '}
+                                <span className=" text-[#a57647]">
+                                    <SitePriceTotal
+                                        original={totalPriceWithoutShipping}
+                                        discounted={totalPriceWithoutShippingDiscounted}
+                                        className={`${SITE_PRICE_TEXT} font-semibold text-[#a57647]`}
+                                    />
+                                </span>
                             </span>
                         </div>
                         <div className="text-right">
@@ -1290,7 +1381,35 @@ const Main_CustomFrames = () => {
                         mb-6 font-bold">구매 방식을 선택해주세요</p>
 
                     <button
-                        onClick={() => navigate('/userLogin')}
+                        onClick={() => {
+                            const pendingOrderItems = customItems.map((item) => {
+                                const enabledVal =
+                                    item.retouch?.enabled === true || (item.retouch?.types?.length ?? 0) > 0 ? 1 : 0;
+                                const typesStr = item.retouch?.types?.join(', ') ?? '';
+                                const noteStr = item.retouch?.note ?? '';
+
+                                return {
+                                    pid: '-3',
+                                    title: '맞춤 액자',
+                                    price: item.price,
+                                    thumbnail: item.imageSrc,
+                                    size: toInchSize(item.width, item.height),
+                                    category: 'customFrames',
+                                    quantity: '1',
+                                    finishType: item.finishType ?? 'glossy',
+                                    retouchEnabled: enabledVal,
+                                    retouchTypes: enabledVal ? typesStr : null,
+                                    retouchNote: enabledVal ? noteStr : null,
+                                };
+                            });
+
+                            navigate('/userLogin', {
+                                state: {
+                                    pendingOrderItems,
+                                    returnTo: `${location.pathname}${location.search}`,
+                                },
+                            });
+                        }}
                         className="
                             md:text-base text-[clamp(12px,2.085vw,16px)]
                             w-full py-3 mb-3 bg-[#D0AC88] text-white rounded-md"
@@ -1309,7 +1428,7 @@ const Main_CustomFrames = () => {
                             return {
                             pid: '-3',
                             title: '맞춤 액자',
-                            price: item.price, // 배송비 제외
+                            price: item.price,
                             thumbnail: item.imageSrc,
                             size: toInchSize(item.width, item.height),
                             category:'customFrames',
@@ -1332,7 +1451,7 @@ const Main_CustomFrames = () => {
                     </button>
 
                     <button
-                        onClick={() => clearRetouch(retouchTargetId)}
+                        onClick={() => setShowGuestChoice(false)}
                         className="
                             md:text-sm text-[clamp(11px,1.8252vw,14px)]
                             mt-4 text-gray-500 hover:underline"

@@ -81,15 +81,29 @@ const ChangePwd = () => {
     return (
         <div className="flex flex-col w-full items-center">
             <form onSubmit={handleChangePasswordSubmit}>
-                <div 
-                    className="
-                        md:text-xl text-[clamp(14px,2.607vw,20px)]
-                        sm:mb-5 mb-2
-                        flex font-bold pb-2 justify-center">
-                    비밀번호 변경
-                </div>    
+                <div className="flex items-center justify-between">
+                    <span className="
+                        md:text-lg text-[clamp(16px,2.346vw,18px)]
+                        font-bold pb-2 md:pb-6"
+                    >
+                            | 비밀번호 변경
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate('/mypage')}
+                        className="
+                            md:hidden
+                            self-start flex items-center gap-1 mb-3
+                            text-[13px] text-gray-600 hover:text-gray-900
+                        "
+                    >
+                        <span className="text-base leading-none">←</span>
+                        마이페이지
+                    </button>
+                </div>
                 <div className="
-                    md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                    text-sm
                     flex flex-col border-[1px] 
                     sm:px-10 px-4
                     sm:py-12 py-4
@@ -105,7 +119,7 @@ const ChangePwd = () => {
                             font-semibold">현재 비밀번호</span>
                     <input type="password" value={nowPassword} onChange={(e) => setNowPassword(e.target.value)} 
                         className="
-                            sm:w-[250px] w-[180px]
+                            w-[250px]
                             sm:h-[40px] h-8
                             p-2 border-black border-[1px] border-opacity-15 mb-4"></input>
 
@@ -114,12 +128,12 @@ const ChangePwd = () => {
                             font-semibold">새 비밀번호</span>
                     <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} ref={newPasswordRef} 
                         className="
-                            sm:w-[250px] w-[180px]
+                            w-[250px]
                             sm:h-[40px] h-8
                             p-2 border-black border-[1px] border-opacity-15"></input>
                     <span 
                         className="
-                            md:text-xs text-[clamp(8px,1.5645vw,12px)]
+                            text-[12px]
                             mb-4 
                             text-gray-500">
                         (영문/숫자/특수문자 중 2종 이상, 8~16자)
@@ -130,7 +144,7 @@ const ChangePwd = () => {
                             font-semibold">새 비밀번호 확인</span>
                     <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} 
                         className="
-                            sm:w-[250px] w-[180px]
+                            w-[250px]
                             sm:h-[40px] h-8
                             p-2 border-black border-[1px] border-opacity-15"></input>
 
@@ -144,7 +158,7 @@ const ChangePwd = () => {
                             className="
                                 w-1/2 
                                 sm:h-[40px] h-[30px]
-                                bg-[#555555] text-[#fbf7f0] border-[1px] border-[#555555] font-bold">비밀번호 변경</button>
+                                bg-[#555555] text-[#fbf7f0] border-[1px] border-[#555555] rounded font-bold">비밀번호 변경</button>
                     </div>
                 </div>
             </form>

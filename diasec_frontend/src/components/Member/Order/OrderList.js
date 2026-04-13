@@ -195,7 +195,7 @@ const OrderList = () => {
         const wCm = Math.round(wInch * 2.54);
         const hCm = Math.round(hInch * 2.54);
 
-        return `약 ${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)} inch)`;
+        return `${wCm} x ${hCm} cm (${wInch.toFixed(1)} x ${hInch.toFixed(1)})`;
     }
 
     const convertCategoryName = (category) => {
@@ -227,10 +227,30 @@ const OrderList = () => {
     }
 
     return (
-        <div className="flex flex-col w-full mb-20 mr-2">
-            <span className="
-                md:text-xl text-[clamp(14px,2.607vw,20px)]
-                font-bold pb-6">| 주문내역 조회</span>
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >   
+            <div className="flex items-center justify-between">
+                <span className="
+                    md:text-lg text-[clamp(16px,2.346vw,18px)]
+                    font-bold pb-2 md:pb-6"
+                >
+                    | 주문내역 조회
+                </span>
+
+                <button
+                    type="button"
+                    onClick={() => navigate('/mypage')}
+                    className="
+                        md:hidden
+                        self-start flex items-center gap-1 mb-3
+                        text-[13px] text-gray-600 hover:text-gray-900
+                    "
+                >
+                    <span className="text-base leading-none">←</span>
+                    마이페이지
+                </button>
+            </div>
 
             <hr />
 
@@ -239,7 +259,7 @@ const OrderList = () => {
                 xl:flex-row flex-col
                 ">
                 <div className="
-                    text-[clamp(11px,2.085vw,16px)] md:text-base
+                    text-[14px] md:text-[16px]
                     flex sm:flex-row flex-col">
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} 
                         className="
@@ -257,33 +277,33 @@ const OrderList = () => {
                     ">
                         <button 
                             className="
-                                w-[50px] 
+                                w-[60px] 
                                 sm:h-[40px] h-[30px] 
                                 border-[1px] bg-white" onClick={handleToday}>오늘</button>
                         <button className="
-                                w-[50px] 
+                                w-[60px] 
                                 sm:h-[40px] h-[30px] 
                                 border-[1px] bg-white" onClick={() => handleRangeClick(1)}>1개월</button>
                         <button className="
-                                w-[50px] 
+                                w-[60px] 
                                 sm:h-[40px] h-[30px] 
                                 border-[1px] bg-white" onClick={() => handleRangeClick(3)}>3개월</button>
                         <button className="
-                                w-[50px] 
+                                w-[60px] 
                                 sm:h-[40px] h-[30px] 
                                 border-[1px] bg-white" onClick={() => handleRangeClick(6)}>6개월</button>
                     </div>
                 </div>
-                <div className="md:text-base text-[clamp(11px,2.085vw,16px)]">
+                <div className="text-[14px] md:text-[16px]">
                     <input type="date" 
                         className="
-                            sm:w-[140px] w-[90px] 
+                            w-[110px] sm:w-[140px] 
                             sm:h-[40px] h-[30px]
                             border-[1px] border-opacity-15 text-center" value={startDate} onChange={(e) => setStartDate(e.target.value)}></input>
                     <span className="mx-2">~</span>
                     <input type="date" 
                         className="
-                            sm:w-[140px] w-[90px] 
+                            w-[110px] sm:w-[140px]
                             sm:h-[40px] h-[30px]
                             border-[1px] border-opacity-15 text-center mr-2" value={endDate} onChange={(e) => setEndDate(e.target.value)}></input>
                 </div>
@@ -307,7 +327,7 @@ const OrderList = () => {
                             {/* 주문번호 및 날짜 */}
                             <div 
                                 className="flex justify-between items-center 
-                                    md:text-sm text-[clamp(11px,1.8252vw,14px)]
+                                    md:text-sm text-[clamp(12px,1.8252vw,14px)]
                                     text-gray-500">
                                 <span className='font-medium'>
                                     {order.createdAt?.slice(0, 10)} · 주문번호: {order.oid}
@@ -322,7 +342,7 @@ const OrderList = () => {
                                             }}
                                             className="
                                                 sm:px-2 px-[2px] py-1 border border-red-400 text-red-500 
-                                                md:text-[10px] text-[clamp(8px,1.303vw,10px)]
+                                                md:text-[12px] text-[10px]
                                                 rounded hover:bg-red-50"
                                         >
                                             주문 취소
@@ -332,7 +352,7 @@ const OrderList = () => {
                                         onClick={() => navigate(`/orderDetail/${order.oid}`)}
                                         className='
                                             ml-2 sm:px-2 px-[2px] py-1 border border-gray-400 text-gray-700 
-                                            md:text-[10px] text-[clamp(8px,1.303vw,10px)]
+                                            md:text-[12px] text-[10px]
                                             rounded hover:bg-gray-100'
                                     >주문 상세</button>
                                 </div>
@@ -368,7 +388,13 @@ const OrderList = () => {
                                     </div>
 
                                     <div className='flex flex-row gap-4 py-2'>
-                                        <img src={item.category === 'customFrames' ? thumbCustom : item.thumbnail} alt={item.title} 
+                                        <img 
+                                            src={
+                                                item.category === 'customFrames' 
+                                                    ? item.thumbnail || thumbCustom
+                                                    : item.thumbnail
+                                            } 
+                                            alt={item.title} 
                                             className="
                                                 md:w-20 w-[clamp(4rem,10.43vw,5rem)]
                                                 md:h-20 h-[clamp(4rem,10.43vw,5rem)]
@@ -379,13 +405,12 @@ const OrderList = () => {
                                             <div 
                                                 className="
                                                     flex flex-col w-full
-                                                    md:text-sm text-[clamp(9px,1.825vw,14px)]
+                                                    md:text-sm text-[clamp(12px,1.825vw,14px)]
                                             ">
                                                 <span className="font-bold text-black">{item.title}</span>
                                                 <span>카테고리: {convertCategoryName(item.category)} ({item.finishType === 'matte' ? '무광' : '유광'})</span>
                                                 <div className="flex sm:flex-row flex-col">
-                                                    <span>사이즈: </span>
-                                                    <span>{convertInchToCm(item.size)} ({item.quantity}개)</span>
+                                                    <span>사이즈: {convertInchToCm(item.size)}</span>
                                                 </div>
                                                 {item.category === 'lease' && (
                                                 `기간 : ${item.period}`
@@ -413,64 +438,81 @@ const OrderList = () => {
                 )
             )}
 
-            <div 
-                className="
-                    md:text-sm text-[clamp(10px,1.8252vw,14px)]
-                    flex justify-center items-center sm:gap-2 gap-[1px] mt-10 mb-10">
-                <button 
-                    onClick={() => setCurrentPage(Math.max(1, groupStart - pageGroupSize))}
-                    disabled={groupStart === 1}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6     
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<<'}
-                </button>
+            {/* 페이징 (InquiryList와 동일 패턴) */}
+            <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
+                {(() => {
+                    const maxVisible = 5;
+                    let startPage = Math.max(currentPage - 2, 1);
+                    let endPage = Math.min(startPage + maxVisible - 1, totalPages);
 
-                <button 
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'<'}
-                </button>
+                    if (endPage - startPage < maxVisible - 1) {
+                        startPage = Math.max(endPage - maxVisible + 1, 1);
+                    }
 
-                {Array.from({ length: groupEnd - groupStart + 1 }, (_, i) => groupStart + i).map(page => (
-                    <button key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`
-                                sm:w-8 w-6
-                                sm:h-8 h-6
-                                flex items-center justify-center rounded-full ${
-                            currentPage === page ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'
-                            }`}>
-                    {page}
-                    </button>
-                ))}
+                    const pageNumbers = Array.from(
+                        { length: endPage - startPage + 1 },
+                        (_, i) => startPage + i
+                    );
 
-                <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>'}
-                </button>
+                    return (
+                        <div className="flex justify-center gap-1 text-sm font-medium">  
+                            {/* 맨 처음 */}
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<<'}
+                            </button>
+                            {/* 이전 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev -1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === 1 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'<'}
+                            </button>
 
-                <button onClick={() => setCurrentPage(Math.min(totalPages, groupStart + pageGroupSize))}
-                    disabled={groupEnd === totalPages}
-                    className="
-                        sm:w-8 w-6
-                        sm:h-8 h-6 
-                        flex items-center justify-center text-gray-500 hover:text-black"
-                >
-                    {'>>'}
-                </button>
+                            {/* 숫자 */}
+                            {pageNumbers.map((pageNum) => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`w-8 h-8 rounded-full border flex items-center justify-center
+                                        ${currentPage === pageNum 
+                                            ? 'bg-black text-white border-black' 
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}>
+                                    <span>{pageNum}</span>
+                                </button>
+                            ))}
+
+                            {/* 다음 */}
+                            <button
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                disabled={currentPage >= totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>'}
+                            </button>
+                            {/* 마지막 */}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 border rounded-full flex items-center justify-center 
+                                    ${currentPage === totalPages 
+                                        ? 'text-gray-300 border-gray-200' 
+                                        : 'text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                                {'>>'}
+                            </button>
+                        </div>
+                    )
+                })()}
             </div>
         </div>
     );

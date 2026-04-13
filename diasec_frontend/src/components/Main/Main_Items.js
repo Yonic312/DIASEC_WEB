@@ -1,16 +1,84 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, useMemo } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
+import { X, Search } from 'lucide-react';
 import { getMinFrameConfigByRatio } from '../../utils/customFramePrice';
+import { SitePriceRow } from '../common/SitePriceDisplay';
+import { MAIN_ITEMS_SCROLL_PREFIX } from '../../utils/navigationReload';
 import pic_author from '../../assets/collections/author.png';
 import pic_photoIllustration from '../../assets/collections/photoIllustration.png'
 import pic_fungShui from '../../assets/collections/fungShui.png';
+
+function parseListScrollPayload(raw) {
+    if (raw == null || raw === "") return null;
+    try {
+        const o = JSON.parse(raw);
+        if (
+            o &&
+            typeof o === "object" &&
+            typeof o.y === "number" &&
+            typeof o.page === "number" &&
+            o.page >= 0 &&
+            (o.mode === "author" || o.mode === "home")
+        ) {
+            return {
+                y: o.y,
+                docH: typeof o.docH === "number" ? Math.max(0, o.docH) : 0,
+                mode: o.mode,
+                page: o.page,
+                itemCount:
+                    typeof o.itemCount === "number" && o.itemCount >= 0
+                        ? o.itemCount
+                        : undefined,
+            };
+        }
+    } catch {
+        /* ignore */
+    }
+    return null;
+}
+
+const SITE_ORIGIN = 'https://diasec.co.kr';
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/icon.png`;
+
+function getMainItemsMetaByType(type) {
+    switch (type) {
+        case 'masterPiece':
+            return {
+                title: '명화 액자 | 디아섹코리아',
+                desc: '고해상 명화 디아섹 액자 제작',
+            };
+        case 'koreanPainting':
+            return {
+                title: '동양화 액자 | 디아섹코리아',
+                desc: '전통 동양화 디아섹 액자 제작',
+            };
+        case 'photoIllustration':
+            return {
+                title: '사진 / 일러스트 액자 | 디아섹코리아',
+                desc: '사진 / 일러스트 디아섹 액자 제작',
+            };
+        case 'fengShui':
+            return {
+                title: '풍수 그림 액자 | 디아섹코리아',
+                desc: '풍수 인테리어 디아섹 액자',
+            };
+        default:
+            return {
+                title: '디아섹코리아',
+                desc: '프리미엄 액자 제작 쇼핑몰',
+            };
+    }
+}
 
 const Main_Items = () => {
     const API = process.env.REACT_APP_API_BASE;
     const location = useLocation();
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
+
+    const getScrollKey = () => `${MAIN_ITEMS_SCROLL_PREFIX}${location.pathname}${location.search}`;
 
     const author = queryParams.get("author");
     const type = queryParams.get("type");
@@ -32,7 +100,7 @@ const Main_Items = () => {
 
     // 경로에 따라 제목 변경
     if(type === "masterPiece") {
-        title = "명화갤러리";
+        title = "명화";
     } else if (type === "koreanPainting") { 
         title = "동양화";
     } else if(type === "fengShui") {
@@ -81,6 +149,35 @@ const Main_Items = () => {
     const [labelLoading, setLabelLoading] = useState(false);
     const [labelHasMore, setLabelHasMore] = useState(true);
     const labelLoadMoreRef = useRef(null);
+    const listRestoreInProgressRef = useRef(false);
+    const prevAuthorForScrollRef = useRef(null);
+    const prevAuthorForSearchResetRef = useRef(author);
+    const postRestoreScrollYRef = useRef(null);
+
+    useEffect(() => {
+        const prev = window.history.scrollRestoration;
+        if ("scrollRestoration" in window.history) {
+            window.history.scrollRestoration = "manual";
+        }
+        return () => {
+            if ("scrollRestoration" in window.history) {
+                window.history.scrollRestoration = prev;
+            }
+        };
+    }, []);
+
+    useLayoutEffect(() => {
+        const key = `${MAIN_ITEMS_SCROLL_PREFIX}${location.pathname}${location.search}`;
+        const raw = sessionStorage.getItem(key);
+        const parsed = parseListScrollPayload(raw);
+        const el = document.documentElement;
+        if (parsed && parsed.docH > 0) {
+            el.style.minHeight = `${parsed.docH}px`;
+        }
+        return () => {
+            el.style.minHeight = "";
+        };
+    }, [location.pathname, location.search]);
 
     useEffect(() => {
         homeReqIdRef.current += 1;
@@ -235,6 +332,7 @@ const Main_Items = () => {
     // 작가가 선택되면 상품을 가져옴 (page 기반)
     useEffect(() => {
         if (!type || !author) return;
+        if (listRestoreInProgressRef.current) return;
         if (!authorHasMore) return;
 
         const reqId = ++authorReqIdRef.current;
@@ -306,22 +404,22 @@ const Main_Items = () => {
             : (["masterPiece", "koreanPainting"].includes(type) ? [] : filteredHomeProducts);
     }, [author, type, filteredAuthorProducts, filteredHomeProducts]);
 
-    // 논커스텀 상세 진입 전 저장한 스크롤 위치 복원
-    useEffect(() => {
-        if (displayProducts.length === 0) return;
-
-        const key = `main_items_scroll:${location.search}`;
-        const saved = sessionStorage.getItem(key);
-        if (!saved) return;
-
-        const y = Number(saved);
-        if (Number.isFinite(y) && y >= 0) {
-            requestAnimationFrame(() => {
-                window.scrollTo(0, y);
-            });
+    const mainItemsSeo = useMemo(() => {
+        const base = getMainItemsMetaByType(type);
+        let title = base.title;
+        let desc = base.desc;
+        if (author) {
+            const name = decodeURIComponent(author);
+            title = `${name} | ${base.title}`;
+            desc = `${name} 작품. ${base.desc}`;
         }
-        sessionStorage.removeItem(key);
-    }, [displayProducts.length, location.search]);
+        const origin =
+            typeof window !== 'undefined' && window.location?.origin
+                ? window.location.origin
+                : SITE_ORIGIN;
+        const canonical = `${origin}${location.pathname}${location.search}`;
+        return { title, desc, canonical };
+    }, [type, author, location.pathname, location.search]);
 
     useEffect(() => {
         setTitleSearch('');
@@ -335,6 +433,7 @@ const Main_Items = () => {
 
         const obs = new IntersectionObserver(([entry]) => {
             if (!entry.isIntersecting) return;
+            if (listRestoreInProgressRef.current) return;
             if (authorLoading || !authorHasMore) return;
             if (authorProducts.length === 0) return;
                 
@@ -346,8 +445,15 @@ const Main_Items = () => {
     }, [type, author, authorLoading, authorHasMore, authorProducts.length]);
 
     useEffect(() => {
-        if (!author) return;
-        window.scrollTo({ top: 0, behavior: "auto"});
+        if (!author) {
+            prevAuthorForScrollRef.current = null;
+            return;
+        }
+        const prev = prevAuthorForScrollRef.current;
+        if (prev !== null && prev !== author) {
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }
+        prevAuthorForScrollRef.current = author;
     }, [author]);
 
     // 마우스 호버 상태 저장(img)
@@ -411,10 +517,14 @@ const Main_Items = () => {
     }, [type, author]);
 
     useEffect(() => {
+        if (prevAuthorForSearchResetRef.current !== author) {
+            setAuthorSearch('');
+            setTitleSearch('');
+        }
+        prevAuthorForSearchResetRef.current = author;
+
         if (!author) {
             setSelectedLabel('');
-            setTitleSearch('');
-            setAuthorSearch('');
             setSelectedPeriod('');
             setSortMode('popular');
         }
@@ -426,6 +536,7 @@ const Main_Items = () => {
 
         // 명화/동양화는 라벨 카드 구조니까 홈상품 로딩 안 함
         if (["masterPiece", "koreanPainting"].includes(type)) return;
+        if (listRestoreInProgressRef.current) return;
         if (!homeHasMore) return;
 
         const reqId = ++homeReqIdRef.current;
@@ -473,6 +584,7 @@ const Main_Items = () => {
 
         const obs = new IntersectionObserver(([entry]) => {
             if (!entry.isIntersecting) return;
+            if (listRestoreInProgressRef.current) return;
             if (homeLoading || !homeHasMore) return;
             if (homeProducts.length === 0) return;
 
@@ -482,6 +594,186 @@ const Main_Items = () => {
         obs.observe(el);
         return () => obs.disconnect();
     }, [type, author, homeLoading, homeHasMore, homeProducts.length]);
+
+    // 상세에서 뒤로: 저장된 페이지까지 API를 연속 호출해 한 번에 목록을 채운 뒤 스크롤만 맞춤 (무한스크롤 단계별 렌더로 푸터가 흔들리지 않게)
+    useEffect(() => {
+        const key = `${MAIN_ITEMS_SCROLL_PREFIX}${location.pathname}${location.search}`;
+        const raw = sessionStorage.getItem(key);
+        const parsed = parseListScrollPayload(raw);
+        if (!parsed) return;
+
+        if (parsed.mode === "author") {
+            if (!type || !author) return;
+        } else if (parsed.mode === "home") {
+            if (!type || author || ["masterPiece", "koreanPainting"].includes(type)) return;
+        } else {
+            return;
+        }
+
+        let cancelled = false;
+        listRestoreInProgressRef.current = true;
+        authorReqIdRef.current += 1;
+        homeReqIdRef.current += 1;
+
+        const finishScroll = () => {
+            postRestoreScrollYRef.current = parsed.y;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const el = document.documentElement;
+                    const maxY = Math.max(0, el.scrollHeight - window.innerHeight);
+                    window.scrollTo({
+                        top: Math.min(parsed.y, maxY),
+                        left: 0,
+                        behavior: "auto",
+                    });
+                    sessionStorage.removeItem(key);
+                });
+            });
+            setTimeout(() => {
+                if (postRestoreScrollYRef.current == null) return;
+                const yy = postRestoreScrollYRef.current;
+                const maxY = Math.max(
+                    0,
+                    document.documentElement.scrollHeight - window.innerHeight
+                );
+                window.scrollTo({ top: Math.min(yy, maxY), left: 0, behavior: "auto" });
+                postRestoreScrollYRef.current = null;
+                document.documentElement.style.minHeight = "";
+            }, 1200);
+        };
+
+        const runAuthor = async () => {
+            const reqId = authorReqIdRef.current;
+            const decoded = decodeURIComponent(author);
+            const isAll = decoded === "ALL";
+            const url = isAll ? `${API}/product/list/paged` : `${API}/product/filter/paged`;
+            const merged = [];
+            const ic =
+                typeof parsed.itemCount === "number" && parsed.itemCount >= 0
+                    ? parsed.itemCount
+                    : 0;
+            const batchesFromItems = ic > 0 ? Math.ceil(ic / PAGE_SIZE) : 0;
+            const ps = parsed.page;
+            const toExclusive =
+                ps <= 0
+                    ? Math.max(1, batchesFromItems || 1)
+                    : Math.max(ps, batchesFromItems || 0);
+
+            setAuthorLoading(true);
+            try {
+                setSelectedLabel(decoded);
+                let lastLen = PAGE_SIZE;
+                const runLoop = async (fromP, toEx) => {
+                    for (let p = fromP; p < toEx; p++) {
+                        if (cancelled || reqId !== authorReqIdRef.current) return;
+                        const offset = p * PAGE_SIZE;
+                        const params = isAll
+                            ? { category: type, size: PAGE_SIZE, offset }
+                            : { category: type, author: decoded, size: PAGE_SIZE, offset };
+                        const res = await axios.get(url, { params });
+                        const list = res.data ?? [];
+                        const seen = new Set(merged.map((x) => x.pid));
+                        for (const item of list) {
+                            if (!seen.has(item.pid)) {
+                                seen.add(item.pid);
+                                merged.push(item);
+                            }
+                        }
+                        lastLen = list.length;
+                        if (list.length < PAGE_SIZE) return;
+                    }
+                };
+                await runLoop(0, toExclusive);
+                if (cancelled || reqId !== authorReqIdRef.current) return;
+                setAuthorProducts(merged);
+                setAuthorPage(toExclusive);
+                setAuthorHasMore(lastLen >= PAGE_SIZE);
+            } catch (e) {
+                console.error("목록 복원(작가) 실패", e);
+                setAuthorHasMore(false);
+            } finally {
+                if (reqId === authorReqIdRef.current) setAuthorLoading(false);
+            }
+        };
+
+        const runHome = async () => {
+            const reqId = homeReqIdRef.current;
+            const merged = [];
+            const ic =
+                typeof parsed.itemCount === "number" && parsed.itemCount >= 0
+                    ? parsed.itemCount
+                    : 0;
+            const batchesFromItems = ic > 0 ? Math.ceil(ic / PAGE_SIZE) : 0;
+            const ps = parsed.page;
+            const toExclusive =
+                ps <= 0
+                    ? Math.max(1, batchesFromItems || 1)
+                    : Math.max(ps, batchesFromItems || 0);
+
+            setHomeLoading(true);
+            try {
+                let lastLen = PAGE_SIZE;
+                const runLoop = async (fromP, toEx) => {
+                    for (let p = fromP; p < toEx; p++) {
+                        if (cancelled || reqId !== homeReqIdRef.current) return;
+                        const offset = p * PAGE_SIZE;
+                        const res = await axios.get(`${API}/product/list/paged`, {
+                            params: { category: type, size: PAGE_SIZE, offset },
+                        });
+                        const list = res.data ?? [];
+                        const seen = new Set(merged.map((x) => x.pid));
+                        for (const item of list) {
+                            if (!seen.has(item.pid)) {
+                                seen.add(item.pid);
+                                merged.push(item);
+                            }
+                        }
+                        lastLen = list.length;
+                        if (list.length < PAGE_SIZE) return;
+                    }
+                };
+                await runLoop(0, toExclusive);
+                if (cancelled || reqId !== homeReqIdRef.current) return;
+                setHomeProducts(merged);
+                setHomePage(toExclusive);
+                setHomeHasMore(lastLen >= PAGE_SIZE);
+            } catch (e) {
+                console.error("목록 복원(홈) 실패", e);
+                setHomeHasMore(false);
+            } finally {
+                if (reqId === homeReqIdRef.current) setHomeLoading(false);
+            }
+        };
+
+        (async () => {
+            try {
+                if (parsed.mode === "author") {
+                    await runAuthor();
+                } else {
+                    await runHome();
+                }
+            } finally {
+                listRestoreInProgressRef.current = false;
+            }
+            if (!cancelled) finishScroll();
+        })();
+
+        return () => {
+            cancelled = true;
+            listRestoreInProgressRef.current = false;
+        };
+    }, [API, author, type, location.pathname, location.search]);
+
+    const saveListScrollForDetail = () => {
+        const payload = {
+            y: window.scrollY,
+            docH: document.documentElement.scrollHeight,
+            mode: author ? "author" : "home",
+            page: author ? authorPage : homePage,
+            itemCount: author ? authorProducts.length : homeProducts.length,
+        };
+        sessionStorage.setItem(getScrollKey(), JSON.stringify(payload));
+    };
 
     const displayCount = author ? filteredAuthorProducts.length : 0;
 
@@ -537,8 +829,49 @@ const Main_Items = () => {
         };
     }, [displayProducts]);
 
+    // 복원 직후 가격(비동기) 들어오며 카드 높이가 늘어나 스크롤이 밀리는 보정
+    useEffect(() => {
+        const y = postRestoreScrollYRef.current;
+        if (y == null) return;
+        if (displayProducts.length === 0) return;
+
+        const allPriced = displayProducts.every((p) =>
+            Object.prototype.hasOwnProperty.call(itemPriceMap, p.pid)
+        );
+        if (!allPriced) return;
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (postRestoreScrollYRef.current == null) return;
+                const yy = postRestoreScrollYRef.current;
+                const maxY = Math.max(
+                    0,
+                    document.documentElement.scrollHeight - window.innerHeight
+                );
+                window.scrollTo({
+                    top: Math.min(yy, maxY),
+                    left: 0,
+                    behavior: "auto",
+                });
+                postRestoreScrollYRef.current = null;
+                document.documentElement.style.minHeight = "";
+            });
+        });
+    }, [itemPriceMap, displayProducts]);
+
     return (
         <div>
+            <Helmet>
+                <title>{mainItemsSeo.title}</title>
+                <meta name="description" content={mainItemsSeo.desc} />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={mainItemsSeo.title} />
+                <meta property="og:description" content={mainItemsSeo.desc} />
+                <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+                <meta property="og:url" content={mainItemsSeo.canonical} />
+                <meta property="og:locale" content="ko_KR" />
+                <link rel="canonical" href={mainItemsSeo.canonical} />
+            </Helmet>
             {/* [공통] 페이지 제목 */}
             <div className="flex justify-center mt-[40px] text-[#cfab88]">
                 <span className="md:text-3xl text-[clamp(24px,3.911vw,30px)] font-bold">{selectedLabel ?  selectedLabel : title}</span>
@@ -571,13 +904,21 @@ const Main_Items = () => {
                                             value={authorSearch}
                                             onChange={(e) => setAuthorSearch(e.target.value)}
                                             className='
-                                                w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
+                                                w-full pl-10 pr-8 py-[6px] rounded-full border border-gray-300 
                                                 focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
                                                 md:text-sm text-[clamp(12px,1.955vw,15px)]'
                                         />
-                                        <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z"></path>
-                                        </svg>
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        {authorSearch && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setAuthorSearch('')}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                                aria-label="작가 검색어 지우기"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -689,16 +1030,21 @@ const Main_Items = () => {
                                 value={titleSearch}
                                 onChange={(e) => setTitleSearch(e.target.value)}
                                 className='
-                                    w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
+                                    w-full pl-10 pr-8 py-[6px] rounded-full border border-gray-300 
                                     focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
                                     md:text-sm text-[clamp(12px,1.955vw,15px)]'
                             />
-                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
-                                fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" 
-                                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z">
-                                </path>
-                            </svg>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            {titleSearch && (
+                                <button
+                                    type="button"
+                                    onClick={() => setTitleSearch('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                    aria-label="상품 검색어 지우기"
+                                >
+                                    <X size={14} />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -767,16 +1113,21 @@ const Main_Items = () => {
                                     value={titleSearch}
                                     onChange={(e) => setTitleSearch(e.target.value)}
                                     className='
-                                        w-full pl-10 pr-4 py-[6px] rounded-full border border-gray-300 
+                                        w-full pl-10 pr-8 py-[6px] rounded-full border border-gray-300 
                                         focus:outline-none focus:ring-2 focus:ring-[#D0AC88]
                                         md:text-sm text-[clamp(12px,1.955vw,15px)]'
                                 />
-                                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
-                                    fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" 
-                                        d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z">
-                                    </path>
-                                </svg>
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                {titleSearch && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setTitleSearch('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                        aria-label="상품 검색어 지우기"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -794,15 +1145,8 @@ const Main_Items = () => {
                                 <div
                                     key={product.pid}
                                     onClick={() => {
-                                        const targetPath = '/none_custom_detail';
-
-                                        // 논 커스텀 상세로 이동할 때만 목록 스크롤 위치 저장
-                                        if (targetPath === '/none_custom_detail') {
-                                            const key = `main_items_scroll:${location.search}`;
-                                            sessionStorage.setItem(key, String(window.scrollY));
-                                        }
-
-                                        navigate(`${targetPath}?pid=${product.pid}&category=${product.category}`);
+                                        saveListScrollForDetail();
+                                        navigate(`/none_custom_detail?pid=${product.pid}&category=${product.category}`);
                                     }}
                                     className="flex flex-col 
                                             lg:px-4 md:px-2 px-[2px]
@@ -839,10 +1183,18 @@ const Main_Items = () => {
                                         {product.author}
                                     </span>
 
-                                    <span className="
-                                        lg:text-[15px] text-[clamp(13px,1.46vw,15px)]
-                                        font-semibold text-[#a67a3e] mt-[2px]">
-                                        {itemPriceMap[product.pid] ? `${itemPriceMap[product.pid].toLocaleString()}원~` : ''}
+                                    <span className="mt-[2px] min-h-[1.375rem] inline-block w-full font-semibold text-[#a67a3e]">
+                                        {Object.prototype.hasOwnProperty.call(itemPriceMap, product.pid)
+                                            ? itemPriceMap[product.pid] != null
+                                                ? (
+                                                    <SitePriceRow
+                                                        unitPrice={itemPriceMap[product.pid]}
+                                                        quantity={1}
+                                                        suffix="~"
+                                                    />
+                                                )
+                                                : ""
+                                            : "\u00a0"}
                                     </span>
 
                                     <hr className="my-1" />

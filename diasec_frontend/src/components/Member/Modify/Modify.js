@@ -20,6 +20,12 @@ const Modify = () => {
     const [phone1, setPhone1] = useState('010');
     const [phone2, setPhone2] = useState('');
     const [phone3, setPhone3] = useState('');
+    const [originalPhone, setOriginalPhone] = useState('');
+    const [smsCode, setSmsCode] = useState('');
+    const [smsSent, setSmsSent] = useState(false);
+    const [smsVerified, setSmsVerified] = useState(false);
+    const [remainSec, setRemainSec] = useState(0);
+    const timerRef = useRef(null);
     const [email, setEmail] = useState('');
     const [gender, setGender] = useState('');
     const [birthYear, setBirthYear] = useState('');
@@ -28,6 +34,21 @@ const Modify = () => {
     const [region, setRegion] = useState('');
     const [smsAgree, setSmsAgree] = useState(false);
     const [emailAgree, setEmailAgree] = useState(false);
+
+    const regionOptions = ['선택', '강원', '경기', '경남', '경북', '광주', '대구', '대전', '부산', '서울', '세종', '울산', '인천', '전남', '전북', '제주', '충남', '충북', '해외'];
+    const [regionOpen, setRegionOpen] = useState(false);
+    const regionWrapRef = useRef(null);
+
+    useEffect(() => {
+        const onDocMouseDown = (e) => {
+            if (!regionOpen) return;
+            if (regionWrapRef.current && !regionWrapRef.current.contains(e.target)) {
+                setRegionOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", onDocMouseDown);
+        return () => document.removeEventListener("mousedown", onDocMouseDown);
+    }, [regionOpen]);
 
     // 최초 로드 시 로그인된 사용자 정보로 초기값 설정
     useEffect(() => {
@@ -49,8 +70,129 @@ const Modify = () => {
                 const [y = '', m = '', d = ''] = member.birth.split('-');
                 setBirthYear(y); setBirthMonth(m); setBirthDay(d);
             } 
+            setOriginalPhone(member.phone || '');
+            setSmsVerified(true);
+            setSmsSent(false);
+            setSmsCode('');
+            setRemainSec(0);
+        } else {
+            setOriginalPhone('');
         }
     }, [member]);
+
+    const currentPhone = `${phone1}-${phone2}-${phone3}`;
+    const isPhoneChanged = !!member && currentPhone !== (originalPhone || '');
+
+    const startTimer = (sec) => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setRemainSec(sec);
+        timerRef.current = setInterval(() => {
+            setRemainSec((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current);
+                    timerRef.current = null;
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!member) return;
+        if (isPhoneChanged) {
+            setSmsVerified(false);
+        } else {
+            setSmsVerified(true);
+            setSmsSent(false);
+            setSmsCode('');
+            setRemainSec(0);
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        }
+    }, [phone1, phone2, phone3, member, isPhoneChanged]);
+
+    const handleSendSmsForModify = async () => {
+        const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
+        if (!phoneRegex.test(currentPhone)) {
+            toast.error('휴대폰 번호를 올바르게 입력해 주세요.');
+            return;
+        }
+        try {
+            await axios.post(`${API}/sms/send`, {
+                type: 'send',
+                to: currentPhone,
+            });
+            setSmsSent(true);
+            setSmsVerified(false);
+            setSmsCode('');
+            startTimer(5 * 60);
+            toast.success('인증번호를 발송했습니다.');
+        } catch (e) {
+            if (e?.response?.status === 429) {
+                const retryAfterSec = Number(e?.response?.data?.retryAfterSec || 0);
+                const msg = e?.response?.data?.msg || '요청이 너무 많습니다.';
+                const secText = retryAfterSec > 0 ? ` (${retryAfterSec}초 후 재시도)` : '';
+                toast.error(`${msg}${secText}`);
+            } else {
+                toast.error('인증번호 발송 실패');
+            }
+        }
+    };
+
+    const handleVerifySmsForModify = async () => {
+        if (!smsCode.trim()) {
+            toast.error('인증번호를 입력해주세요.');
+            return;
+        }
+        try {
+            await axios.post(`${API}/sms/send`, {
+                type: 'verify',
+                to: currentPhone,
+                code: smsCode,
+            });
+            setSmsVerified(true);
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+            setRemainSec(0);
+            toast.success('휴대폰 인증이 완료되었습니다.');
+        } catch (e) {
+            setSmsVerified(false);
+            toast.error('인증번호가 올바르지 않습니다.');
+        }
+    };
+
+    const checkPhoneDuplicateForModify = async () => {
+        if (!isPhoneChanged) return true;
+
+        const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
+        if (!phoneRegex.test(currentPhone)) {
+            toast.error('휴대폰 번호를 올바르게 입력해 주세요.');
+            return false;
+        }
+
+        try {
+            const res = await axios.get(`${API}/member/check-phone?phone=${currentPhone}`);
+            if (res.data === true) {
+                toast.error('이미 사용 중인 휴대폰 번호입니다.');
+                return false;
+            }
+            return true;
+        } catch (err) {
+            toast.error('휴대폰 번호 중복 확인 중 오류가 발생했습니다.');
+            return false;
+        }
+    };
     
     // 비밀번호 형식 체크
     const isValidPassword = (password) => {
@@ -126,10 +268,18 @@ const Modify = () => {
             return true;
         };
         
-        if (!member?.name || !phone2.trim() || !phone3.trim() || !member.smsAgree || !member.email || !member.emailAgree) {
+        if (!name?.trim() || !phone2.trim() || !phone3.trim() || !email?.trim()) {
             toast.error('필수 정보들을 입력해 주세요.');
             return;
         }
+
+        if (isPhoneChanged && !smsVerified) {
+            toast.error('휴대폰 번호 변경 시 인증을 완료해주세요.');
+            return;
+        }
+
+        const isPhoneAvailable = await checkPhoneDuplicateForModify();
+        if (!isPhoneAvailable) return;
 
         if (member && member.provider === 'web') {
             // 1. 현재 비밀번호 확인 요청
@@ -224,8 +374,8 @@ const Modify = () => {
                 name,
                 email,
                 phone: `${phone1}-${phone2}-${phone3}`,
-                gender,
-                birth: `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`,
+                gender: gender || null,
+                birth: birthStr,
                 region,
                 smsAgree: smsAgree,
                 emailAgree: emailAgree,
@@ -241,7 +391,7 @@ const Modify = () => {
                 });
                 setMember(response.data);
 
-                toast.error('회원정보가 수정되었습니다.');
+                toast.success('회원정보가 수정되었습니다.');
                 navigate('/modify');
             } catch (err) {
                 console.error(err);
@@ -275,13 +425,28 @@ const Modify = () => {
     }
 
     return (
-        <div className="flex w-full">
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >
             <form className="flex flex-col w-full">
-                <div className="flex flex-col">
-                    <span 
+                <div className="flex items-center justify-between">
+                    <span className="
+                        md:text-xl text-[clamp(14px,2.607vw,20px)]
+                        font-bold pb-6">| 회원정보 수정
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate('/mypage')}
                         className="
-                            md:text-xl text-[clamp(14px,2.607vw,20px)] 
-                            font-bold pb-6">| 회원 정보 수정</span>                    
+                            md:hidden
+                            self-start flex items-center gap-1 mb-3
+                            text-[13px] text-gray-600 hover:text-gray-900
+                        "
+                    >
+                        <span className="text-base leading-none">←</span>
+                        마이페이지
+                    </button>
                 </div>
                 <div className="w-full mx-auto mb-10">
                     <hr/>
@@ -428,16 +593,66 @@ const Modify = () => {
                                 <option>018</option>
                                 <option>019</option>
                             </select>
-                            <input type="text" maxLength="4" value={phone2} onChange={(e) => setPhone2(e.target.value)} inputMode="numeric" 
+                            <input type="text" maxLength="4" value={phone2} onChange={(e) => setPhone2(e.target.value.replace(/[^0-9]/g, ''))} inputMode="numeric" 
                                 className="
                                     md:w-[60px] w-1/3
                                     h-8 border border-gray-300 text-center"/>
-                            <input type="text" maxLength="4" value={phone3} onChange={(e) => setPhone3(e.target.value)} inputMode="numeric" 
+                            <input type="text" maxLength="4" value={phone3} onChange={(e) => setPhone3(e.target.value.replace(/[^0-9]/g, ''))} inputMode="numeric" 
                                 className="
                                     md:w-[60px] w-1/3
-                                    h-8 border border-gray-300 text-center"/>
+                                    h-8 border border-gray-300 text-center"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleSendSmsForModify}
+                                disabled={!isPhoneChanged || (smsVerified || remainSec > 0)}
+                                className="px-2 py-1 border bg-black text-white text-[12px] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                {smsSent ? '재전송' : '인증번호 받기'}
+                            </button>
                         </div>
                     </div>
+
+                    {isPhoneChanged && (
+                        <div className="md:text-base text-[clamp(11px,2.085vw,16px)] flex md:flex-row flex-col md:items-center items-start mt-1 mx-2 mb-3">
+                            <div className="min-w-[150px]">휴대폰 인증</div>
+                            <div className="flex flex-col gap-2 w-full">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={smsCode}
+                                        onChange={(e) => setSmsCode(e.target.value.replace(/[^0-9]/g, ''))}
+                                        maxLength={6}
+                                        inputMode="numeric"
+                                        placeholder="인증번호 6자리"
+                                        className="px-2 border-[1px] h-8 md:w-[160px] w-full"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleVerifySmsForModify}
+                                        disabled={remainSec === 0 || smsVerified}
+                                        className="px-2 py-1 border bg-black text-white text-[12px] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    >
+                                        확인
+                                    </button>
+                                    {!smsVerified && remainSec > 0 && (
+                                        <span className="text-[12px] text-gray-700">
+                                            {String(Math.floor(remainSec / 60)).padStart(2, '0')}:
+                                            {String(remainSec % 60).padStart(2, '0')}
+                                        </span>
+                                    )}
+                                </div>
+                                {remainSec === 0 && smsSent && !smsVerified && (
+                                    <span className="text-[12px] text-red-500">
+                                        인증번호가 만료되었습니다. 재전송 해주세요.
+                                    </span>
+                                )}
+                                {smsVerified && (
+                                    <span className="text-[12px] text-green-600">휴대폰 인증 완료</span>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 
                     <hr/>
 
@@ -598,13 +813,47 @@ const Modify = () => {
                         <div className="sm:w-[150px] w-[95px]">
                             지역 
                         </div>
-                        <select value={region} onChange={(e) => setRegion(e.target.value)} 
-                            className="
-                                md:w-[100px] w-1/2 h-8 text-center border-black border-[1px] border-opacity-15">
-                            {['선택', '강원', '경기', '경남', '경북', '광주', '대구', '대전', '부산', '서울', '세종', '울산', '인천', '전남', '전북', '제주', '충남', '충북', '해외'].map((region) => (
-                                <option key={region} value={region}>{region}</option>
-                            ))}
-                        </select>
+                        <div className="relative" ref={regionWrapRef}>
+                            <button
+                                type="button"
+                                onClick={() => setRegionOpen((v) => !v)}
+                                className="
+                                    w-[95px] h-8 text-center
+                                    border-black border-[1px] border-opacity-15 bg-white
+                                    flex items-center justify-center gap-1
+                                "
+                            >
+                                <span className="truncate">{region || '선택'}</span>
+                                <span className="text-[10px] text-gray-500">▼</span>
+                            </button>
+
+                            {regionOpen && (
+                                <div
+                                    className="
+                                        absolute left-0 top-full z-50
+                                        w-[95px] bg-white border border-gray-200 shadow-md rounded
+                                        max-h-[240px] overflow-auto
+                                    "
+                                >
+                                    {regionOptions.map((opt) => (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            onClick={() => {
+                                                setRegion(opt === "선택" ? "" : opt);
+                                                setRegionOpen(false);
+                                            }}
+                                            className={`
+                                                w-full px-3 py-2 text-sm text-left hover:bg-gray-100
+                                                ${((region || "") === opt || (!region && opt === "선택")) ? "bg-gray-50 font-semibold" : ""}    
+                                            `}
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <hr/>

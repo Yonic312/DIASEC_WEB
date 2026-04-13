@@ -93,7 +93,7 @@ const SupportMain = () => {
                 <div className="mt-14">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="
-                            md:text-lg text-[clamp(16px,2.346vw,18px)] 
+                            md:text-lg text-[clamp(16px,2.346vw,18px)]
                             font-bold cursor-pointer" onClick={() => navigate('/faq')}>자주 묻는 질문</h2>
                     </div>
                     <div className="

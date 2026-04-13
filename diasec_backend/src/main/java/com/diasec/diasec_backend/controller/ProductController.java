@@ -116,7 +116,7 @@ public class ProductController {
 
     @GetMapping("/filter/paged")
     public ResponseEntity<List<ProductVo>> getFilteredProductsPaged(
-            @RequestParam(required = false) String category, 
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) String author,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "offset", defaultValue = "0") int offset

@@ -73,7 +73,7 @@ export default function LinkSocial() {
     };
 
     return (
-        <div className="h-[70vh] flex items-center justify-center px-4">
+        <div className="h-[70vh] flex items-center justify-center px-4 mt-5">
             <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-sm p-8">
                 <div className="mb-6 text-center">
                     <h2 className="text-2xl font-semibold mb-2">계정 연동</h2>
@@ -95,7 +95,7 @@ export default function LinkSocial() {
                 {/* 폼 */}
                 <form onSubmit={onSubmit} className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs text-gray-600">비밀번호</label>
+                        <label className="text-[13px] text-gray-600">비밀번호</label>
                         <input
                             ref={pwRef}
                             type="password"
@@ -113,8 +113,8 @@ export default function LinkSocial() {
                         disabled={loading}
                         className="
                             h-11 mt-2
-                            bg-black text-white rounded-md
-                            font-medium
+                            bg-black text-white rounded-md font-medium
+                            text-[14px] md:text-base
                             hover:bg-gray-900
                             transition
                             disabled:opacity-60
@@ -128,7 +128,8 @@ export default function LinkSocial() {
                         onClick={() => navigate("/login")}
                         className="
                             h-11 border border-gray-300 rounded-md
-                            text-sm text-gray-700
+                            text-[14px] md:text-base
+                            text-gray-700
                             hover:bg-gray-50
                             transition
                         "

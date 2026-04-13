@@ -17,6 +17,9 @@ import custom10 from '../../../assets/custom_Frames/5.Background RemovalF.jpg';
 import custom11 from '../../../assets/custom_Frames/6.BlurB.jpg';
 import custom12 from '../../../assets/custom_Frames/6.BlurF.jpg';
 
+import detailAll from '../../../assets/custom_Frames/detailAll.jpg';
+import detailCustom from '../../../assets/custom_Frames/detailCustom.jpg';
+
 const ProductDetail = ({ pid }) => {
     const API = process.env.REACT_APP_API_BASE;
     const [images, setImages] = useState([]);
@@ -163,6 +166,7 @@ const ProductDetail = ({ pid }) => {
             )}
             {/* /보정 */}
             
+            {/* 상품별 상세 이미지 */}
             {images && images.length > 0 ? (
                 images.map((url, idx) => (
                     <img key={idx}
@@ -174,7 +178,11 @@ const ProductDetail = ({ pid }) => {
             ) : (
                 <p className="text-gray-400 text-sm mt-[200px]">등록된 상세 이미지가 없습니다.</p>
             )}
+            {/* 상품별 상세 이미지 */}
 
+            <img src={isCustomFrame ? detailCustom : detailAll} alt="상세 이미지" className="w-full max-w-[800px]" />
+            
+            {/* 영상 */}
             <video
                 src={diasec_old}
                 muted

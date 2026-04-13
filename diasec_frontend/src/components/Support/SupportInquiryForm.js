@@ -171,9 +171,9 @@ const SupportInquiryForm = () => {
     }
 
     return(
-        <div
-            className="w-[60%] mx-auto px-2"
-        >
+        <div className="flex flex-col w-full max-w-[1100px] mb-20 
+            mr-2 ml-2 md:ml-0"
+        >   
             <div 
                 className="
                     full 
@@ -324,7 +324,8 @@ const SupportInquiryForm = () => {
                         <button 
                             className="
                                 md:text-sm text-[clamp(11px,1.824vw,14px)]
-                                px-4 py-2 border rounded" onClick={() => navigate(-1)}>
+                                px-4 py-2 border rounded" onClick={() => navigate(-1)}
+                        >
                             돌아가기
                         </button>
                         <button 

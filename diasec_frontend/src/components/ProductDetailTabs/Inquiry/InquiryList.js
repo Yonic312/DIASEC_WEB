@@ -110,7 +110,7 @@ const InquiryList = ({ pid }) => {
     }
 
     const [currentPage, setCurrentPage] = useState(1);
-    const inquiriesPerPage = 10;
+    const inquiriesPerPage = 5;
 
     const indexOfLast = currentPage * inquiriesPerPage;
     const indexOfFirst = indexOfLast - inquiriesPerPage;
@@ -285,9 +285,9 @@ const InquiryList = ({ pid }) => {
                 )
             })}
             {/* 페이징 버튼 */}
-            <div className="flex justify-center gap-2 mt-8 text-sm">
+            <div className="flex justify-center gap-2 mt-4 md:mt-8 text-sm">
                 {(() => {
-                    const totalPages = Math.max(1, Math.ceil(inquiries.length / 10)); // 10개씩
+                    const totalPages = Math.max(1, Math.ceil(inquiries.length / 5)); // 10개씩
                     const maxVisible = 5;
                     let startPage = Math.max(currentPage - 2, 1);
                     let endPage = Math.min(startPage + maxVisible - 1, totalPages);
@@ -302,7 +302,7 @@ const InquiryList = ({ pid }) => {
                     );
 
                     return (
-                        <div className="flex justify-center gap-1 mt-10 text-sm font-medium">  
+                        <div className="flex justify-center gap-1 text-sm font-medium">  
                             {/* 맨 처음 */}
                             <button
                                 onClick={() => setCurrentPage(1)}

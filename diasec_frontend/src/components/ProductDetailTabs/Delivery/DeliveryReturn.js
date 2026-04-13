@@ -61,7 +61,10 @@ const DeliveryReturn = () => {
                         font-semibold">교환 및 반품이 가능한 경우</span>
                     <ul className="list-disc pl-5 space-y-1 mt-2">
                         <li>배송된 상품이 주문 내용과 다르거나(예: 사이즈, 색상) 파손되었을 경우</li>
-                        <li>파손 상품의 경우 수령 후 5일 이내 <span className="font-medium">d2one@naver.com</span> 으로 사진과 함께 문의해 주세요.</li>
+                        <span className="text-red-500 font-semibold">
+                            반드시 겉비닐을 제거하지 않은 상태에서 제품 전체가 보이도록 사진을 촬영해 주셔야 하며,
+                            개봉 또는 훼손 후에는 교환 및 환불이 불가합니다.
+                        </span>
                         <li>상품에 문제가 있는 경우 확인 절차 후 재제작 또는 환불 처리를 진행해드립니다.</li>
                     </ul>
             </section>

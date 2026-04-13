@@ -110,8 +110,8 @@ public class CollectionController {
 
     @DeleteMapping("/items/delete")
     public ResponseEntity<?> deleteItem(@RequestParam int id) {
-        service.deleteItem(id);
-        return ResponseEntity.ok().build();
+        boolean deleted = service.deleteItem(id);
+        return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/update")
