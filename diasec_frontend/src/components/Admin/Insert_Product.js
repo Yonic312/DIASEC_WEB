@@ -47,7 +47,7 @@ const Insert_Product = () => {
 
             if (isFixed) {
                 const currentOrder = Number(sort_order);
-                const nextOrder = Number.isFinite(currentOrder) ? currentOrder + 1 : '';
+                const nextOrder = (Number.isFinite(currentOrder) && currentOrder > 0) ? currentOrder + 1 : 0;
                 
                 setTitle('');
                 setSort_Order(nextOrder === '' ? '' : String(nextOrder));

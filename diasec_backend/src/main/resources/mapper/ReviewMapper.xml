@@ -19,6 +19,11 @@
         INSERT INTO reviews (pid, id, item_id, rating, title, content)
         VALUES (#{pid}, #{id}, #{item_id}, #{rating}, #{title}, #{content})
     </insert>
+    <select id="countReviewByItemId" resultType="int">
+        SELECT COUNT(*)
+        FROM reviews
+        WHERE item_id = #{itemId}
+    </select>
     <insert id="insertReviewImage" parameterType="map">
         INSERT INTO review_images (rid, image_url)
         VALUES (#{rid}, #{url})

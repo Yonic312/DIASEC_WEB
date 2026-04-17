@@ -407,7 +407,7 @@ const Admin_CollectionManager = () => {
 
             {/* 팝업 - 라벨 수정 */}
             {editingLabel && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-30 flex justify-center items-center z-50">
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-30 flex justify-center items-center z-[10000]">
                     <div className="flex-col w-1/2 justify-center bg-white p-6 rounded shadow-xl">
                         <h2 className="text-lg font-bold mb-4">라벨 수정</h2>
                         <div className="flex justify-center mb-4">

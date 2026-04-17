@@ -105,6 +105,10 @@ public class OrderController {
             }
 
             orderService.insertOrder(ordervo);
+            boolean isBankTransfer = "무통장입금".equals(ordervo.getPaymentMethod());
+            if (!isBankTransfer) {
+                orderService.sendAdminOrderPaidSms(ordervo.getOid(), "즉시결제");
+            }
             return ResponseEntity.ok(Map.of("success", true,
                                             "oid", ordervo.getOid()));
         } catch (Exception e) {

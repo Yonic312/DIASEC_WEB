@@ -845,7 +845,7 @@ const Main = () => {
 
                         {/* 회사소개 */}
                         <button
-                            // onClick={() => navigate('/about')}
+                            onClick={() => navigate('/main_CompanyProfile')}
                             className="
                                 text-[clamp(12px,2.085vw,16px)] md:text-base
                                 lg:px-6 md:px-4 px-2

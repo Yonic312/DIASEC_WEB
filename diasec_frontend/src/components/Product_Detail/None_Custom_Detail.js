@@ -87,7 +87,9 @@ const None_Custom_Detail = () => {
     const [maxWidth, setMaxWidth] = useState(200.7); // 초기값: 가로 최대
     const [maxHeight, setMaxHeight] = useState(101.6); // 초기값: 세로 최대
 
-    const disableDelete = customItems.length <= 1;
+    const MAX_CUSTOM_ORDER_ITEMS = 10;
+    const canDeleteItem = customItems.length > 1;
+    const isCustomOrderFull = customItems.length >= MAX_CUSTOM_ORDER_ITEMS;
 
     // 사이즈
     const [width, setWidth] = useState(35.6);
@@ -127,6 +129,10 @@ const None_Custom_Detail = () => {
     const handleAddOption = () => {
         if (!mainImage || !aspectRatio) {
             toast.error("이미지 로딩 후 이용해주세요.");
+            return;
+        }
+        if (customItems.length >= MAX_CUSTOM_ORDER_ITEMS) {
+            toast.warn(`한 번에 최대 ${MAX_CUSTOM_ORDER_ITEMS}개까지 등록할 수 있습니다.`);
             return;
         }
 
@@ -880,8 +886,35 @@ const None_Custom_Detail = () => {
                         
                         {/* 결제 목록 */}
                         {customItems.length > 0 && (
-                            <div className='max-h-[300px] overflow-y-scroll mt-3 space-y-2'>
-                                {customItems.map((item, idx) => (
+                            <>
+                                <div className="mt-2 ml-1 flex items-center justify-between">
+                                    <span
+                                        className={`
+                                            inline-flex items-center text-[12px] font-semibold
+                                            ${isCustomOrderFull ? 'text-[#a67a3e]' : 'text-gray-600'}
+                                        `}
+                                    >
+                                        등록 {customItems.length} / {MAX_CUSTOM_ORDER_ITEMS}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddOption}
+                                        disabled={isCustomOrderFull}
+                                        className={`
+                                            w-6 h-6 mr-1 border rounded-full flex items-center justify-center font-bold transition
+                                            ${isCustomOrderFull
+                                                ? 'text-gray-300 border-gray-200 cursor-not-allowed'
+                                                : 'text-[#d0ac88] border-[#d0ac88] bg-white hover:text-white hover:bg-[#ecd2af]'
+                                            }
+                                        `}
+                                        aria-label="상품 추가"
+                                        title={isCustomOrderFull ? `최대 ${MAX_CUSTOM_ORDER_ITEMS}개까지 등록 가능합니다.` : '상품 추가'}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <div className='max-h-[300px] overflow-y-scroll mt-1 space-y-2'>
+                                    {customItems.map((item, idx) => (
                                     <div key={item.id} 
                                         onClick={() => setSelectedItemId(item.id)} 
                                         className={`flex items-center gap-2 border rounded-xl p-[8px] shadow-sm cursor-pointer bg-white transition
@@ -907,41 +940,29 @@ const None_Custom_Detail = () => {
                                                     </p>
                                                 </div>
 
-                                                {/* 삭제 버튼 */}
-                                                <button
-                                                    type="button"
-                                                    className={`
-                                                        w-6 h-6 border rounded-full flex items-center justify-center transition font-bold
-                                                        ${disableDelete
-                                                            ? 'text-[#d0ac88] border-[#d0ac88] bg-white hover:text-white hover:bg-[#ecd2af]'
-                                                            : 'text-red-500 hover:text-white hover:bg-red-500  border-red-300'
-                                                        }
-                                                    `}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
+                                                {/* 삭제 버튼: 2개 이상일 때만 노출 */}
+                                                {canDeleteItem && (
+                                                    <button
+                                                        type="button"
+                                                        className="w-6 h-6 border rounded-full flex items-center justify-center transition font-bold text-red-500 hover:text-white hover:bg-red-500 border-red-300"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const deleteId = item.id;
 
-                                                        // 1개일 때: O 버튼 = 추가
-                                                        if (disableDelete) {
-                                                            handleAddOption();
-                                                            return;
-                                                        }
+                                                            setCustomItems(prev => {
+                                                                const newItems = prev.filter((it) => it.id !== deleteId);
 
-                                                        // 2개 이상일 때: X 버튼 = 삭제
-                                                        const deleteId = item.id;
-
-                                                        setCustomItems(prev => {
-                                                            const newItems = prev.filter ((it) => it.id !== deleteId);
-
-                                                            if (selectedItemId === deleteId) {
-                                                                const next = newItems[0];
-                                                                if (next) setSelectedItemId(next.id);
-                                                            }
-                                                            return newItems;
-                                                        });
-                                                    }}
-                                                >
-                                                    {disableDelete ? '+' : '×'}
-                                                </button>
+                                                                if (selectedItemId === deleteId) {
+                                                                    const next = newItems[0];
+                                                                    if (next) setSelectedItemId(next.id);
+                                                                }
+                                                                return newItems;
+                                                            });
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
                                             </div>
                                             <div className="flex justify-end">
                                                 <div className="w-full flex flex-row">
@@ -977,8 +998,9 @@ const None_Custom_Detail = () => {
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            </>
                         )}
 
                         {/* <div className="flex gap-2 mt-2">

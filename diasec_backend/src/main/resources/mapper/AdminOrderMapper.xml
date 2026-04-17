@@ -71,6 +71,22 @@
         WHERE item_id = #{itemId}
     </update>
 
+    <select id="selectShippingNotificationTarget" resultType="map">
+        SELECT
+            oi.item_id AS itemId,
+            oi.oid AS oid,
+            oi.order_status AS orderStatus,
+            oi.title AS title,
+            oi.tracking_company AS trackingCompany,
+            oi.tracking_number AS trackingNumber,
+            o.recipient AS recipient,
+            o.recipient_phone AS recipientPhone,
+            o.orderer_phone AS ordererPhone
+        FROM order_items oi
+        JOIN orders o ON oi.oid = o.oid
+        WHERE oi.item_id = #{itemId}
+    </select>
+
     <!-- 리스정보 수정 -->
     <update id="updateLeasePeriod">
         UPDATE order_items

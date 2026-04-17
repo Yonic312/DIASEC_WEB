@@ -13,6 +13,7 @@ public interface ReviewMapper {
 
     // 리뷰 작성
     void insertReview(ReviewVo review);
+    int countReviewByItemId(@Param("itemId") int itemId);
     void insertReviewImage(@Param("rid") Long rid, @Param("url") String url);
 
     // 리뷰 불러오기

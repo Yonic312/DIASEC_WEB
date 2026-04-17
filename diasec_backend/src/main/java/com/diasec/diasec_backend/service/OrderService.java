@@ -3,6 +3,10 @@ package com.diasec.diasec_backend.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,13 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final CreditService creditService;
     private final ImageUtil imageUtil;
+    private final SolapiService solapiService;
+
+    @Value("${notify.admin.enabled:false}")
+    private boolean adminNotifyEnabled;
+
+    @Value("${notify.admin.phones:}")
+    private String adminPhonesRaw;
 
     private static final int MAX_FILES = 5;
     private static final long MAX_FILE_SIZE = 5L * 1024 * 1024;
@@ -280,5 +291,54 @@ public class OrderService {
                 e.printStackTrace();
             }
         }
+    }
+
+    // 주문 완료시 문자 발송
+    public void sendAdminOrderPaidSms(Long oid, String triggerLabel) {
+        if (!adminNotifyEnabled || oid == null) return;
+
+        Set<String> phones = parseAdminPhones(adminPhonesRaw);
+        if (phones.isEmpty()) return;
+
+        OrderVo order = selectOrderByOid(oid);
+        if (order == null) return;
+
+        String msg = String.format(
+            "[DIASEC KOREA] 주문 결제 완료 알림%n" +
+            "주문번호: %s%n" +
+            "주문자: %s%n" +
+            "결제수단: %s%n" +
+            "결제금액 %,d원%n" +
+            "구분: %s",
+            order.getOid(),
+            nvl(order.getOrdererName(), "미확인"),
+            nvl(order.getPaymentMethod(), "미확인"),
+            order.getFinalPrice(),
+            nvl(triggerLabel, "결제완료")
+        );
+
+        for (String to : phones) {
+            try {
+                solapiService.send(to, msg);
+            } catch (Exception e) {
+                System.err.println("{ADMIN_SMS_FAIL to " + to + ", oid=" + oid + ", err" + e.getMessage());
+            }
+        }
+    }
+
+    private Set<String> parseAdminPhones(String raw) {
+        Set<String> out = new LinkedHashSet<>();
+        if (raw == null || raw.isBlank()) return out;
+
+        Arrays.stream(raw.split(","))
+            .map(v -> v == null ? "" : v.replaceAll("[^0-9]", "").trim())
+            .filter(v -> !v.isBlank())
+            .forEach(out::add);
+        
+        return out;
+    }
+
+    private String nvl(String value, String fallback) {
+        return (value == null || value.isBlank()) ? fallback : value;
     }
 }

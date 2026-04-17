@@ -1,10 +1,5 @@
 import { useEffect,useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import p1 from '../../assets/p1.jpg'
-import p2 from '../../assets/p2.jpg'
-import p3 from '../../assets/p3.jpg'
-import p4 from '../../assets/p4.jpg'
-import p5 from '../../assets/p5.jpg'
 import p7 from '../../assets/p7.jpg'
 import p7_1 from '../../assets/p7_1.png'
 import p8 from '../../assets/p8.jpg'
@@ -19,7 +14,7 @@ import p10_2 from '../../assets/p10_2.png'
 const images = [
     { src: p8, text: p8_1, img:p8_2, },
     { src: p7, text: p7_1,},
-    { src: p9, text: '',}, // 9_1
+    { src: p9, text: p9_1,}, // 9_1
     { src: p10, text: p10_2,},
 ];
 
@@ -168,7 +163,7 @@ const Main_Image = () => {
                             const isActive = idx === currentIndex;
                             const isPrev = idx === prevIndex;
 
-                            const isNoDarkSlide = idx === 0 || idx === 2;
+                            const isNoDarkSlide = idx === 0;
                             // const isNoDarkSlide = idx === 0;
 
                             const overlayOpacity = isNoDarkSlide

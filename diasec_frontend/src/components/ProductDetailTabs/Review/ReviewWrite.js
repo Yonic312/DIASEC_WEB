@@ -61,15 +61,19 @@ const ReviewWrite = () => {
         });
     };
 
-    // 이미지 업로드 //
+    const fetchEligibleProducts = async () => {
+        if (!member?.id) return;
+        try {
+            const res = await axios.get(`${API}/review/eligible?id=${member.id}`);
+            setEligibleProducts(res.data || []);
+        } catch (err) {
+            console.error('배송완료 상품 조회 실패', err);
+        }
+    };
 
     useEffect(() => {
-        if (member?.id) {
-            axios.get(`${API}/review/eligible?id=${member.id}`)
-                .then(res => setEligibleProducts(res.data))
-                .catch(err => console.error('배송완료 상품 조회 실패', err));
-        }
-    }, [member]);
+        fetchEligibleProducts();
+    }, [member?.id]);
 
     // 업로드 이미지 미리보기 표시
     const [previewImages, setPreviewImages] = useState([]);
@@ -125,14 +129,32 @@ const ReviewWrite = () => {
         compressedFiles.forEach(file => formData.append('images', file));
 
         try {
-            await axios.post(`${API}/review/write`, formData, {
+            const res = await axios.post(`${API}/review/write`, formData, {
                 headers: { 'Content-Type' : 'multipart/form-data' }
             });
-            toast.success('리뷰가 등록되었습니다.');
-            window.location.reload();
+            const rewardAmount = Number(res?.data?.rewardAmount || 0);
+            if (rewardAmount > 0) {
+                toast.success(`리뷰가 등록되었습니다. 이벤트 적립금 ${rewardAmount.toLocaleString()}원이 지급되었어요.`);
+            } else {
+                toast.success('리뷰가 등록되었습니다.');
+            }
+
+            // 새로고침 대신 상태만 초기화/갱신해서 토스트가 유지되도록 처리
+            await fetchEligibleProducts();
+            setSelectedPid(0);
+            setSelectedItemId(null);
+            setRating(0);
+            setTitle('');
+            setContent('');
+            setImages([]);
+            setPreviewImages([]);
         } catch (err) {
             console.error('리뷰 등록 실패', err);
-            toast.error('리뷰 등록에 실패했습니다.');
+            if (err?.response?.status === 409) {
+                toast.error(err?.response?.data?.message || '이미 작성된 리뷰입니다.');
+            } else {
+                toast.error('리뷰 등록에 실패했습니다.');
+            }
         } finally {
             setSubmitting(false);
         }
@@ -160,7 +182,7 @@ const ReviewWrite = () => {
                     className="
                         md:text-xl text-[clamp(14px,3.128vw,24px)]
                         font-bold text-center">
-                    상품 사용 후기
+                    상품 리뷰 작성
                 </h2>
 
                 { /* 상품 미리보기*/}
@@ -208,7 +230,7 @@ const ReviewWrite = () => {
                             md:text-sm text-[clamp(11px,1.824vw,14px)]
                             border border-gray-300 rounded-md p-3 focus:ring focus:ring-gray-400 focus:outline-none"
                     >
-                        <option value="">-- 상품을 선택하세요 --</option>
+                        <option value="">구매하신 상품을 선택하세요</option>
                         {eligibleProducts.map(item => (
                             <option key={item.item_id} value={item.item_id}>
                                 {item.title} / {item.size}
@@ -223,7 +245,7 @@ const ReviewWrite = () => {
                         className="
                             block mb-2 
                             md:text-sm text-[clamp(11px,1.824vw,14px)]
-                            font-semibold text-gray-700">상품은 만족하셨나요?</label>
+                            font-semibold text-gray-700">이 상품을 평가해주세요</label>
                     <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map(star => (
                             <span key={star}
@@ -239,7 +261,7 @@ const ReviewWrite = () => {
                 {/* 후기 제목 */}
                 <div>
                     <label className="block mb-2 md:text-sm text-[clamp(11px,1.824vw,14px)] font-semibold text-gray-700">제목</label>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="후기 제목을 입력해주세요"
+                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="리뷰 제목을 입력해주세요."
                         className="w-full border md:text-sm text-[clamp(11px,1.824vw,14px)] border-gray-300 rounded-md p-3 focus:ring focus:ring-gray-400 focus:outline-none" />
                 </div>
 
@@ -250,12 +272,12 @@ const ReviewWrite = () => {
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         rows="6"
-                        placeholder="구매하신 상품에 대한 솔직한 후기를 남겨주세요."
+                        placeholder="구매하신 상품에 대한 솔직한 리뷰를 남겨주세요."
                         className="w-full md:text-sm text-[clamp(11px,1.824vw,14px)] border border-gray-300 rounded-md p-3 resize-none focus:ring focus:ring-gray-400 focus:outline-none">
                     </textarea>
                     <div className="bg-gray-50 p-1 rounded md:text-xs text-[clamp(10px,1.564vw,12px)] text-gray-600 mb-6">
                     - 상품과 무관한 내용, 욕설, 광고 등은 비공개 처리될 수 있습니다.<br/>
-                    - 작성된 리뷰 및 첨부 사진은 운영 및 마케팅에 활용될 수 있습니다.
+                    - 작성된 리뷰 및 첨부 이미지는 쇼핑몰, 블로그, SNS 등 마케팅 및 홍보 목적으로 활용될 수 있습니다.
                     </div>
                 </div>
                 
@@ -388,7 +410,7 @@ const ReviewWrite = () => {
                         onClick={handleSubmit}
                         disabled={submitting}
                         className='w-full md:text-sm text-[clamp(11px,1.824vw,14px)] bg-black text-white py-3 px-6 rounded-md font-semibold hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed'>
-                        후기 등록
+                        리뷰 등록
                     </button>
                 </div>
             </div>

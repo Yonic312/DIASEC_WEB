@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.diasec.diasec_backend.dao.OrderMapper;
 import com.diasec.diasec_backend.service.AdminOrderService;
-import com.diasec.diasec_backend.service.CreditService;
 import com.diasec.diasec_backend.service.OrderService;
-import com.diasec.diasec_backend.vo.CreditVo;
 import com.diasec.diasec_backend.vo.OrderItemsVo;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 public class AdminOrderController {
     
     private final AdminOrderService adminOrderService;
-    private final CreditService creditService;
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
@@ -88,11 +84,9 @@ public class AdminOrderController {
         String accountNubmer = (String) request.getOrDefault("accountNubmer", null);
         String accountHolder = (String) request.getOrDefault("accountHolder", null);
 
-        boolean success = adminOrderService.updateOrderDetail(
+        return adminOrderService.updateOrderDetailWithNotification(
             itemId, trackingCompany, trackingNumber, bankName, accountNubmer, accountHolder
         );
-
-        return Map.of("success", success);
     }
 
     // 리스정보 수정

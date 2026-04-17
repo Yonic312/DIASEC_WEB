@@ -316,7 +316,7 @@ const Admin_MemberManager = () => {
 
             {/* 멤버 정보 수정창 모달 */}
             {selectedMember && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[10000]"
                     onClick={() => setSelectedMember(null)}>
                     <div className="bg-white p-6 rounded w-full max-w-md" onClick={e => e.stopPropagation()}>
                         <h3 className="text-lg font-bold mb-4">회원 정보 수정</h3>

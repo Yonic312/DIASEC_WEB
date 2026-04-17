@@ -29,6 +29,10 @@ public class ReviewService {
         reviewMapper.insertReview(review);
     }
 
+    public boolean existsReviewByItemId(int itemId) {
+        return reviewMapper.countReviewByItemId(itemId) > 0;
+    }
+
     public void insertReviewImage(@Param("rid") Long rid, @Param("url") String url) {
         reviewMapper.insertReviewImage(rid, url);
     }

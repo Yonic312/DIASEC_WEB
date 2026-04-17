@@ -8,6 +8,7 @@ const Admin_ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [editData, setEditData] = useState({ topImages: [], detailImages: [] });
+    const [editAuthorLabels, setEditAuthorLabels] = useState([]);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [orderKey, setOrderKey] = useState('pid');
     const [orderDir, setOrderDir] = useState('desc');
@@ -159,7 +160,7 @@ const Admin_ProductManager = () => {
         formData.append('title', editData.title);
         formData.append('price', editData.price);
         formData.append('category', editData.category);
-        formData.append('author', editData.author);
+        formData.append('author', editData.author ?? '');
         formData.append('sortOrder', editData.sortOrder || 0);
         formData.append('sales', editData.sales);
 
@@ -256,6 +257,32 @@ const Admin_ProductManager = () => {
 
         setSelectedProduct(product);
     };
+
+    useEffect(() => {
+        if (!selectedProduct || !editData.category) {
+            setEditAuthorLabels([]);
+            return;
+        }
+        const col = collections.find((c) => c.name === editData.category);
+        if (!col) {
+            setEditAuthorLabels([]);
+            return;
+        }
+        axios
+            .get(`${API}/product/collection-items`, {
+                params: { collectionId: col.id },
+                withCredentials: true,
+            })
+            .then((res) => setEditAuthorLabels(res.data || []))
+            .catch(() => setEditAuthorLabels([]));
+    }, [selectedProduct, editData.category, collections, API]);
+
+    const authorOptions = (() => {
+        const cur = editData.author;
+        const list = [...(editAuthorLabels || [])];
+        if (cur && !list.includes(cur)) list.unshift(cur);
+        return list;
+    })();
 
     const handleImageReorder = (type, result) => {
         if (!result.destination) return;
@@ -440,9 +467,10 @@ const Admin_ProductManager = () => {
                         >
                             판매량{arrow('sales')}
                         </th>
+                        <th className="border p-2 w-[10%]">카테고리</th>
+                        <th className="border p-2 w-[15%]">라벨(작가)</th>
                         <th className="border p-2 w-[15%]">썸네일</th>
                         <th className="border p-2 w-auto">상품명</th>
-                        <th className="border p-2 w-[15%]">카테고리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -451,6 +479,13 @@ const Admin_ProductManager = () => {
                             <td className="border p-2 text-center">{product.pid}</td>
                             <td className="border p-2 text-center">{product.sortOrder}</td>
                             <td className="border p-2 text-center">{product.sales}</td>
+
+                            <td className="border p-2 text-center">
+                                {categoryMap[product.category] || product.category}
+                            </td>
+                            <td className="border p-2 text-center">
+                                {categoryMap[product.author] || product.author}
+                            </td>
                             <td className="border p-2 text-center">
                                 {product.imageUrl ? (
                                     <img src={product.imageUrl} alt="썸네일" className="w-20 h-20 object-cover rounded-md mx-auto border" />
@@ -459,13 +494,6 @@ const Admin_ProductManager = () => {
                                 )}
                             </td>
                             <td className="border p-2 text-center">{product.title}</td>
-                            <td className="border p-2 text-center">
-                                {categoryMap[product.category] || product.category}
-                                {product.square && (
-                                    <span>🟧</span>
-                                )}
-                            </td>
-                            
                         </tr>
                     ))}
                 </tbody>
@@ -548,7 +576,7 @@ const Admin_ProductManager = () => {
             </div>
 
             {selectedProduct && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={() => setSelectedProduct(null)}>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[10000]" onClick={() => setSelectedProduct(null)}>
                     <div className="bg-white p-6 rounded w-full max-w-2xl max-h-[95vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <h3 className="text-xl font-bold mb-4">상품 정보 수정</h3>
                         <div className="flex flex-col gap-2 text-sm">
@@ -566,6 +594,23 @@ const Admin_ProductManager = () => {
                                     <option value="fengShui">풍수</option>
                                     <option value="authorCollection">작가별</option>
                                     <option value="customFrames">맞춤액자</option>
+                                </select>
+                            </label>
+                            <label>
+                                작가(라벨)
+                                <select 
+                                    className="border p-2 w-full mt-1 mb-1"
+                                    value={editData.author ?? ''}
+                                    onChange={(e) =>
+                                        setEditData((prev) => ({ ...prev, author: e.target.value }))
+                                    }
+                                >
+                                    <option value="">선택 안 함</option>
+                                    {authorOptions.map((name) => (
+                                        <option key={name} value={name}>
+                                            {name}
+                                        </option>
+                                    ))}
                                 </select>
                             </label>
                             <label>

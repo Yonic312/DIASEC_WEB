@@ -113,7 +113,7 @@ function SeoMetaManager() {
         const promoTitle = ' · 30% 오픈할인';
         const seoDefaults = {
             title: `디아섹코리아 | 30% 오픈할인`,
-            description: '디아섹 코리아에서 디아섹 액자와 맞춤 액자를 만나보세요. 작품과 사진에 맞춘 고급 액자 제작 서비스를 제공합니다.',
+            description: '디아섹코리아에서 디아섹 액자와 맞춤 액자를 만나보세요. 작품과 사진에 맞춘 고급 액자 제작 서비스를 제공합니다.',
             canonical: `${origin}/`,
         };
 
@@ -122,7 +122,7 @@ function SeoMetaManager() {
         if (location.pathname === '/introduce') {
             seo = {
                 title: `디아섹 액자 소개 | 디아섹코리아${promoTitle}`,
-                description: '디아섹 코리아의 디아섹 액자를 소개합니다. 선명한 발색과 고급스러운 마감의 아크릴 액자를 확인해보세요.',
+                description: '디아섹코리아의 디아섹 액자를 소개합니다. 선명한 발색과 고급스러운 마감의 아크릴 액자를 확인해보세요.',
                 canonical: `${origin}/introduce`,
             };
         }

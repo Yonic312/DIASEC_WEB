@@ -1,6 +1,7 @@
 package com.diasec.diasec_backend.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -24,6 +25,8 @@ public interface AdminOrderMapper {
                             @Param("bankName") String bankName,
                             @Param("accountNumber") String accountNumber,
                             @Param("accountHolder") String accountHolder);
+
+    Map<String, Object> selectShippingNotificationTarget(@Param("itemId") Long itemId);
 
     // 리스정보 수정
     void updateLeasePeriod(@Param("itemId") Long itemId, @Param("leaseStart") String leaseStart, @Param("leaseEnd") String leaseEnd);

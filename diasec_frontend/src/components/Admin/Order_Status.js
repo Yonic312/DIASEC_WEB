@@ -54,6 +54,15 @@ const Order_Status = () => {
         '반품신청', '반품회수완료', '환불처리중', '환불완료'
     ];
 
+    const STATUS_GROUPS = {
+        전체: [],
+        처리필요: ['입금대기', '취소요청', '교환신청', '반품신청'],
+        진행중: ['결제완료', '배송준비중', '배송중', '교환회수완료', '교환배송중', '반품회수완료', '환불처리중'],
+        완료: ['배송완료', '취소', '교환완료', '환불완료'],
+    };
+
+    const [workFilter, setWorkFilter] = useState('전체');
+
     // 목록 불러오기
     useEffect(() => {
         fetchOrders();
@@ -141,7 +150,7 @@ const Order_Status = () => {
 
     // 진행 상태 폰트색
     const statusBadgeColor = (status) => {
-        if (status.includes(["반품신청"]) || status.includes(["교환신청"])) return 'text-red-500';
+        if (status.includes("반품신청") || status.includes("교환신청")) return 'text-red-500';
         if (status.includes("완료")) return 'text-green-600';
         if (status.includes("배송") || status.includes("처리중")) return 'text-blue-500';
         if (status === '입금대기') return 'text-yellow-600';
@@ -267,6 +276,11 @@ const Order_Status = () => {
         .then(data => {
             if (data.success) {
                 toast.success('저장되었습니다.')
+                if (data.smsTried) {
+                    toast.success('고객에게 배송 알림 문자를 전송했습니다.');
+                } else {
+                    toast.warn(`배송 알림 문자 전송 실패: ${data.smsMessage || '설정을 확인해주세요.'}`);
+                }
                 setShowModal(false);
                 fetchOrders(); // 목록 갱신
             }
@@ -274,11 +288,19 @@ const Order_Status = () => {
         .catch(err => console.error("상세정보 저장 실패", err));
     }
 
+    const groupedOrderList = orderList.filter((item) => {
+        if (workFilter === '전체') return true;
+        return STATUS_GROUPS[workFilter]?.includes(item.orderStatus);
+    });
+
     // 페이징
     const itemsPerPage = 10;
 
     const totalPages = Math.max(1, Math.ceil(orderList.length / itemsPerPage));
-    const currentItems = orderList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const currentItems = groupedOrderList.slice(
+        (currentPage - 1) * itemsPerPage, 
+        currentPage * itemsPerPage
+    );
 
     const pageGroupSize = 10;
     const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
@@ -290,34 +312,55 @@ const Order_Status = () => {
             <h2 className="text-2xl font-bold mb-6 text-gray-800">주문 상태 관리</h2>
 
             <div className="w-full p-[24px] bg-[#f6f6f6] text-sm flex flex-wrap gap-2 items-center">
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-[120px] h-[40px] border text-center bg-white">
-                    {statusOptions.map(status => (
-                        <option key={status} value={status}>{status}</option>
+                <div className="flex items-center gap-1 mr-2">
+                    {Object.keys(STATUS_GROUPS).map((group) => (
+                        <button
+                            key={group}
+                            type="button"
+                            onClick={() => {
+                                setWorkFilter(group);
+                                setCurrentPage(1);
+                            }}
+                            className={`px-3 h-[36px] rounded border text-sm ${
+                                workFilter === group
+                                    ? 'bg-black text-white border-black'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
+                            {group}
+                        </button>
                     ))}
-                </select>
-                <select 
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="w-[120px] h-[40px] border text-center bg-white"
-                >   
-                    <option value="전체">전체</option>
-                    <option value="masterPiece">명화</option>
-                    <option value="koreanPainting">동양화</option>
-                    <option value="photoIllustration">사진/일러스트</option>
-                    <option value="fengShui">풍수</option>
-                    <option value="authorCollection">작가별</option>
-                    <option value="customFrames">맞춤액자</option>
-                </select>
-                <button className="w-[65px] h-[40px] border bg-white" onClick={handleToday}>오늘</button>
-                <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(1)}>1개월</button>
-                <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(3)}>3개월</button>
-                <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(6)}>6개월</button>
+                </div>
+                <div className="flex gap-1">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-[120px] h-[40px] border text-center bg-white">
+                        {statusOptions.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                        ))}
+                    </select>
+                    <select 
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="w-[120px] h-[40px] border text-center bg-white"
+                    >   
+                        <option value="전체">전체</option>
+                        <option value="masterPiece">명화</option>
+                        <option value="koreanPainting">동양화</option>
+                        <option value="photoIllustration">사진/일러스트</option>
+                        <option value="fengShui">풍수</option>
+                        <option value="authorCollection">작가별</option>
+                        <option value="customFrames">맞춤액자</option>
+                    </select>
+                    <button className="w-[65px] h-[40px] border bg-white" onClick={handleToday}>오늘</button>
+                    <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(1)}>1개월</button>
+                    <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(3)}>3개월</button>
+                    <button className="w-[65px] h-[40px] border bg-white" onClick={() => handleRangeClick(6)}>6개월</button>
 
-                <input type="date" className="w-[130px] h-[40px] border text-center" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                <span className="mx-1">~</span>
-                <input type="date" className="w-[130px] h-[40px] border text-center" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                
-                <input type="text" placeholder="회원ID 또는 상품명" className="w-[180px] h-[40px] border text-sm px-3" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+                    <input type="date" className="w-[130px] h-[40px] border text-center" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    <span className="mx-1">~</span>
+                    <input type="date" className="w-[130px] h-[40px] border text-center" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                    
+                    <input type="text" placeholder="회원ID 또는 상품명" className="w-[180px] h-[40px] border text-sm px-3" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+                </div>
             </div>
             
             {currentItems.length === 0 ? (
@@ -361,7 +404,7 @@ const Order_Status = () => {
                                         <td className="p-3">{isSameOid ? '' : item.createdAt?.slice(0, 10)}</td>
                                         <td className="p-3">{isSameOid ? '' : item.id == '' ? '비회원' : item.id}</td>
                                         <td className="p-3">{categoryMap[item.category] || item.category}</td>
-                                        <td className={`p-3 ${(item.category == 'customFrames' && item?.thumbnail) ? 'text-red-500' : 'text-black'}`}>{item.title}</td>
+                                        <td className={`p-3 text-black`}>{item.title}</td>
                                         <td className="p-3 text-center">{item.quantity}</td>
                                         <td className="p-3 text-center">{item.price?.toLocaleString()}원</td>
                                         <td className="p-3 text-center">{(item.price * item.quantity).toLocaleString()}원</td>

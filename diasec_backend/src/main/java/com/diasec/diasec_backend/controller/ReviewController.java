@@ -1,14 +1,13 @@
 package com.diasec.diasec_backend.controller;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +19,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.diasec.diasec_backend.service.CreditService;
+import com.diasec.diasec_backend.service.OrderService;
 import com.diasec.diasec_backend.service.ReviewService;
 import com.diasec.diasec_backend.util.ImageUtil;
+import com.diasec.diasec_backend.vo.CreditVo;
 import com.diasec.diasec_backend.vo.ReviewVo;
 
 
@@ -32,6 +34,12 @@ public class ReviewController {
 
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    private CreditService creditService;
+
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private ImageUtil imageUtil;
@@ -50,6 +58,7 @@ public class ReviewController {
     
     // 리뷰 작성
     @PostMapping("/write")
+    @Transactional
     public ResponseEntity<?> writeReview(
         @RequestParam("pid") Long pid,
         @RequestParam("id") String id,
@@ -60,6 +69,12 @@ public class ReviewController {
         @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
         try {
+            // 중복 리뷰/중복 적립 방지
+            if (reviewService.existsReviewByItemId(itemId)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("success", false, "message", "이미 작성된 리뷰입니다."));
+            }
+
             // 1. 후기 저장
             ReviewVo review = new ReviewVo();
             review.setPid(pid);
@@ -81,7 +96,20 @@ public class ReviewController {
                 }
             }
 
-            return ResponseEntity.ok().body(Map.of("success", true));
+            // 3. 리뷰 작성 이벤트 적립금 지급
+            final int rewardAmount = 5000;
+            CreditVo rewardCredit = new CreditVo();
+            rewardCredit.setId(id);
+            rewardCredit.setType("적립");
+            rewardCredit.setAmount(rewardAmount);
+            rewardCredit.setDescription("리뷰 작성 이벤트");
+            rewardCredit.setOid(orderService.getOidByItemId((long) itemId));
+            creditService.insertCreditHistory(rewardCredit);
+
+            return ResponseEntity.ok().body(Map.of(
+                "success", true,
+                "rewardAmount", rewardAmount
+            ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("success", false));

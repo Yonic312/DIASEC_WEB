@@ -84,7 +84,7 @@ const EventModal = ({ onClose, onSuccess, event }) => {
     }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-[10000]">
             <div className="bg-white p-6 rounded-lg w-full max-w-md relative shadow-xl">
                 <h3 className="text-lg font-bold mb-4">
                     {isEdit ? "이벤트 수정" : "이벤트 등록"}

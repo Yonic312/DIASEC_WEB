@@ -261,6 +261,13 @@ const Order_Detail = () => {
         .then(data => {
             if (data.success) {
                 toast.success('저장되었습니다.')
+                if (data.smsTried) {
+                    if (data.smsSent) {
+                        toast.success('고객에게 배송 알림 문자를 전송했습니다.');
+                    } else {
+                        toast.warn(`배송 알림 문자 전송 실패: ${data.smsMessage || '설정을 확인해주세요.'}`);
+                    }
+                }
                 setShowModal(false);
                 reload();
             }
